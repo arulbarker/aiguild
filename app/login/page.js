@@ -28,13 +28,15 @@ function LoginForm() {
       if (!res.ok) {
         setErrorMsg(data.error || 'Terjadi kesalahan.')
         setStatus('error')
-      } else {
-        if (data.devUrl) {
-          window.location.href = data.devUrl
-          return
-        }
-        setStatus('sent')
+        return
       }
+
+      if (data.devUrl) {
+        window.location.href = data.devUrl
+        return
+      }
+
+      setStatus('sent')
     } catch {
       setErrorMsg('Tidak bisa terhubung ke server.')
       setStatus('error')
@@ -42,39 +44,34 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        {/* Logo / judul */}
-        <motion.div
-          className="text-center mb-8"
-          initial={{ opacity: 0, y: -24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <motion.h1
-            className="text-3xl font-bold text-white"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.45, delay: 0.1 }}
-          >
-            AI Guild
-          </motion.h1>
-          <motion.p
-            className="text-gray-400 mt-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: 0.25 }}
-          >
-            Platform Vibe Coding
-          </motion.p>
-        </motion.div>
+    <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: 'var(--bg)' }}>
 
-        {/* Card */}
-        <motion.div
-          className="bg-gray-900 rounded-2xl p-8 border border-gray-800"
-          initial={{ opacity: 0, y: 32, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+      {/* Logo */}
+      <motion.div
+        className="mb-10 text-center"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.25em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 8 }}>
+          Platform Vibe Coding
+        </p>
+        <h1 className="font-extrabold uppercase leading-none" style={{ fontSize: 'clamp(2.2rem, 8vw, 4rem)', letterSpacing: '-0.04em', color: 'var(--cream)' }}>
+          AI Guild
+        </h1>
+      </motion.div>
+
+      {/* Card */}
+      <motion.div
+        className="w-full"
+        style={{ maxWidth: 420 }}
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <div
+          className="rounded-2xl p-8"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: '0 8px 48px rgba(0,0,0,0.5)' }}
         >
           <AnimatePresence mode="wait">
             {status === 'sent' ? (
@@ -90,115 +87,117 @@ function LoginForm() {
                   className="text-4xl mb-4"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 18, delay: 0.1 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.1 }}
                 >
                   ✉️
                 </motion.div>
-                <h2 className="text-xl font-semibold text-white mb-2">Cek email kamu</h2>
-                <p className="text-gray-400 text-sm">
+                <h2 className="font-bold mb-2" style={{ fontSize: 18, color: 'var(--cream)' }}>
+                  Cek email kamu
+                </h2>
+                <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6 }}>
                   Link masuk sudah dikirim ke{' '}
-                  <span className="text-purple-400">{email}</span>.
-                  Link berlaku 15 menit.
+                  <span style={{ color: 'var(--amber)', fontWeight: 600 }}>{email}</span>.
+                  <br />Berlaku 15 menit.
                 </p>
                 <motion.button
+                  className="mt-6 text-sm"
+                  style={{ color: 'var(--muted)', fontFamily: 'var(--font-mono)', letterSpacing: '0.05em' }}
+                  whileHover={{ color: 'var(--amber)' }}
                   onClick={() => setStatus('idle')}
-                  className="mt-6 text-sm text-gray-500 hover:text-gray-300 transition-colors"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                 >
-                  Kirim ulang
+                  ← Kirim ulang
                 </motion.button>
               </motion.div>
             ) : (
-              <motion.div
+              <motion.form
                 key="form"
+                onSubmit={handleSubmit}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
+                transition={{ duration: 0.2 }}
               >
-                <h2 className="text-xl font-semibold text-white mb-1">Masuk</h2>
-                <p className="text-gray-400 text-sm mb-6">
+                <h2 className="font-bold mb-1" style={{ fontSize: 20, color: 'var(--cream)' }}>
+                  Masuk
+                </h2>
+                <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 24 }}>
                   Masukkan email yang kamu gunakan saat membeli akses.
                 </p>
 
+                {authError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+                    className="mb-4 px-4 py-2.5 rounded-xl text-sm"
+                    style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171' }}
+                  >
+                    {authError === 'expired' ? 'Link sudah kedaluwarsa. Minta link baru.' : 'Link tidak valid.'}
+                  </motion.div>
+                )}
+
                 <AnimatePresence>
-                  {(authError === 'expired' || authError === 'invalid') && (
+                  {status === 'error' && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="bg-red-900/30 border border-red-800 text-red-400 text-sm rounded-lg px-4 py-3 mb-4 overflow-hidden"
+                      initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                      className="mb-4 px-4 py-2.5 rounded-xl text-sm"
+                      style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171' }}
                     >
-                      {authError === 'expired'
-                        ? 'Link sudah kadaluarsa atau sudah digunakan. Minta link baru.'
-                        : 'Link tidak valid.'}
+                      {errorMsg}
                     </motion.div>
                   )}
                 </AnimatePresence>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-1.5">Email</label>
-                    <motion.input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="kamu@email.com"
-                      required
-                      whileFocus={{ scale: 1.01, borderColor: '#a855f7' }}
-                      className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-3
-                                 placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
-                    />
-                  </div>
+                <div className="mb-4">
+                  <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.15em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: 8 }}>
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="kamu@email.com"
+                    required
+                    className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+                    style={{
+                      background: 'var(--surface-2, #141319)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--cream)',
+                      transition: 'border-color 0.2s',
+                    }}
+                    onFocus={e => e.target.style.borderColor = 'rgba(232,160,32,0.4)'}
+                    onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                  />
+                </div>
 
-                  <AnimatePresence>
-                    {status === 'error' && (
-                      <motion.p
-                        key="err"
-                        className="text-red-400 text-sm"
-                        initial={{ opacity: 0, y: -6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                      >
-                        {errorMsg}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
+                <motion.button
+                  type="submit"
+                  disabled={status === 'loading'}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="w-full py-3 rounded-xl font-bold"
+                  style={{
+                    background: status === 'loading' ? 'rgba(232,160,32,0.4)' : '#E8A020',
+                    color: '#07070A',
+                    cursor: status === 'loading' ? 'not-allowed' : 'pointer',
+                    fontFamily: 'var(--font-mono)',
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    fontSize: 12,
+                  }}
+                >
+                  {status === 'loading' ? 'Mengirim...' : 'Kirim Link Masuk'}
+                </motion.button>
 
-                  <motion.button
-                    type="submit"
-                    disabled={status === 'loading'}
-                    className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-900
-                               text-white font-semibold py-3 rounded-lg transition-colors"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  >
-                    {status === 'loading' ? (
-                      <motion.span
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                      >
-                        Mengirim...
-                      </motion.span>
-                    ) : (
-                      'Kirim Link Masuk'
-                    )}
-                  </motion.button>
-                </form>
-
-                <p className="text-center text-gray-600 text-xs mt-6">
+                <p className="mt-5 text-center" style={{ fontSize: 13, color: 'var(--muted)' }}>
                   Belum punya akses?{' '}
-                  <a href="https://lynk.id" className="text-purple-400 hover:underline">
+                  <a href="https://lynk.id" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--amber)' }} className="hover:underline">
                     Beli di sini
                   </a>
                 </p>
-              </motion.div>
+              </motion.form>
             )}
           </AnimatePresence>
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
     </div>
   )
 }
