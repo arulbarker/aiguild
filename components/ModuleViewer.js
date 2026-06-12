@@ -126,12 +126,39 @@ export default function ModuleViewer({ module: mod, initialTab, isCompleted, onC
         )}
 
         {tab === 'materi' && mod.gammaUrl && (
-          <iframe
-            src={mod.gammaUrl}
-            className="w-full h-full"
-            style={{ background: '#fff' }}
-            allow="fullscreen"
-          />
+          <div className="flex flex-col items-center justify-center h-full gap-6 px-4">
+            <div
+              className="w-full max-w-lg rounded-2xl p-8 text-center"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+            >
+              <div className="mb-4" style={{ fontSize: 40 }}>◈</div>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 8 }}>
+                MATERI · {mod.title}
+              </p>
+              <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.6, marginBottom: 24 }}>
+                Materi dibuka di tab baru agar tampil optimal.
+              </p>
+              <motion.a
+                href={mod.gammaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold"
+                style={{
+                  background: '#E8A020',
+                  color: '#07070A',
+                  fontFamily: 'var(--font-mono)',
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  fontSize: 12,
+                  textDecoration: 'none',
+                }}
+              >
+                Buka Materi →
+              </motion.a>
+            </div>
+          </div>
         )}
 
         {tab === 'video' && !youtubeEmbed && (
