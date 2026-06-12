@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Guild — Platform Pembelajaran Vibe Coding
 
-## Getting Started
+Platform berbayar untuk belajar membangun produk digital dengan AI. Modul flowchart interaktif, video + materi dalam satu layar, akses via email magic link.
 
-First, run the development server:
+## Stack
+
+- **Next.js 14** App Router (JavaScript) + Tailwind CSS
+- **PostgreSQL** + Prisma 7 + `@prisma/adapter-pg`
+- **Auth:** Magic link (jose JWT + Resend)
+- **Deploy:** VPS Hostinger (Coolify + Docker) + GitHub Actions
+
+## Local Development
+
+**Syarat:** SSH key ke VPS tersimpan di `~/.ssh/aiguild_vps`
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev       # otomatis buka SSH tunnel ke DB + Next.js dev server
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka `http://localhost:3001` (atau 3000 jika port bebas).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Login dengan email yang sudah ada di database. Di dev mode, magic link dikembalikan langsung — tidak perlu buka email.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Seed database
 
-## Learn More
+```bash
+# Set ADMIN_EMAIL di .env.local terlebih dahulu
+npm run seed
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Environment Variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Salin `.env.example` ke `.env.local` dan isi nilainya:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+DATABASE_URL=postgresql://aiguild:...@localhost:5433/aiguild
+JWT_SECRET=
+TOKEN_SECRET=
+NEXT_PUBLIC_APP_URL=http://localhost:3001
+ADMIN_EMAIL=
+RESEND_API_KEY=
+LYNKID_WEBHOOK_SECRET=
+MAYAR_WEBHOOK_SECRET=
+NEXT_PUBLIC_POSTHOG_KEY=
+NEXT_PUBLIC_POSTHOG_HOST=
+SENTRY_DSN=
+```
 
-## Deploy on Vercel
+## Deploy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Push ke `master` → GitHub Actions auto-deploy ke VPS. Detail di `.claude/skills/deploy.md`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Lisensi
+
+Hak cipta © 2026 Arul. Seluruh hak dilindungi.
