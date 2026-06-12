@@ -44,8 +44,10 @@ SENTRY_DSN
 
 ## Docker & build notes
 - `next.config.mjs` pakai `output: 'standalone'`
-- Dockerfile: multi-stage (deps → builder → runner), copy `.next/standalone`
+- Dockerfile: multi-stage (deps → build-deps → builder → runner) — build-deps pakai `npm ci` (semua deps termasuk tailwindcss), runner pakai `npm ci --omit=dev`
 - `public/` folder harus ada (dibuat dengan `RUN mkdir -p public` di Dockerfile)
+- Deploy pakai `docker-compose.prod.yml` — JANGAN pakai `docker run` langsung (backtick di Traefik label akan rusak di bash)
+- Container WAJIB punya label `traefik.docker.network=coolify` jika terhubung ke lebih dari 1 Docker network (aiguild-net + coolify)
 
 ## Rollback
 ```bash

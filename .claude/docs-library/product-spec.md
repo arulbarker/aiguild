@@ -16,13 +16,14 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 ### Autentikasi
 - Magic link via email — tidak ada password
 - User dibuat otomatis saat pembelian berhasil (via webhook)
-- Session JWT 30 hari, cookie httpOnly
+- Session JWT 1 tahun, cookie httpOnly — persist sampai logout manual
 
 ### Konten — flowchart modul
 - Modul tersusun sebagai DAG (Directed Acyclic Graph) — bukan tree linear
 - Satu modul bisa punya banyak parent (multiple prerequisite)
-- Setiap modul berisi: YouTube embed (video) + Gamma.app embed (materi slide)
-- Progress user dilacak per modul (last_viewed_at)
+- Setiap modul berisi: YouTube embed (video) + Google Drive PDF embed (materi) — Gamma.app TIDAK digunakan (X-Frame-Options: SAMEORIGIN memblokir embedding)
+- Progress tracking manual: user klik "Tandai Selesai", tidak otomatis saat buka modul
+- Progress user dilacak per modul
 - Konten dikelola via `lib/modules-seed.js` + `npm run seed` — bukan CMS
 
 ### Pembayaran & akses
