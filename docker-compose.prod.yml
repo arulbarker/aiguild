@@ -1,0 +1,27 @@
+services:
+  app:
+    image: aiguild:latest
+    container_name: aiguild-app
+    restart: unless-stopped
+    env_file: /data/aiguild/.env.production
+    networks:
+      - coolify
+      - aiguild-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.aiguild.rule=Host(`aiguild.online`) || Host(`www.aiguild.online`)"
+      - "traefik.http.routers.aiguild.entrypoints=https"
+      - "traefik.http.routers.aiguild.tls=true"
+      - "traefik.http.routers.aiguild.tls.certresolver=letsencrypt"
+      - "traefik.http.services.aiguild.loadbalancer.server.port=3000"
+      - "traefik.http.routers.aiguild-http.rule=Host(`aiguild.online`) || Host(`www.aiguild.online`)"
+      - "traefik.http.routers.aiguild-http.entrypoints=http"
+      - "traefik.http.routers.aiguild-http.middlewares=aiguild-https"
+      - "traefik.http.middlewares.aiguild-https.redirectscheme.scheme=https"
+
+networks:
+  coolify:
+    external: true
+  aiguild-net:
+    external: true
