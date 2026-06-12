@@ -3,6 +3,15 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 
+function isSafeUrl(url) {
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:'
+  } catch {
+    return false
+  }
+}
+
 export default function ModuleViewer({ module: mod, initialTab, isCompleted, onComplete, onClose }) {
   const hasVideo  = !!(mod?.youtubeUrl)
   const hasMateri = !!(mod?.gammaUrl)
@@ -139,7 +148,7 @@ export default function ModuleViewer({ module: mod, initialTab, isCompleted, onC
                 Materi dibuka di tab baru agar tampil optimal.
               </p>
               <motion.a
-                href={mod.gammaUrl}
+                href={isSafeUrl(mod.gammaUrl) ? mod.gammaUrl : '#'}
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.03 }}
