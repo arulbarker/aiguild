@@ -13,6 +13,10 @@ const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
 
 async function main() {
+  console.log('Menghapus data lama...')
+  await prisma.userProgress.deleteMany()
+  await prisma.module.deleteMany()
+
   console.log('Seeding modules...')
 
   const slugToId = {}

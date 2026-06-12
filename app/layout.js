@@ -1,8 +1,18 @@
-import { Inter } from 'next/font/google'
+import { Syne, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import PostHogProvider from '@/components/PostHogProvider'
 
-const inter = Inter({ subsets: ['latin'] })
+const syne = Syne({
+  subsets: ['latin'],
+  variable: '--font-syne',
+  weight: ['400', '500', '600', '700', '800'],
+})
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  weight: ['100', '200', '300', '400'],
+})
 
 export const metadata = {
   title: 'AI Guild — Platform Vibe Coding',
@@ -11,8 +21,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="id">
-      <body className={inter.className}>
+    <html lang="id" className={`${syne.variable} ${mono.variable}`}>
+      <body>
         <PostHogProvider>
           {children}
         </PostHogProvider>

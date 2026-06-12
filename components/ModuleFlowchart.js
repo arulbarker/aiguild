@@ -1,158 +1,222 @@
 'use client'
 
-import { useMemo } from 'react'
+import { motion } from 'framer-motion'
 
-const NODE_W = 200
-const NODE_H = 64
-const H_GAP = 40
-const V_GAP = 80
+function getYouTubeId(url) {
+  if (!url) return null
+  const m = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
+  return m ? m[1] : null
+}
 
-function computeLayout(modules) {
-  const idToMod = Object.fromEntries(modules.map((m) => [m.id, m]))
+function PlayIcon() {
+  return (
+    <motion.div
+      className="flex items-center justify-center rounded-full"
+      style={{ width: 60, height: 60, background: '#E8A020' }}
+      whileHover={{ scale: 1.12, boxShadow: '0 0 0 12px rgba(232,160,32,0.12), 0 0 40px rgba(232,160,32,0.35)' }}
+      whileTap={{ scale: 0.88 }}
+      transition={{ type: 'spring', stiffness: 380, damping: 18 }}
+    >
+      <svg viewBox="0 0 24 24" fill="#07070A" style={{ width: 26, height: 26, marginLeft: 4 }}>
+        <path d="M8 5v14l11-7z" />
+      </svg>
+    </motion.div>
+  )
+}
 
-  // BFS dari root nodes untuk menentukan level tiap node
-  const levels = {}
-  const roots = modules.filter((m) => m.parentIds.length === 0)
+function MateriIcon() {
+  return (
+    <motion.div
+      className="flex items-center justify-center rounded-full"
+      style={{ width: 60, height: 60, background: 'rgba(240,232,212,0.1)', border: '1.5px solid rgba(240,232,212,0.22)' }}
+      whileHover={{ scale: 1.1, background: 'rgba(240,232,212,0.18)' }}
+      whileTap={{ scale: 0.88 }}
+      transition={{ type: 'spring', stiffness: 380, damping: 18 }}
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--cream)" strokeWidth="1.5" style={{ width: 26, height: 26 }}>
+        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </motion.div>
+  )
+}
 
-  const queue = roots.map((r) => ({ id: r.id, level: 0 }))
-  while (queue.length) {
-    const { id, level } = queue.shift()
-    if (levels[id] === undefined || levels[id] < level) {
-      levels[id] = level
-    }
-    const children = modules.filter((m) => m.parentIds.includes(id))
-    children.forEach((c) => queue.push({ id: c.id, level: level + 1 }))
-  }
+function FlowConnector({ index }) {
+  return (
+    <div className="flex flex-col items-center" style={{ height: 64 }}>
+      <svg width="24" height="64" viewBox="0 0 24 64" fill="none">
+        <motion.path
+          d="M12 0 L12 50"
+          stroke="#E8A020" strokeWidth="1.5" strokeDasharray="5 6" strokeLinecap="round" strokeOpacity={0.35}
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ duration: 0.7, delay: 0.3 + index * 0.1, ease: 'easeOut' }}
+        />
+        <motion.path
+          d="M6 46 L12 56 L18 46"
+          stroke="#E8A020" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" strokeOpacity={0.35}
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ duration: 0.25, delay: 1.0 + index * 0.1 }}
+        />
+      </svg>
+    </div>
+  )
+}
 
-  // Kelompokkan per level
-  const byLevel = {}
-  modules.forEach((m) => {
-    const l = levels[m.id] ?? 0
-    if (!byLevel[l]) byLevel[l] = []
-    byLevel[l].push(m)
-  })
-
-  // Hitung posisi X dan Y tiap node
-  const positions = {}
-  Object.entries(byLevel).forEach(([level, mods]) => {
-    const totalW = mods.length * NODE_W + (mods.length - 1) * H_GAP
-    const startX = -totalW / 2 + NODE_W / 2
-    mods.forEach((m, i) => {
-      positions[m.id] = {
-        x: startX + i * (NODE_W + H_GAP),
-        y: Number(level) * (NODE_H + V_GAP),
-      }
-    })
-  })
-
-  const maxLevel = Math.max(...Object.keys(byLevel).map(Number))
-  const maxPerLevel = Math.max(...Object.values(byLevel).map((a) => a.length))
-  const svgWidth = maxPerLevel * NODE_W + (maxPerLevel - 1) * H_GAP + 80
-  const svgHeight = (maxLevel + 1) * (NODE_H + V_GAP) + 40
-
-  return { positions, svgWidth, svgHeight, idToMod }
+const cardVariants = {
+  hidden: { opacity: 0, y: 28, scale: 0.975 },
+  visible: (i) => ({
+    opacity: 1, y: 0, scale: 1,
+    transition: { duration: 0.5, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] },
+  }),
 }
 
 export default function ModuleFlowchart({ modules, completedIds = [], onSelect, activeId }) {
-  const { positions, svgWidth, svgHeight } = useMemo(
-    () => computeLayout(modules),
-    [modules]
-  )
-
-  const edges = useMemo(() => {
-    const result = []
-    modules.forEach((mod) => {
-      mod.parentIds.forEach((parentId) => {
-        if (positions[parentId] && positions[mod.id]) {
-          result.push({ from: parentId, to: mod.id })
-        }
-      })
-    })
-    return result
-  }, [modules, positions])
-
-  const offsetX = svgWidth / 2
+  const hasVideo  = (mod) => !!mod.youtubeUrl
+  const hasMateri = (mod) => !!mod.gammaUrl
 
   return (
-    <div className="overflow-x-auto">
-      <svg
-        width={svgWidth}
-        height={svgHeight}
-        className="block mx-auto"
-        style={{ minWidth: svgWidth }}
-      >
-        {/* Edges */}
-        {edges.map(({ from, to }) => {
-          const fp = positions[from]
-          const tp = positions[to]
-          const x1 = fp.x + offsetX
-          const y1 = fp.y + NODE_H
-          const x2 = tp.x + offsetX
-          const y2 = tp.y
-          const cy = (y1 + y2) / 2
-          return (
-            <path
-              key={`${from}-${to}`}
-              d={`M ${x1} ${y1} C ${x1} ${cy}, ${x2} ${cy}, ${x2} ${y2}`}
-              stroke="#4b5563"
-              strokeWidth={2}
-              fill="none"
-            />
-          )
-        })}
+    <div className="flex flex-col max-w-2xl mx-auto w-full">
+      {modules.map((mod, i) => {
+        const isActive    = activeId === mod.id
+        const isCompleted = completedIds.includes(mod.id)
+        const ytId        = getYouTubeId(mod.youtubeUrl)
+        const thumbUrl    = ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : null
+        const num         = String(i + 1).padStart(2, '0')
+        const canPlay     = hasVideo(mod) || hasMateri(mod)
 
-        {/* Nodes */}
-        {modules.map((mod) => {
-          const pos = positions[mod.id]
-          if (!pos) return null
-          const cx = pos.x + offsetX
-          const isCompleted = completedIds.includes(mod.id)
-          const isActive = activeId === mod.id
-
-          return (
-            <g
-              key={mod.id}
-              transform={`translate(${cx - NODE_W / 2}, ${pos.y})`}
-              onClick={() => onSelect?.(mod)}
-              style={{ cursor: 'pointer' }}
+        return (
+          <div key={mod.id}>
+            <motion.article
+              custom={i}
+              variants={cardVariants}
+              initial="hidden"
+              animate="visible"
+              whileHover={canPlay ? { scale: 1.008, transition: { duration: 0.2 } } : {}}
+              className="relative rounded-2xl overflow-hidden"
+              style={{
+                background: 'var(--surface)',
+                border: isActive
+                  ? '1px solid rgba(232,160,32,0.45)'
+                  : '1px solid var(--border)',
+                boxShadow: isActive
+                  ? '0 0 40px rgba(232,160,32,0.1), 0 4px 32px rgba(0,0,0,0.6)'
+                  : '0 4px 24px rgba(0,0,0,0.4)',
+                transition: 'border-color 0.3s, box-shadow 0.3s',
+              }}
             >
-              <rect
-                width={NODE_W}
-                height={NODE_H}
-                rx={10}
-                ry={10}
-                fill={isActive ? '#7c3aed' : isCompleted ? '#166534' : '#1f2937'}
-                stroke={isActive ? '#a855f7' : isCompleted ? '#4ade80' : '#374151'}
-                strokeWidth={isActive ? 2 : 1}
-              />
-              <text
-                x={NODE_W / 2}
-                y={NODE_H / 2 - 2}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fill="white"
-                fontSize={12}
-                fontWeight={isActive ? 600 : 400}
-                style={{ userSelect: 'none', pointerEvents: 'none' }}
+              {/* Thumbnail / Cover */}
+              <motion.div
+                className="relative overflow-hidden"
+                style={{ aspectRatio: '16/9', cursor: canPlay ? 'pointer' : 'default' }}
+                whileTap={canPlay ? { scale: 0.992 } : {}}
+                onClick={() => canPlay && onSelect?.(mod, hasVideo(mod) ? 'video' : 'materi')}
               >
-                {mod.title.length > 28 ? mod.title.slice(0, 26) + '…' : mod.title}
-              </text>
-              {isCompleted && (
-                <text
-                  x={NODE_W - 10}
-                  y={12}
-                  textAnchor="end"
-                  fontSize={11}
-                  fill="#4ade80"
-                  style={{ pointerEvents: 'none' }}
+                {thumbUrl ? (
+                  <img
+                    src={thumbUrl} alt={mod.title}
+                    className="w-full h-full object-cover"
+                    style={{ filter: 'brightness(0.85) saturate(0.9)' }}
+                  />
+                ) : (
+                  <div
+                    className="w-full h-full"
+                    style={{
+                      background: hasMateri(mod)
+                        ? 'linear-gradient(135deg, #12101E 0%, #0A0810 60%, #0E0C14 100%)'
+                        : 'linear-gradient(135deg, #0E0E12 0%, #09090C 100%)',
+                    }}
+                  />
+                )}
+
+                {/* Gradient bawah */}
+                <div
+                  className="absolute inset-0"
+                  style={{ background: 'linear-gradient(to top, rgba(7,7,10,0.92) 0%, rgba(7,7,10,0.3) 45%, rgba(7,7,10,0.05) 100%)' }}
+                />
+
+                {/* Watermark nomor */}
+                <div
+                  className="absolute top-2 left-3 select-none pointer-events-none"
+                  style={{ fontFamily: 'var(--font-mono)', fontSize: 72, fontWeight: 100, color: 'rgba(232,160,32,0.18)', lineHeight: 1, letterSpacing: '-0.04em' }}
                 >
-                  ✓
-                </text>
-              )}
-            </g>
-          )
-        })}
-      </svg>
+                  {num}
+                </div>
+
+                {/* Badge selesai */}
+                {isCompleted && (
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', delay: i * 0.08 + 0.2 }}
+                    className="absolute top-3 right-3 flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full"
+                    style={{ fontFamily: 'var(--font-mono)', background: 'rgba(232,160,32,0.12)', border: '1px solid rgba(232,160,32,0.3)', color: '#E8A020' }}
+                  >
+                    ✓ selesai
+                  </motion.div>
+                )}
+
+                {/* Ikon tengah */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  {hasVideo(mod)            && <PlayIcon />}
+                  {!hasVideo(mod) && hasMateri(mod) && <MateriIcon />}
+                  {!hasVideo(mod) && !hasMateri(mod) && (
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.15em' }}>
+                      SEGERA
+                    </span>
+                  )}
+                </div>
+
+                {/* Judul overlay bawah */}
+                <div className="absolute bottom-0 left-0 right-0 px-5 pb-4 pt-8">
+                  <h3 className="text-white font-bold leading-tight" style={{ fontSize: 17, textShadow: '0 1px 8px rgba(0,0,0,0.8)' }}>
+                    {mod.title}
+                  </h3>
+                </div>
+              </motion.div>
+
+              {/* Footer */}
+              <div
+                className="flex items-center justify-between px-4 py-3"
+                style={{ borderTop: '1px solid var(--border)' }}
+              >
+                <div className="flex items-center gap-2">
+                  {hasVideo(mod) && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
+                      onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'video') }}
+                      className="text-xs px-3 py-1.5 rounded-full font-medium"
+                      style={{ background: 'rgba(232,160,32,0.1)', color: '#E8A020', border: '1px solid rgba(232,160,32,0.3)' }}
+                    >
+                      ▶&nbsp; Video
+                    </motion.button>
+                  )}
+                  {hasMateri(mod) && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
+                      onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'materi') }}
+                      className="text-xs px-3 py-1.5 rounded-full font-medium"
+                      style={{ background: 'rgba(240,232,212,0.06)', color: 'var(--cream)', border: '1px solid rgba(240,232,212,0.14)' }}
+                    >
+                      ◈&nbsp; Materi
+                    </motion.button>
+                  )}
+                  {!hasVideo(mod) && !hasMateri(mod) && (
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.1em' }}>
+                      Konten segera hadir
+                    </span>
+                  )}
+                </div>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.18)', letterSpacing: '0.05em' }}>
+                  {num}
+                </span>
+              </div>
+            </motion.article>
+
+            {i < modules.length - 1 && <FlowConnector index={i} />}
+          </div>
+        )
+      })}
     </div>
   )
 }

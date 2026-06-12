@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Sidebar({ modules = [], completedIds = [] }) {
   const [open, setOpen] = useState(false)
@@ -10,75 +11,139 @@ export default function Sidebar({ modules = [], completedIds = [] }) {
 
   return (
     <>
-      {/* Toggle button — always visible */}
-      <button
+      {/* Toggle button */}
+      <motion.button
         onClick={() => setOpen(!open)}
-        className="fixed top-4 left-4 z-50 bg-gray-800 hover:bg-gray-700 border border-gray-700
-                   text-white rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-2
-                   transition-colors shadow-lg"
+        className="fixed top-4 left-4 z-50 flex items-center gap-2 text-sm font-medium"
+        style={{
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          color: 'var(--cream)',
+          borderRadius: 10,
+          padding: '8px 14px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+        }}
+        whileHover={{ scale: 1.04, borderColor: 'rgba(232,160,32,0.35)' }}
+        whileTap={{ scale: 0.94 }}
         aria-label="Toggle menu"
       >
-        <span className="text-base">{open ? '✕' : '☰'}</span>
-        <span className="hidden sm:inline">Modul</span>
-      </button>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={open ? 'x' : 'm'}
+            style={{ fontSize: 15, lineHeight: 1 }}
+            initial={{ rotate: -60, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            exit={{ rotate: 60, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            {open ? '✕' : '☰'}
+          </motion.span>
+        </AnimatePresence>
+        <span className="hidden sm:inline" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+          Modul
+        </span>
+      </motion.button>
 
-      {/* Overlay */}
-      {open && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setOpen(false)}
-        />
-      )}
+      {/* Backdrop */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="fixed inset-0 z-40"
+            style={{ background: 'rgba(7,7,10,0.75)', backdropFilter: 'blur(4px)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
-      {/* Sidebar panel */}
-      <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-gray-900 border-r border-gray-800
-                    z-40 transform transition-transform duration-200 ease-in-out
-                    ${open ? 'translate-x-0' : '-translate-x-full'}`}
+      {/* Panel */}
+      <motion.aside
+        className="fixed top-0 left-0 h-full z-50"
+        style={{
+          width: 280,
+          background: 'var(--surface)',
+          borderRight: '1px solid var(--border)',
+        }}
+        initial={{ x: '-100%' }}
+        animate={{ x: open ? 0 : '-100%' }}
+        transition={{ type: 'spring', stiffness: 340, damping: 38 }}
       >
-        <div className="p-6 pt-16">
-          <h2 className="text-white font-bold text-lg mb-4">AI Guild</h2>
+        {/* Panel header */}
+        <div
+          className="px-6 pt-6 pb-5"
+          style={{ borderBottom: '1px solid var(--border)' }}
+        >
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 4 }}>
+            AI GUILD
+          </p>
+          <h2 className="font-bold uppercase" style={{ fontSize: 18, letterSpacing: '-0.02em', color: 'var(--cream)' }}>
+            Kurikulum
+          </h2>
+        </div>
 
-          <nav className="space-y-1">
-            <Link
-              href="/dashboard"
-              onClick={() => setOpen(false)}
-              className={`block px-3 py-2 rounded-lg text-sm transition-colors
-                ${pathname === '/dashboard'
-                  ? 'bg-purple-900/50 text-purple-300'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}
-            >
-              Dashboard
-            </Link>
+        <nav className="p-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 100px)' }}>
+          <Link
+            href="/dashboard"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm mb-1"
+            style={{
+              background: pathname === '/dashboard' ? 'var(--amber-glow)' : 'transparent',
+              color: pathname === '/dashboard' ? 'var(--amber)' : 'var(--muted)',
+              border: pathname === '/dashboard' ? '1px solid rgba(232,160,32,0.2)' : '1px solid transparent',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
+            ← Dashboard
+          </Link>
 
-            <div className="pt-2">
-              <p className="text-xs text-gray-600 uppercase tracking-wider px-3 mb-2">Modul</p>
-              {modules.map((mod) => {
-                const isActive = pathname === `/modul/${mod.slug}`
-                const isDone = completedIds.includes(mod.id)
-                return (
+          <div className="mt-3">
+            {modules.map((mod, i) => {
+              const isActive = pathname === `/modul/${mod.slug}`
+              const isDone = completedIds.includes(mod.id)
+              return (
+                <motion.div
+                  key={mod.id}
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{
+                    opacity: open ? 1 : 0,
+                    x: open ? 0 : -12,
+                  }}
+                  transition={{ delay: open ? 0.04 + i * 0.035 : 0, duration: 0.22 }}
+                >
                   <Link
-                    key={mod.id}
                     href={`/modul/${mod.slug}`}
                     onClick={() => setOpen(false)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors
-                      ${isActive
-                        ? 'bg-purple-900/50 text-purple-300'
-                        : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm mb-0.5 transition-colors"
+                    style={{
+                      background: isActive ? 'var(--amber-glow)' : 'transparent',
+                      color: isActive ? 'var(--cream)' : 'var(--muted)',
+                      border: isActive ? '1px solid rgba(232,160,32,0.2)' : '1px solid transparent',
+                    }}
                   >
-                    {isDone ? (
-                      <span className="text-green-400 text-xs">✓</span>
-                    ) : (
-                      <span className="w-3 h-3 rounded-full border border-gray-600 flex-shrink-0" />
-                    )}
-                    <span className="truncate">{mod.title}</span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 10,
+                        color: isDone ? 'var(--amber)' : 'rgba(255,255,255,0.2)',
+                        minWidth: 18,
+                      }}
+                    >
+                      {isDone ? '✓' : String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="truncate" style={{ fontSize: 13 }}>{mod.title}</span>
                   </Link>
-                )
-              })}
-            </div>
-          </nav>
-        </div>
-      </aside>
+                </motion.div>
+              )
+            })}
+          </div>
+        </nav>
+      </motion.aside>
     </>
   )
 }
