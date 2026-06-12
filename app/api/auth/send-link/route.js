@@ -34,6 +34,13 @@ export async function POST(request) {
       data: { email: normalizedEmail, token: hashedToken, expiresAt },
     })
 
+    // Di dev mode, kembalikan URL langsung ke browser — tidak perlu email
+    if (process.env.NODE_ENV === 'development') {
+      const devUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify?token=${rawToken}`
+      console.log('\n🔗 DEV MAGIC LINK:', devUrl, '\n')
+      return NextResponse.json({ message: 'Link masuk sudah dikirim ke email kamu.', devUrl })
+    }
+
     await sendMagicLink(normalizedEmail, rawToken)
 
     return NextResponse.json({ message: 'Link masuk sudah dikirim ke email kamu.' })

@@ -8,6 +8,7 @@ function LoginForm() {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState('idle') // idle | loading | sent | error
   const [errorMsg, setErrorMsg] = useState('')
+  const [devUrl, setDevUrl] = useState(null)
   const searchParams = useSearchParams()
   const authError = searchParams.get('error')
 
@@ -28,6 +29,11 @@ function LoginForm() {
         setErrorMsg(data.error || 'Terjadi kesalahan.')
         setStatus('error')
       } else {
+        if (data.devUrl) {
+          // Dev mode: langsung redirect tanpa perlu buka email
+          window.location.href = data.devUrl
+          return
+        }
         setStatus('sent')
       }
     } catch {
