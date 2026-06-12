@@ -1,6 +1,6 @@
 FROM node:20-alpine AS base
 
-# Install dependencies only when needed
+# Production deps only (untuk runtime)
 FROM base AS deps
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
@@ -9,10 +9,19 @@ COPY prisma ./prisma/
 COPY prisma.config.ts ./
 RUN npm ci --omit=dev
 
+# All deps (termasuk devDependencies — dibutuhkan saat build)
+FROM base AS build-deps
+RUN apk add --no-cache libc6-compat openssl
+WORKDIR /app
+COPY package*.json ./
+COPY prisma ./prisma/
+COPY prisma.config.ts ./
+RUN npm ci
+
 # Build the application
 FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=build-deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
 RUN npm run build
@@ -25,6 +34,7 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 RUN mkdir -p public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
