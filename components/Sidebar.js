@@ -48,7 +48,7 @@ function ModuleItem({ mod, i, isDone, isActive, onSelect, setOpen }) {
         className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-colors"
         style={{
           background: isActive ? 'var(--amber-glow)' : 'transparent',
-          color: isActive ? 'var(--cream)' : 'var(--muted)',
+          color: isActive ? 'var(--amber)' : 'rgba(255,255,255,0.75)',
           border: isActive ? '1px solid rgba(232,160,32,0.2)' : '1px solid transparent',
         }}
         onMouseEnter={() => setHovered(true)}
@@ -60,7 +60,7 @@ function ModuleItem({ mod, i, isDone, isActive, onSelect, setOpen }) {
           }
         }}
       >
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: isDone ? 'var(--amber)' : 'rgba(255,255,255,0.2)', minWidth: 18, flexShrink: 0 }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: isDone ? 'var(--amber)' : 'rgba(255,255,255,0.45)', minWidth: 18, flexShrink: 0 }}>
           {isDone ? '✓' : String(i + 1).padStart(2, '0')}
         </span>
         <ScrollTitle hovered={hovered}>{mod.title}</ScrollTitle>
@@ -80,7 +80,7 @@ function ModuleItem({ mod, i, isDone, isActive, onSelect, setOpen }) {
             whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.92 }}
             onClick={() => handleSubClick('materi')}
             className="flex items-center gap-1 px-2.5 py-1 rounded-lg"
-            style={{ background: 'rgba(240,232,212,0.05)', color: 'var(--muted)', border: '1px solid var(--border)', fontFamily: 'var(--font-mono)', fontSize: 10 }}
+            style={{ background: 'rgba(240,232,212,0.05)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.12)', fontFamily: 'var(--font-mono)', fontSize: 10 }}
           >
             ◈ Materi
           </motion.button>
