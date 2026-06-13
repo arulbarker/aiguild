@@ -60,7 +60,7 @@ laporkan + tawarkan alternatif, terus kerja.
 
 ### Environment variables wajib sebelum run
 ```
-DATABASE_URL          postgresql://aiguild:...@localhost:5433/aiguild
+DATABASE_URL          postgresql://aiguild:...@localhost:5432/aiguild
 JWT_SECRET            min 32 karakter
 TOKEN_SECRET          min 32 karakter
 NEXT_PUBLIC_APP_URL   http://localhost:3001 (dev) / https://domain.com (prod)

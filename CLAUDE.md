@@ -56,7 +56,7 @@ Keputusan dibatalkan → hapus dari product-spec, catat di backlog status BATAL.
 
 ## Aturan cepat (wajib diingat)
 1. **Prisma 7:** selalu `new Pool() → new PrismaPg(pool)` — `new PrismaClient()` langsung = error
-2. **SSH tunnel wajib aktif** sebelum dev server bisa koneksi ke DB (`npm run dev` sudah otomatis)
+2. **Docker Desktop wajib jalan** sebelum dev server — `npm run dev` otomatis start container postgres lokal
 3. **Dev mode bypass:** di `NODE_ENV=development`, API send-link return `devUrl` langsung, tidak kirim email
 4. **Module DAG:** `Module.parentIds` adalah `String[]` — satu modul bisa punya banyak parent
 5. **master branch suci:** selalu buat branch baru, STOP setelah push, merge hanya dengan perintah eksplisit
@@ -65,8 +65,8 @@ Keputusan dibatalkan → hapus dari product-spec, catat di backlog status BATAL.
 
 ## Commands
 ```bash
-npm run dev        # SSH tunnel ke VPS postgres + Next.js dev server
-npm run seed       # Seed modul dan admin user (butuh tunnel aktif)
+npm run dev        # Start postgres lokal (Docker) + Next.js dev server
+npm run seed       # Seed modul dan admin user
 npm run build      # Production build
 npm run test       # Vitest test suite
 
@@ -77,6 +77,6 @@ npx prisma generate                  # Regenerate Prisma client
 
 ## Catatan khusus
 - Dev server berjalan di `localhost:3001` jika port 3000 sudah terpakai — update `NEXT_PUBLIC_APP_URL` di `.env.local` sesuai
-- SSH tunnel target: IP container postgres (diambil dinamis via `docker inspect`) — bukan hostname `aiguild-postgres` yang hanya resolve di dalam Docker
+- Dev DB: container Docker `aiguild-postgres-dev` di `localhost:5432` — prod DB di VPS terpisah
 - Tambah modul baru: edit `lib/modules-seed.js` lalu `npm run seed`
 - Admin user: set `ADMIN_EMAIL` di `.env.local` sebelum seed
