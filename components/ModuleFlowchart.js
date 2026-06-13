@@ -53,7 +53,7 @@ function FlowConnector({ index }) {
       <svg width="24" height="64" viewBox="0 0 24 64" fill="none">
         <motion.path
           d="M12 0 L12 50"
-          stroke="#E8A020" strokeWidth="1.5" strokeDasharray="5 6" strokeLinecap="round" strokeOpacity={0.35}
+          stroke="#E8A020" strokeWidth="1.5" strokeLinecap="round" strokeOpacity={0.35}
           initial={{ pathLength: 0, opacity: 0 }}
           animate={{ pathLength: 1, opacity: 1 }}
           transition={{ duration: 0.7, delay: 0.3 + index * 0.1, ease: 'easeOut' }}
@@ -254,16 +254,18 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
                 {seg.columns.map((chain) => {
                   const head = Number(displayNumber(chain[0]))
                   return (
-                    <div key={chain[0].id} className="flex flex-col gap-4">
+                    <div key={chain[0].id} className="flex flex-col">
                       {chain.map((mod, ci) => (
-                        <ModuleCard
-                          key={mod.id}
-                          mod={mod}
-                          label={ci === 0 ? displayNumber(mod) : `${head}.${ci}`}
-                          isActive={activeId === mod.id}
-                          isCompleted={isDone(mod)}
-                          onSelect={onSelect}
-                        />
+                        <div key={mod.id}>
+                          <ModuleCard
+                            mod={mod}
+                            label={ci === 0 ? displayNumber(mod) : `${head}.${ci}`}
+                            isActive={activeId === mod.id}
+                            isCompleted={isDone(mod)}
+                            onSelect={onSelect}
+                          />
+                          {ci < chain.length - 1 && <FlowConnector index={ci} />}
+                        </div>
                       ))}
                     </div>
                   )
