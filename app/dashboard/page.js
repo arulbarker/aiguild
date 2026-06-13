@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ModuleFlowchart from '@/components/ModuleFlowchart'
+import ModuleFlowchartCompact from '@/components/ModuleFlowchartCompact'
 import ModuleViewer from '@/components/ModuleViewer'
 import Sidebar from '@/components/Sidebar'
 import { useRouter } from 'next/navigation'
@@ -13,6 +14,7 @@ export default function DashboardPage() {
   const [activeModule, setActive]    = useState(null)
   const [initialTab, setInitialTab]  = useState('video')
   const [loading, setLoading]        = useState(true)
+  const [viewMode, setViewMode]      = useState('compact')
   const router = useRouter()
 
   useEffect(() => {
@@ -99,6 +101,33 @@ export default function DashboardPage() {
                   <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
                 </div>
 
+                {/* Toggle tampilan */}
+                <div className="flex items-center justify-end gap-1 mt-4">
+                  {[
+                    { key: 'compact', label: '⊟ Ringkas' },
+                    { key: 'card',    label: '⊞ Kartu'   },
+                  ].map(({ key, label }) => (
+                    <motion.button
+                      key={key}
+                      onClick={() => setViewMode(key)}
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.94 }}
+                      className="px-3 py-1.5 rounded-lg text-xs"
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 10,
+                        letterSpacing: '0.06em',
+                        background: viewMode === key ? 'rgba(232,160,32,0.12)' : 'transparent',
+                        color: viewMode === key ? '#E8A020' : 'rgba(255,255,255,0.3)',
+                        border: viewMode === key ? '1px solid rgba(232,160,32,0.3)' : '1px solid transparent',
+                        transition: 'all 0.18s',
+                      }}
+                    >
+                      {label}
+                    </motion.button>
+                  ))}
+                </div>
+
                 {modules.length > 0 && (
                   <div className="mt-3 h-0.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
                     <motion.div
@@ -113,12 +142,21 @@ export default function DashboardPage() {
               </motion.header>
 
               {modules.length > 0 ? (
-                <ModuleFlowchart
-                  modules={modules}
-                  completedIds={completedIds}
-                  onSelect={handleSelectModule}
-                  activeId={activeModule?.id}
-                />
+                viewMode === 'compact' ? (
+                  <ModuleFlowchartCompact
+                    modules={modules}
+                    completedIds={completedIds}
+                    onSelect={handleSelectModule}
+                    activeId={activeModule?.id}
+                  />
+                ) : (
+                  <ModuleFlowchart
+                    modules={modules}
+                    completedIds={completedIds}
+                    onSelect={handleSelectModule}
+                    activeId={activeModule?.id}
+                  />
+                )
               ) : (
                 <motion.p
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }}
