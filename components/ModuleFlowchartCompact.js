@@ -8,20 +8,30 @@ function ScrollTitle({ children, hovered }) {
   const wrapRef = useRef(null)
   const txtRef  = useRef(null)
   const [delta, setDelta] = useState(0)
+  const [canHover, setCanHover] = useState(true)
 
   useEffect(() => {
     if (!wrapRef.current || !txtRef.current) return
     setDelta(Math.max(0, txtRef.current.scrollWidth - wrapRef.current.offsetWidth))
   }, [children])
 
+  useEffect(() => {
+    setCanHover(window.matchMedia('(hover: hover)').matches)
+  }, [])
+
+  // Device touch (tanpa hover): teks terpotong geser otomatis bolak-balik
+  const auto = !canHover && delta > 0
+
   return (
     <div ref={wrapRef} style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
       <motion.span
         ref={txtRef}
         style={{ display: 'inline-block', whiteSpace: 'nowrap', fontSize: 13, fontWeight: 500, letterSpacing: '-0.01em' }}
-        animate={{ x: hovered && delta > 0 ? -delta : 0 }}
+        animate={auto ? { x: [0, -delta, -delta, 0] } : { x: hovered && delta > 0 ? -delta : 0 }}
         transition={
-          hovered && delta > 0
+          auto
+            ? { duration: Math.max(9, delta / 12), times: [0, 0.42, 0.58, 1], repeat: Infinity, repeatDelay: 2, ease: 'linear' }
+            : hovered && delta > 0
             ? { duration: delta / 40, ease: 'linear', delay: 0.4 }
             : { duration: 0.35, ease: 'easeOut' }
         }
