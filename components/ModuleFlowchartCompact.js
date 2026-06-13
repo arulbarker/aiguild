@@ -42,11 +42,11 @@ function ScrollTitle({ children, hovered }) {
   )
 }
 
-function NodeBox({ mod, isActive, isCompleted, onSelect }) {
+function NodeBox({ mod, label, isActive, isCompleted, onSelect }) {
   const hasVideo  = !!mod.youtubeUrl
   const hasMateri = !!mod.gammaUrl
   const canPlay   = hasVideo || hasMateri
-  const num       = displayNumber(mod)
+  const num       = label ?? displayNumber(mod)
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -207,16 +207,25 @@ export default function ModuleFlowchartCompact({ modules, completedIds = [], onS
             <div className="mx-auto" style={{ minWidth: count * 190, maxWidth: '100%' }}>
               <SplitConnector count={count} />
               <div className="grid gap-3 items-start" style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }}>
-                {seg.columns.map((chain) => (
-                  <div key={chain[0].id} className="flex flex-col">
-                    {chain.map((mod, ci) => (
-                      <div key={mod.id}>
-                        <NodeBox mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
-                        {ci < chain.length - 1 && <Connector />}
-                      </div>
-                    ))}
-                  </div>
-                ))}
+                {seg.columns.map((chain) => {
+                  const head = Number(displayNumber(chain[0]))
+                  return (
+                    <div key={chain[0].id} className="flex flex-col">
+                      {chain.map((mod, ci) => (
+                        <div key={mod.id}>
+                          <NodeBox
+                            mod={mod}
+                            label={ci === 0 ? displayNumber(mod) : `${head}.${ci}`}
+                            isActive={activeId === mod.id}
+                            isCompleted={isDone(mod)}
+                            onSelect={onSelect}
+                          />
+                          {ci < chain.length - 1 && <Connector />}
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </div>

@@ -78,7 +78,7 @@ const cardVariants = {
   }),
 }
 
-function ModuleCard({ mod, isActive, isCompleted, onSelect }) {
+function ModuleCard({ mod, label, isActive, isCompleted, onSelect }) {
   const hasVideo  = !!mod.youtubeUrl
   const hasMateri = !!mod.gammaUrl
   const canPlay   = hasVideo || hasMateri
@@ -86,7 +86,7 @@ function ModuleCard({ mod, isActive, isCompleted, onSelect }) {
   const thumbUrl  = ytId
     ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
     : getDriveThumb(mod.gammaUrl)
-  const num = displayNumber(mod)
+  const num = label ?? displayNumber(mod)
 
   return (
     <motion.article
@@ -251,13 +251,23 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
                 className="grid gap-4 items-start mx-auto"
                 style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))`, minWidth: count * 240, maxWidth: '100%' }}
               >
-                {seg.columns.map((chain) => (
-                  <div key={chain[0].id} className="flex flex-col gap-4">
-                    {chain.map((mod) => (
-                      <ModuleCard key={mod.id} mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
-                    ))}
-                  </div>
-                ))}
+                {seg.columns.map((chain) => {
+                  const head = Number(displayNumber(chain[0]))
+                  return (
+                    <div key={chain[0].id} className="flex flex-col gap-4">
+                      {chain.map((mod, ci) => (
+                        <ModuleCard
+                          key={mod.id}
+                          mod={mod}
+                          label={ci === 0 ? displayNumber(mod) : `${head}.${ci}`}
+                          isActive={activeId === mod.id}
+                          isCompleted={isDone(mod)}
+                          onSelect={onSelect}
+                        />
+                      ))}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </div>
