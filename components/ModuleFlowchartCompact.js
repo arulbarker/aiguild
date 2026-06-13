@@ -30,7 +30,7 @@ function ScrollTitle({ children, hovered }) {
         animate={auto ? { x: [0, -delta, -delta, 0] } : { x: hovered && delta > 0 ? -delta : 0 }}
         transition={
           auto
-            ? { duration: Math.max(9, delta / 12), times: [0, 0.42, 0.58, 1], repeat: Infinity, repeatDelay: 2, ease: 'linear' }
+            ? { duration: Math.max(7, delta / 14), times: [0, 0.55, 0.96, 1], repeat: Infinity, repeatDelay: 1.4, ease: 'linear' }
             : hovered && delta > 0
             ? { duration: delta / 40, ease: 'linear', delay: 0.4 }
             : { duration: 0.35, ease: 'easeOut' }
