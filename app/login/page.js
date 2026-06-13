@@ -69,6 +69,26 @@ function LoginForm() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
       >
+        {process.env.NODE_ENV === 'development' && (
+          <motion.a
+            href="/api/dev-login"
+            className="flex items-center justify-center gap-2 w-full rounded-xl py-2.5 mb-3 text-sm font-medium"
+            style={{
+              background: 'rgba(232,160,32,0.06)',
+              border: '1px dashed rgba(232,160,32,0.3)',
+              color: '#E8A020',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              textDecoration: 'none',
+            }}
+            whileHover={{ background: 'rgba(232,160,32,0.12)' }}
+          >
+            ⚡ Dev Login (admin)
+          </motion.a>
+        )}
+
         <div
           className="rounded-2xl p-8"
           style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: '0 8px 48px rgba(0,0,0,0.5)' }}

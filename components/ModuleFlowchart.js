@@ -8,6 +8,12 @@ function getYouTubeId(url) {
   return m ? m[1] : null
 }
 
+function getDriveThumb(url) {
+  if (!url) return null
+  const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)
+  return m ? `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1280` : null
+}
+
 function PlayIcon() {
   return (
     <motion.div
@@ -81,7 +87,9 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
         const isActive    = activeId === mod.id
         const isCompleted = completedIds.includes(mod.id)
         const ytId        = getYouTubeId(mod.youtubeUrl)
-        const thumbUrl    = ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : null
+        const thumbUrl    = ytId
+          ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
+          : getDriveThumb(mod.gammaUrl)
         const num         = String(i + 1).padStart(2, '0')
         const canPlay     = hasVideo(mod) || hasMateri(mod)
 

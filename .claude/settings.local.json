@@ -4,7 +4,11 @@
       "Bash(npx create-next-app@14 . --js --app --no-tailwind --no-src-dir --import-alias \"@/*\" --no-eslint --yes --force)",
       "Read(//d/VIBE CODING VERSION/**)",
       "Bash(npx create-next-app@14 aiguild-temp --js --app --no-tailwind --no-src-dir --import-alias \"@/*\" --no-eslint --yes)",
-      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__take_screenshot"
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__take_screenshot",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__evaluate_script",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__navigate_page",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__emulate",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_pages"
     ]
   }
 }

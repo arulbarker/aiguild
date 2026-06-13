@@ -16,8 +16,6 @@ const nextConfig = {
   },
 }
 
-export default withSentryConfig(nextConfig, {
-  org: 'arl-group',
-  project: 'aiguild',
-  silent: true,
-})
+export default process.env.NODE_ENV === 'production'
+  ? withSentryConfig(nextConfig, { org: 'arl-group', project: 'aiguild', silent: true })
+  : nextConfig
