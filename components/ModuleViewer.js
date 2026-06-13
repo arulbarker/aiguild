@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 
 function isSafeUrl(url) {
@@ -28,6 +28,15 @@ export default function ModuleViewer({ module: mod, initialTab, isCompleted, onC
   const hasMateri = !!(mod?.gammaUrl)
   const [tab, setTab] = useState(initialTab ?? (hasVideo ? 'video' : 'materi'))
   const [marking, setMarking] = useState(false)
+  const onCloseRef = useRef(onClose)
+  useEffect(() => { onCloseRef.current = onClose }, [onClose])
+
+  useEffect(() => {
+    history.pushState(null, '')
+    function handlePopState() { onCloseRef.current?.() }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
 
   async function handleMarkDone() {
     if (isCompleted || marking) return
