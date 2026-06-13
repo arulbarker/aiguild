@@ -7,8 +7,10 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const rawToken = searchParams.get('token')
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+
   if (!rawToken) {
-    return NextResponse.redirect(new URL('/login?error=invalid', request.url))
+    return NextResponse.redirect(new URL('/login?error=invalid', baseUrl))
   }
 
   const hashedToken = hashToken(rawToken)
@@ -16,7 +18,7 @@ export async function GET(request) {
   const record = await prisma.magicToken.findUnique({ where: { token: hashedToken } })
 
   if (!record || record.used || record.expiresAt < new Date()) {
-    return NextResponse.redirect(new URL('/login?error=expired', request.url))
+    return NextResponse.redirect(new URL('/login?error=expired', baseUrl))
   }
 
   // Tandai token sebagai sudah dipakai
@@ -27,10 +29,10 @@ export async function GET(request) {
 
   const user = await prisma.user.findUnique({ where: { email: record.email } })
   if (!user) {
-    return NextResponse.redirect(new URL('/login?error=invalid', request.url))
+    return NextResponse.redirect(new URL('/login?error=invalid', baseUrl))
   }
 
   await createSession(user.id, user.isAdmin)
 
-  return NextResponse.redirect(new URL('/dashboard', request.url))
+  return NextResponse.redirect(new URL('/dashboard', baseUrl))
 }
