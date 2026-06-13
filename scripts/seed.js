@@ -12,17 +12,27 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
 
-async function main() {
-  console.log('Menghapus data lama...')
-  await prisma.userProgress.deleteMany()
-  await prisma.module.deleteMany()
+// Reset total HANYA kalau diminta eksplisit (SEED_RESET=true) — untuk dev.
+// Default: mode aman, progress user TIDAK PERNAH disentuh.
+const RESET = process.env.SEED_RESET === 'true'
 
-  console.log('Seeding modules...')
+async function main() {
+  if (RESET) {
+    console.log('⚠️  SEED_RESET=true — menghapus SEMUA modul & progress (mode dev)...')
+    await prisma.userProgress.deleteMany()
+    await prisma.module.deleteMany()
+  } else {
+    console.log('Mode aman: progress user dipertahankan.')
+  }
+
+  console.log('Sinkronisasi modul...')
 
   const slugToId = {}
 
+  // 1. Upsert tiap modul. Slug yang sudah ada → update (ID dipertahankan,
+  //    jadi userProgress tetap nyambung). Slug baru → create.
   for (const mod of MODULES_SEED) {
-    const { parentIds: slugParentIds, ...rest } = mod
+    const { parentIds: _slugParentIds, ...rest } = mod
 
     const upserted = await prisma.module.upsert({
       where: { slug: mod.slug },
@@ -33,6 +43,7 @@ async function main() {
     slugToId[mod.slug] = upserted.id
   }
 
+  // 2. Set parentIds (resolve slug → id) setelah semua modul ada.
   for (const mod of MODULES_SEED) {
     if (mod.parentIds.length === 0) continue
 
@@ -47,7 +58,24 @@ async function main() {
     })
   }
 
-  console.log(`Selesai: ${MODULES_SEED.length} modul di-seed.`)
+  // 3. Bersihkan modul usang (tidak ada di seed) — TAPI hanya yang aman
+  //    dihapus (tanpa progress user). Kalau ada progress → skip + peringatan.
+  const seedSlugs = new Set(MODULES_SEED.map((m) => m.slug))
+  const dbModules = await prisma.module.findMany({ select: { id: true, slug: true } })
+
+  for (const m of dbModules) {
+    if (seedSlugs.has(m.slug)) continue
+
+    const progressCount = await prisma.userProgress.count({ where: { moduleId: m.id } })
+    if (progressCount === 0) {
+      await prisma.module.delete({ where: { id: m.id } })
+      console.log(`  ↳ hapus modul usang (tanpa progress): ${m.slug}`)
+    } else {
+      console.log(`  ↳ SKIP hapus "${m.slug}" — masih ada ${progressCount} progress user`)
+    }
+  }
+
+  console.log(`Selesai: ${MODULES_SEED.length} modul tersinkron.`)
 
   const adminEmail = process.env.ADMIN_EMAIL
   if (adminEmail) {
@@ -56,7 +84,7 @@ async function main() {
       update: { isAdmin: true },
       create: { email: adminEmail, isAdmin: true },
     })
-    console.log(`Admin user dibuat: ${adminEmail}`)
+    console.log(`Admin user dipastikan: ${adminEmail}`)
   }
 }
 
