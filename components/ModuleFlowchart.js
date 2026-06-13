@@ -260,15 +260,15 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
             <div className="flex items-center gap-3 my-2">
               <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--amber)', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
-                PILIH JALUR
+                {group.modules.every(m => !m.youtubeUrl && !m.gammaUrl) ? 'PILIH JALUR' : 'PARALEL'}
               </span>
               <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
             </div>
 
-            {/* Branch cards — horizontal scroll di mobile, grid di tablet+ */}
+            {/* Branch cards — 2 kolom max */}
             <div
               className="grid gap-4"
-              style={{ gridTemplateColumns: `repeat(${Math.min(group.modules.length, 2)}, 1fr)` }}
+              style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}
             >
               {group.modules.map((mod, bi) => (
                 <ModuleCard

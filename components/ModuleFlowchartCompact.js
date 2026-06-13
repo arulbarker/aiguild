@@ -153,16 +153,20 @@ function BranchArrows({ count }) {
   const op = 0.3
   const sw = 1.5
   const lc = 'round'
+  const cols = Math.min(count, 2)
   return (
     <div className="flex justify-center" style={{ height: 28, marginBlock: 2 }}>
       <svg width="100%" height="28" viewBox="0 0 200 28" preserveAspectRatio="none" fill="none">
         <line x1="100" y1="0" x2="100" y2="10" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
-        {count === 2 && <>
-          <line x1="50" y1="10" x2="150" y2="10" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
+        {cols === 1 && (
+          <line x1="100" y1="10" x2="100" y2="28" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
+        )}
+        {cols === 2 && <>
+          <line x1="50"  y1="10" x2="150" y2="10" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
           <line x1="50"  y1="10" x2="50"  y2="28" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
           <line x1="150" y1="10" x2="150" y2="28" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
         </>}
-        {count === 3 && <>
+        {cols === 3 && <>
           <line x1="20"  y1="10" x2="180" y2="10" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
           <line x1="20"  y1="10" x2="20"  y2="28" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
           <line x1="100" y1="10" x2="100" y2="28" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
@@ -205,7 +209,7 @@ export default function ModuleFlowchartCompact({ modules, completedIds = [], onS
 
         const branchStart = globalIndex
         globalIndex += group.modules.length
-        const cols = Math.min(group.modules.length, 3)
+        const cols = group.modules.length === 2 ? 2 : Math.min(group.modules.length, 2)
 
         return (
           <div key={group.modules.map((m) => m.id).join('-')}>
