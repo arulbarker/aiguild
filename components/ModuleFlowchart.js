@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { buildSegments, displayNumber } from '@/lib/module-tree'
 
 function getYouTubeId(url) {
   if (!url) return null
@@ -52,7 +53,7 @@ function FlowConnector({ index }) {
       <svg width="24" height="64" viewBox="0 0 24 64" fill="none">
         <motion.path
           d="M12 0 L12 50"
-          stroke="#E8A020" strokeWidth="1.5" strokeDasharray="5 6" strokeLinecap="round" strokeOpacity={0.35}
+          stroke="#E8A020" strokeWidth="1.5" strokeLinecap="round" strokeOpacity={0.35}
           initial={{ pathLength: 0, opacity: 0 }}
           animate={{ pathLength: 1, opacity: 1 }}
           transition={{ duration: 0.7, delay: 0.3 + index * 0.1, ease: 'easeOut' }}
@@ -77,151 +78,187 @@ const cardVariants = {
   }),
 }
 
-export default function ModuleFlowchart({ modules, completedIds = [], onSelect, activeId }) {
-  const hasVideo  = (mod) => !!mod.youtubeUrl
-  const hasMateri = (mod) => !!mod.gammaUrl
+function ModuleCard({ mod, label, isActive, isCompleted, onSelect }) {
+  const hasVideo  = !!mod.youtubeUrl
+  const hasMateri = !!mod.gammaUrl
+  const canPlay   = hasVideo || hasMateri
+  const ytId      = getYouTubeId(mod.youtubeUrl)
+  const thumbUrl  = ytId
+    ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
+    : getDriveThumb(mod.gammaUrl)
+  const num = label ?? displayNumber(mod)
 
   return (
-    <div className="flex flex-col max-w-2xl mx-auto w-full">
-      {modules.map((mod, i) => {
-        const isActive    = activeId === mod.id
-        const isCompleted = completedIds.includes(mod.id)
-        const ytId        = getYouTubeId(mod.youtubeUrl)
-        const thumbUrl    = ytId
-          ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
-          : getDriveThumb(mod.gammaUrl)
-        const num         = String(i + 1).padStart(2, '0')
-        const canPlay     = hasVideo(mod) || hasMateri(mod)
+    <motion.article
+      custom={mod.orderIndex}
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      whileHover={canPlay ? { scale: 1.008, transition: { duration: 0.2 } } : {}}
+      className="relative rounded-2xl overflow-hidden"
+      style={{
+        background: 'var(--surface)',
+        border: isActive
+          ? '1px solid rgba(232,160,32,0.45)'
+          : '1px solid var(--border)',
+        boxShadow: isActive
+          ? '0 0 40px rgba(232,160,32,0.1), 0 4px 32px rgba(0,0,0,0.6)'
+          : '0 4px 24px rgba(0,0,0,0.4)',
+        transition: 'border-color 0.3s, box-shadow 0.3s',
+      }}
+    >
+      <motion.div
+        className="relative overflow-hidden"
+        style={{ aspectRatio: '16/9', cursor: canPlay ? 'pointer' : 'default' }}
+        whileTap={canPlay ? { scale: 0.992 } : {}}
+        onClick={() => canPlay && onSelect?.(mod, hasVideo ? 'video' : 'materi')}
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            background: hasMateri
+              ? 'linear-gradient(135deg, #12101E 0%, #0A0810 60%, #0E0C14 100%)'
+              : 'linear-gradient(135deg, #0E0E12 0%, #09090C 100%)',
+          }}
+        />
+        {thumbUrl && (
+          <img
+            src={thumbUrl} alt={mod.title}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ filter: 'brightness(0.9) saturate(0.9)' }}
+            onError={(e) => { e.target.style.display = 'none' }}
+          />
+        )}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(7,7,10,0.35) 0%, transparent 50%)' }} />
 
+        {/* Thumbnail bersih — hanya ikon aksi, tanpa teks */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          {hasVideo && <PlayIcon />}
+          {!hasVideo && hasMateri && <MateriIcon />}
+        </div>
+      </motion.div>
+
+      <div className="px-4 pt-3.5 pb-3" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="flex items-start gap-3">
+          <span
+            className="shrink-0 mt-0.5"
+            style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: isCompleted ? '#E8A020' : 'rgba(255,255,255,0.55)', letterSpacing: '0.08em' }}
+          >
+            {isCompleted ? '✓' : num}
+          </span>
+          <h3 className="leading-snug" style={{ fontSize: 15, fontWeight: 600, color: 'var(--cream)', letterSpacing: '-0.01em' }}>
+            {mod.title}
+          </h3>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 px-4 py-3">
+        {hasVideo && (
+          <motion.button
+            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
+            onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'video') }}
+            className="text-xs px-3 py-1.5 rounded-full font-medium"
+            style={{ background: 'rgba(232,160,32,0.1)', color: '#E8A020', border: '1px solid rgba(232,160,32,0.3)' }}
+          >
+            ▶&nbsp; Video
+          </motion.button>
+        )}
+        {hasMateri && (
+          <motion.button
+            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
+            onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'materi') }}
+            className="text-xs px-3 py-1.5 rounded-full font-medium"
+            style={{ background: 'rgba(240,232,212,0.06)', color: 'var(--cream)', border: '1px solid rgba(240,232,212,0.14)' }}
+          >
+            ◈&nbsp; Materi
+          </motion.button>
+        )}
+        {!hasVideo && !hasMateri && (
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em' }}>
+            Konten segera hadir
+          </span>
+        )}
+      </div>
+    </motion.article>
+  )
+}
+
+export default function ModuleFlowchart({ modules, completedIds = [], onSelect, activeId }) {
+  const segments = buildSegments(modules)
+  const isDone = (m) => completedIds.includes(m.id)
+
+  // Trunk kartu dibatasi lebar nyaman di tengah; track melebar keluar (fan-out)
+  const TRUNK = 'w-full max-w-2xl mx-auto px-4'
+
+  return (
+    <div className="flex flex-col w-full max-w-5xl mx-auto px-4">
+      {segments.map((seg, si) => {
+        const isLast = si === segments.length - 1
+
+        if (seg.type === 'single') {
+          const mod = seg.modules[0]
+          return (
+            <div key={mod.id} className={TRUNK}>
+              <ModuleCard mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
+              {!isLast && <FlowConnector index={si} />}
+            </div>
+          )
+        }
+
+        if (seg.type === 'diamond') {
+          // Di mode kartu, modul paralel ditumpuk ke bawah (kartu besar
+          // tidak enak berdampingan). Tiap kartu disambung panah.
+          return (
+            <div key={seg.modules.map((m) => m.id).join('-')} className={TRUNK}>
+              {seg.modules.map((mod, mi) => (
+                <div key={mod.id}>
+                  <ModuleCard mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
+                  {mi < seg.modules.length - 1 && <FlowConnector index={si * 10 + mi} />}
+                </div>
+              ))}
+              {!isLast && <FlowConnector index={si} />}
+            </div>
+          )
+        }
+
+        // tracks — N kolom kartu sejajar yang melebar (fan-out dari trunk)
+        const count = seg.columns.length
         return (
-          <div key={mod.id}>
-            <motion.article
-              custom={i}
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-              whileHover={canPlay ? { scale: 1.008, transition: { duration: 0.2 } } : {}}
-              className="relative rounded-2xl overflow-hidden"
-              style={{
-                background: 'var(--surface)',
-                border: isActive
-                  ? '1px solid rgba(232,160,32,0.45)'
-                  : '1px solid var(--border)',
-                boxShadow: isActive
-                  ? '0 0 40px rgba(232,160,32,0.1), 0 4px 32px rgba(0,0,0,0.6)'
-                  : '0 4px 24px rgba(0,0,0,0.4)',
-                transition: 'border-color 0.3s, box-shadow 0.3s',
-              }}
-            >
-              {/* Thumbnail / Cover */}
-              <motion.div
-                className="relative overflow-hidden"
-                style={{ aspectRatio: '16/9', cursor: canPlay ? 'pointer' : 'default' }}
-                whileTap={canPlay ? { scale: 0.992 } : {}}
-                onClick={() => canPlay && onSelect?.(mod, hasVideo(mod) ? 'video' : 'materi')}
-              >
-                {thumbUrl ? (
-                  <img
-                    src={thumbUrl} alt={mod.title}
-                    className="w-full h-full object-cover"
-                    style={{ filter: 'brightness(0.85) saturate(0.9)' }}
-                  />
-                ) : (
-                  <div
-                    className="w-full h-full"
-                    style={{
-                      background: hasMateri(mod)
-                        ? 'linear-gradient(135deg, #12101E 0%, #0A0810 60%, #0E0C14 100%)'
-                        : 'linear-gradient(135deg, #0E0E12 0%, #09090C 100%)',
-                    }}
-                  />
-                )}
+          <div key={seg.columns.map((c) => c[0].id).join('-')}>
+            <div className={`${TRUNK} flex items-center gap-3 my-3`}>
+              <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--amber)', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+                PILIH JALUR
+              </span>
+              <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+            </div>
 
-                {/* Gradient bawah */}
-                <div
-                  className="absolute inset-0"
-                  style={{ background: 'linear-gradient(to top, rgba(7,7,10,0.92) 0%, rgba(7,7,10,0.3) 45%, rgba(7,7,10,0.05) 100%)' }}
-                />
-
-                {/* Watermark nomor */}
-                <div
-                  className="absolute top-2 left-3 select-none pointer-events-none"
-                  style={{ fontFamily: 'var(--font-mono)', fontSize: 72, fontWeight: 100, color: 'rgba(232,160,32,0.18)', lineHeight: 1, letterSpacing: '-0.04em' }}
-                >
-                  {num}
-                </div>
-
-                {/* Badge selesai */}
-                {isCompleted && (
-                  <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: 'spring', delay: i * 0.08 + 0.2 }}
-                    className="absolute top-3 right-3 flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full"
-                    style={{ fontFamily: 'var(--font-mono)', background: 'rgba(232,160,32,0.12)', border: '1px solid rgba(232,160,32,0.3)', color: '#E8A020' }}
-                  >
-                    ✓ selesai
-                  </motion.div>
-                )}
-
-                {/* Ikon tengah */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  {hasVideo(mod)            && <PlayIcon />}
-                  {!hasVideo(mod) && hasMateri(mod) && <MateriIcon />}
-                  {!hasVideo(mod) && !hasMateri(mod) && (
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.15em' }}>
-                      SEGERA
-                    </span>
-                  )}
-                </div>
-
-                {/* Judul overlay bawah */}
-                <div className="absolute bottom-0 left-0 right-0 px-5 pb-4 pt-8">
-                  <h3 className="text-white font-bold leading-tight" style={{ fontSize: 17, textShadow: '0 1px 8px rgba(0,0,0,0.8)' }}>
-                    {mod.title}
-                  </h3>
-                </div>
-              </motion.div>
-
-              {/* Footer */}
+            <div className="overflow-x-auto">
               <div
-                className="flex items-center justify-between px-4 py-3"
-                style={{ borderTop: '1px solid var(--border)' }}
+                className="grid gap-4 items-start mx-auto"
+                style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))`, minWidth: count * 240, maxWidth: '100%' }}
               >
-                <div className="flex items-center gap-2">
-                  {hasVideo(mod) && (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
-                      onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'video') }}
-                      className="text-xs px-3 py-1.5 rounded-full font-medium"
-                      style={{ background: 'rgba(232,160,32,0.1)', color: '#E8A020', border: '1px solid rgba(232,160,32,0.3)' }}
-                    >
-                      ▶&nbsp; Video
-                    </motion.button>
-                  )}
-                  {hasMateri(mod) && (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
-                      onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'materi') }}
-                      className="text-xs px-3 py-1.5 rounded-full font-medium"
-                      style={{ background: 'rgba(240,232,212,0.06)', color: 'var(--cream)', border: '1px solid rgba(240,232,212,0.14)' }}
-                    >
-                      ◈&nbsp; Materi
-                    </motion.button>
-                  )}
-                  {!hasVideo(mod) && !hasMateri(mod) && (
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.1em' }}>
-                      Konten segera hadir
-                    </span>
-                  )}
-                </div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.18)', letterSpacing: '0.05em' }}>
-                  {num}
-                </span>
+                {seg.columns.map((chain) => {
+                  const head = Number(displayNumber(chain[0]))
+                  return (
+                    <div key={chain[0].id} className="flex flex-col">
+                      {chain.map((mod, ci) => (
+                        <div key={mod.id}>
+                          <ModuleCard
+                            mod={mod}
+                            label={ci === 0 ? displayNumber(mod) : `${head}.${ci}`}
+                            isActive={activeId === mod.id}
+                            isCompleted={isDone(mod)}
+                            onSelect={onSelect}
+                          />
+                          {ci < chain.length - 1 && <FlowConnector index={ci} />}
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })}
               </div>
-            </motion.article>
-
-            {i < modules.length - 1 && <FlowConnector index={i} />}
+            </div>
           </div>
         )
       })}
