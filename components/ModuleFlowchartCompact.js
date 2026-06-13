@@ -42,7 +42,7 @@ function ScrollTitle({ children, hovered }) {
   )
 }
 
-function NodeBox({ mod, label, isActive, isCompleted, onSelect }) {
+function NodeBox({ mod, label, isActive, isCompleted, onSelect, isSection }) {
   const hasVideo  = !!mod.youtubeUrl
   const hasMateri = !!mod.gammaUrl
   const canPlay   = hasVideo || hasMateri
@@ -104,7 +104,7 @@ function NodeBox({ mod, label, isActive, isCompleted, onSelect }) {
             ◈
           </span>
         )}
-        {!canPlay && (
+        {!canPlay && !isSection && (
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 4, padding: '1px 5px' }}>
             soon
           </span>
@@ -219,6 +219,7 @@ export default function ModuleFlowchartCompact({ modules, completedIds = [], onS
                             isActive={activeId === mod.id}
                             isCompleted={isDone(mod)}
                             onSelect={onSelect}
+                            isSection={ci === 0 && chain.length > 1}
                           />
                           {ci < chain.length - 1 && <Connector />}
                         </div>

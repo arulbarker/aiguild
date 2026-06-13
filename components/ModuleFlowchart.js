@@ -78,7 +78,7 @@ const cardVariants = {
   }),
 }
 
-function ModuleCard({ mod, label, isActive, isCompleted, onSelect }) {
+function ModuleCard({ mod, label, isActive, isCompleted, onSelect, isSection }) {
   const hasVideo  = !!mod.youtubeUrl
   const hasMateri = !!mod.gammaUrl
   const canPlay   = hasVideo || hasMateri
@@ -174,9 +174,15 @@ function ModuleCard({ mod, label, isActive, isCompleted, onSelect }) {
           </motion.button>
         )}
         {!hasVideo && !hasMateri && (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em' }}>
-            Konten segera hadir
-          </span>
+          isSection ? (
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#E8A020', letterSpacing: '0.08em' }}>
+              Materi ada di bawah ↓
+            </span>
+          ) : (
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em' }}>
+              Konten segera hadir
+            </span>
+          )
         )}
       </div>
     </motion.article>
@@ -250,6 +256,7 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
                             isActive={activeId === mod.id}
                             isCompleted={isDone(mod)}
                             onSelect={onSelect}
+                            isSection={ci === 0 && chain.length > 1}
                           />
                           {ci < chain.length - 1 && <FlowConnector index={ci} />}
                         </div>
