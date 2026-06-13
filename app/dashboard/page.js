@@ -42,7 +42,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
-      <Sidebar modules={modules} completedIds={completedIds} />
+      <Sidebar modules={modules} completedIds={completedIds} onSelect={handleSelectModule} />
 
       <AnimatePresence mode="wait">
         {loading ? (
