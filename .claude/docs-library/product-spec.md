@@ -20,11 +20,20 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 
 ### Konten — flowchart modul
 - Modul tersusun sebagai DAG (Directed Acyclic Graph) — bukan tree linear
-- Satu modul bisa punya banyak parent (multiple prerequisite)
-- Setiap modul berisi: YouTube embed (video) + Google Drive PDF embed (materi) — Gamma.app TIDAK digunakan (X-Frame-Options: SAMEORIGIN memblokir embedding)
+- Satu modul bisa punya banyak parent (multiple prerequisite); `parentIds` adalah `String[]`
+- Struktur kurikulum: **trunk lurus** (modul persiapan berurutan) lalu **pecah jadi beberapa jalur praktek** (GAS, Web App, Desktop, Android) yang masing-masing punya rantai sub-modul sendiri ke bawah
+- Dua pola percabangan dibedakan otomatis oleh `lib/module-tree.js` (`buildSegments`):
+  - **diamond** — pecah lalu menyatu lagi (mis. modul A → {B, C} → D)
+  - **tracks** — pecah jadi jalur sendiri-sendiri, tidak menyatu (mis. card 12 → 4 jalur praktek)
+- Modul berisi salah satu / kombinasi: YouTube embed (video) + Google Drive PDF embed (materi) — Gamma.app TIDAK digunakan (X-Frame-Options: SAMEORIGIN memblokir embedding)
+- **Kepala jalur** (mis. "Praktek GAS") boleh tanpa konten langsung — kontennya ada di sub-modul (13.1, 13.2, dst). Penomoran sub-modul bertingkat otomatis dari posisinya di jalur
+- **Dua mode tampilan flowchart**, toggle di dashboard (default Ringkas):
+  - **Ringkas** — kotak kecil, seluruh kurikulum muat di layar
+  - **Kartu** — kartu besar dengan thumbnail
+  - Desktop: jalur praktek melebar (fan-out); mobile: scroll samping + judul terpotong auto-scroll
 - Progress tracking manual: user klik "Tandai Selesai", tidak otomatis saat buka modul
 - Progress user dilacak per modul
-- Konten dikelola via `lib/modules-seed.js` + `npm run seed` — bukan CMS
+- Konten dikelola via `lib/modules-seed.js` + `npm run seed` — bukan CMS. **Seed aman**: default upsert (tidak hapus progress user); reset total dev pakai `SEED_RESET=true`. Saat deploy ke prod, seed jalan otomatis (langkah di `.github/workflows/deploy.yml`) → prod selalu sinkron dengan dev
 
 ### Pembayaran & akses
 - Lynk.id dan Mayar.id → webhook masuk → user dibuat → purchase dicatat
