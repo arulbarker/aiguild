@@ -1,9 +1,94 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+
+function ScrollTitle({ children, hovered }) {
+  const wrapRef = useRef(null)
+  const txtRef  = useRef(null)
+  const [delta, setDelta] = useState(0)
+
+  useEffect(() => {
+    if (!wrapRef.current || !txtRef.current) return
+    setDelta(Math.max(0, txtRef.current.scrollWidth - wrapRef.current.offsetWidth))
+  }, [children])
+
+  return (
+    <div ref={wrapRef} style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
+      <motion.span
+        ref={txtRef}
+        style={{ display: 'inline-block', whiteSpace: 'nowrap', fontSize: 13 }}
+        animate={{ x: hovered && delta > 0 ? -delta : 0 }}
+        transition={hovered && delta > 0
+          ? { duration: delta / 40, ease: 'linear', delay: 0.5 }
+          : { duration: 0.4, ease: 'easeOut' }}
+      >
+        {children}
+      </motion.span>
+    </div>
+  )
+}
+
+function ModuleItem({ mod, i, isDone, isActive, onSelect, setOpen }) {
+  const [hovered, setHovered] = useState(false)
+  const hasVideo  = !!mod.youtubeUrl
+  const hasMateri = !!mod.gammaUrl
+  const hasBoth   = hasVideo && hasMateri
+
+  function handleSubClick(tab) {
+    onSelect?.(mod, tab)
+    setOpen(false)
+  }
+
+  return (
+    <div className="mb-0.5">
+      <div
+        className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-colors"
+        style={{
+          background: isActive ? 'var(--amber-glow)' : 'transparent',
+          color: isActive ? 'var(--cream)' : 'var(--muted)',
+          border: isActive ? '1px solid rgba(232,160,32,0.2)' : '1px solid transparent',
+        }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onClick={() => {
+          if (hasVideo || hasMateri) {
+            onSelect?.(mod, hasVideo ? 'video' : 'materi')
+            setOpen(false)
+          }
+        }}
+      >
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: isDone ? 'var(--amber)' : 'rgba(255,255,255,0.2)', minWidth: 18, flexShrink: 0 }}>
+          {isDone ? '✓' : String(i + 1).padStart(2, '0')}
+        </span>
+        <ScrollTitle hovered={hovered}>{mod.title}</ScrollTitle>
+      </div>
+
+      {hasBoth && (
+        <div className="flex gap-1.5 pl-9 pb-1">
+          <motion.button
+            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.92 }}
+            onClick={() => handleSubClick('video')}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg"
+            style={{ background: 'rgba(232,160,32,0.08)', color: '#E8A020', border: '1px solid rgba(232,160,32,0.2)', fontFamily: 'var(--font-mono)', fontSize: 10 }}
+          >
+            ▶ Video
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.92 }}
+            onClick={() => handleSubClick('materi')}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg"
+            style={{ background: 'rgba(240,232,212,0.05)', color: 'var(--muted)', border: '1px solid var(--border)', fontFamily: 'var(--font-mono)', fontSize: 10 }}
+          >
+            ◈ Materi
+          </motion.button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function Sidebar({ modules = [], completedIds = [], onSelect }) {
   const [open, setOpen] = useState(false)
@@ -103,71 +188,23 @@ export default function Sidebar({ modules = [], completedIds = [], onSelect }) {
           </Link>
 
           <div className="mt-3">
-            {modules.map((mod, i) => {
-              const isActive = pathname === `/modul/${mod.slug}`
-              const isDone   = completedIds.includes(mod.id)
-              const hasVideo  = !!mod.youtubeUrl
-              const hasMateri = !!mod.gammaUrl
-              const hasBoth   = hasVideo && hasMateri
-
-              function handleSubClick(tab) {
-                onSelect?.(mod, tab)
-                setOpen(false)
-              }
-
-              return (
-                <motion.div
-                  key={mod.id}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: open ? 1 : 0, x: open ? 0 : -12 }}
-                  transition={{ delay: open ? 0.04 + i * 0.035 : 0, duration: 0.22 }}
-                  className="mb-0.5"
-                >
-                  {/* Baris modul */}
-                  <div
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-colors"
-                    style={{
-                      background: isActive ? 'var(--amber-glow)' : 'transparent',
-                      color: isActive ? 'var(--cream)' : 'var(--muted)',
-                      border: isActive ? '1px solid rgba(232,160,32,0.2)' : '1px solid transparent',
-                    }}
-                    onClick={() => {
-                      if (hasVideo || hasMateri) {
-                        onSelect?.(mod, hasVideo ? 'video' : 'materi')
-                        setOpen(false)
-                      }
-                    }}
-                  >
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: isDone ? 'var(--amber)' : 'rgba(255,255,255,0.2)', minWidth: 18 }}>
-                      {isDone ? '✓' : String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span className="truncate" style={{ fontSize: 13 }}>{mod.title}</span>
-                  </div>
-
-                  {/* Sub-item: tampil hanya jika ada video DAN materi */}
-                  {hasBoth && (
-                    <div className="flex gap-1.5 pl-9 pb-1">
-                      <motion.button
-                        whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.92 }}
-                        onClick={() => handleSubClick('video')}
-                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs"
-                        style={{ background: 'rgba(232,160,32,0.08)', color: '#E8A020', border: '1px solid rgba(232,160,32,0.2)', fontFamily: 'var(--font-mono)', fontSize: 10 }}
-                      >
-                        ▶ Video
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.92 }}
-                        onClick={() => handleSubClick('materi')}
-                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs"
-                        style={{ background: 'rgba(240,232,212,0.05)', color: 'var(--muted)', border: '1px solid var(--border)', fontFamily: 'var(--font-mono)', fontSize: 10 }}
-                      >
-                        ◈ Materi
-                      </motion.button>
-                    </div>
-                  )}
-                </motion.div>
-              )
-            })}
+            {modules.map((mod, i) => (
+              <motion.div
+                key={mod.id}
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: open ? 1 : 0, x: open ? 0 : -12 }}
+                transition={{ delay: open ? 0.04 + i * 0.035 : 0, duration: 0.22 }}
+              >
+                <ModuleItem
+                  mod={mod}
+                  i={i}
+                  isDone={completedIds.includes(mod.id)}
+                  isActive={pathname === `/modul/${mod.slug}`}
+                  onSelect={onSelect}
+                  setOpen={setOpen}
+                />
+              </motion.div>
+            ))}
           </div>
         </nav>
       </motion.aside>
