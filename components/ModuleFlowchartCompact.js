@@ -1,6 +1,35 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useState, useRef, useEffect } from 'react'
+
+function ScrollTitle({ children, hovered }) {
+  const wrapRef = useRef(null)
+  const txtRef  = useRef(null)
+  const [delta, setDelta] = useState(0)
+
+  useEffect(() => {
+    if (!wrapRef.current || !txtRef.current) return
+    setDelta(Math.max(0, txtRef.current.scrollWidth - wrapRef.current.offsetWidth))
+  }, [children])
+
+  return (
+    <div ref={wrapRef} style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
+      <motion.span
+        ref={txtRef}
+        style={{ display: 'inline-block', whiteSpace: 'nowrap', fontSize: 13, fontWeight: 500, letterSpacing: '-0.01em' }}
+        animate={{ x: hovered && delta > 0 ? -delta : 0 }}
+        transition={
+          hovered && delta > 0
+            ? { duration: delta / 40, ease: 'linear', delay: 0.4 }
+            : { duration: 0.35, ease: 'easeOut' }
+        }
+      >
+        {children}
+      </motion.span>
+    </div>
+  )
+}
 
 function buildDisplayGroups(modules) {
   const groups = []
@@ -36,11 +65,13 @@ function NodeBox({ mod, globalIndex, isActive, isCompleted, onSelect }) {
   const hasMateri = !!mod.gammaUrl
   const canPlay   = hasVideo || hasMateri
   const num       = String(globalIndex + 1).padStart(2, '0')
+  const [hovered, setHovered] = useState(false)
 
   return (
     <motion.button
       onClick={() => canPlay && onSelect?.(mod, hasVideo ? 'video' : 'materi')}
-      whileHover={canPlay ? { scale: 1.03 } : {}}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
       whileTap={canPlay ? { scale: 0.97 } : {}}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -75,62 +106,30 @@ function NodeBox({ mod, globalIndex, isActive, isCompleted, onSelect }) {
         {isCompleted ? '✓' : num}
       </span>
 
-      {/* Judul */}
-      <span
-        className="truncate flex-1"
-        style={{
-          fontSize: 13,
-          fontWeight: 500,
-          color: isActive ? '#E8A020' : isCompleted ? 'rgba(240,232,212,0.85)' : 'rgba(240,232,212,0.7)',
-          letterSpacing: '-0.01em',
-        }}
+      {/* Judul — scroll saat hover kalau terpotong */}
+      <ScrollTitle
+        hovered={hovered}
+        style={{ color: isActive ? '#E8A020' : isCompleted ? 'rgba(240,232,212,0.85)' : 'rgba(240,232,212,0.7)' }}
       >
-        {mod.title}
-      </span>
+        <span style={{ color: isActive ? '#E8A020' : isCompleted ? 'rgba(240,232,212,0.85)' : 'rgba(240,232,212,0.7)' }}>
+          {mod.title}
+        </span>
+      </ScrollTitle>
 
       {/* Badge konten */}
       <div className="flex items-center gap-1 flex-shrink-0">
         {hasVideo && (
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 9,
-              color: '#E8A020',
-              background: 'rgba(232,160,32,0.1)',
-              border: '1px solid rgba(232,160,32,0.2)',
-              borderRadius: 4,
-              padding: '1px 5px',
-            }}
-          >
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: '#E8A020', background: 'rgba(232,160,32,0.1)', border: '1px solid rgba(232,160,32,0.2)', borderRadius: 4, padding: '1px 5px' }}>
             ▶
           </span>
         )}
         {hasMateri && (
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 9,
-              color: 'rgba(240,232,212,0.5)',
-              background: 'rgba(240,232,212,0.05)',
-              border: '1px solid rgba(240,232,212,0.12)',
-              borderRadius: 4,
-              padding: '1px 5px',
-            }}
-          >
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,232,212,0.5)', background: 'rgba(240,232,212,0.05)', border: '1px solid rgba(240,232,212,0.12)', borderRadius: 4, padding: '1px 5px' }}>
             ◈
           </span>
         )}
         {!canPlay && (
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 9,
-              color: 'rgba(255,255,255,0.2)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: 4,
-              padding: '1px 5px',
-            }}
-          >
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '1px 5px' }}>
             soon
           </span>
         )}
@@ -142,29 +141,32 @@ function NodeBox({ mod, globalIndex, isActive, isCompleted, onSelect }) {
 function Arrow() {
   return (
     <div className="flex justify-center" style={{ height: 24, marginBlock: 2 }}>
-      <svg width="2" height="24" viewBox="0 0 2 24" fill="none">
-        <line x1="1" y1="0" x2="1" y2="18" stroke="#E8A020" strokeWidth="1.5" strokeOpacity={0.25} strokeDasharray="3 3" />
-        <path d="M-3 15 L1 21 L5 15" stroke="#E8A020" strokeWidth="1.5" strokeOpacity={0.25} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <svg width="12" height="24" viewBox="0 0 12 24" fill="none">
+        <line x1="6" y1="0" x2="6" y2="18" stroke="#E8A020" strokeWidth="1.5" strokeOpacity={0.3} strokeLinecap="round" />
+        <path d="M2 15 L6 21 L10 15" stroke="#E8A020" strokeWidth="1.5" strokeOpacity={0.3} strokeLinecap="round" strokeLinejoin="round" fill="none" />
       </svg>
     </div>
   )
 }
 
 function BranchArrows({ count }) {
+  const op = 0.3
+  const sw = 1.5
+  const lc = 'round'
   return (
     <div className="flex justify-center" style={{ height: 28, marginBlock: 2 }}>
       <svg width="100%" height="28" viewBox="0 0 200 28" preserveAspectRatio="none" fill="none">
-        <line x1="100" y1="0" x2="100" y2="10" stroke="#E8A020" strokeWidth="1.5" strokeOpacity={0.25} />
+        <line x1="100" y1="0" x2="100" y2="10" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
         {count === 2 && <>
-          <line x1="50" y1="10" x2="150" y2="10" stroke="#E8A020" strokeWidth="1.5" strokeOpacity={0.25} />
-          <line x1="50" y1="10" x2="50" y2="28" stroke="#E8A020" strokeWidth="1.5" strokeOpacity={0.25} />
-          <line x1="150" y1="10" x2="150" y2="28" stroke="#E8A020" strokeWidth="1.5" strokeOpacity={0.25} />
+          <line x1="50" y1="10" x2="150" y2="10" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
+          <line x1="50"  y1="10" x2="50"  y2="28" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
+          <line x1="150" y1="10" x2="150" y2="28" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
         </>}
         {count === 3 && <>
-          <line x1="20" y1="10" x2="180" y2="10" stroke="#E8A020" strokeWidth="1.5" strokeOpacity={0.25} />
-          <line x1="20" y1="10" x2="20" y2="28" stroke="#E8A020" strokeWidth="1.5" strokeOpacity={0.25} />
-          <line x1="100" y1="10" x2="100" y2="28" stroke="#E8A020" strokeWidth="1.5" strokeOpacity={0.25} />
-          <line x1="180" y1="10" x2="180" y2="28" stroke="#E8A020" strokeWidth="1.5" strokeOpacity={0.25} />
+          <line x1="20"  y1="10" x2="180" y2="10" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
+          <line x1="20"  y1="10" x2="20"  y2="28" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
+          <line x1="100" y1="10" x2="100" y2="28" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
+          <line x1="180" y1="10" x2="180" y2="28" stroke="#E8A020" strokeWidth={sw} strokeOpacity={op} strokeLinecap={lc} />
         </>}
       </svg>
     </div>
