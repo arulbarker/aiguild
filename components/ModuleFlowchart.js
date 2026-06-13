@@ -219,20 +219,16 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
         }
 
         if (seg.type === 'diamond') {
+          // Di mode kartu, modul paralel ditumpuk ke bawah (kartu besar
+          // tidak enak berdampingan). Tiap kartu disambung panah.
           return (
             <div key={seg.modules.map((m) => m.id).join('-')} className={TRUNK}>
-              <div className="flex items-center gap-3 my-2">
-                <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--amber)', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
-                  PARALEL
-                </span>
-                <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
-              </div>
-              <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
-                {seg.modules.map((mod) => (
-                  <ModuleCard key={mod.id} mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
-                ))}
-              </div>
+              {seg.modules.map((mod, mi) => (
+                <div key={mod.id}>
+                  <ModuleCard mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
+                  {mi < seg.modules.length - 1 && <FlowConnector index={si * 10 + mi} />}
+                </div>
+              ))}
               {!isLast && <FlowConnector index={si} />}
             </div>
           )
