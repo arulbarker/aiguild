@@ -118,7 +118,7 @@ export default function DashboardPage() {
                         fontSize: 10,
                         letterSpacing: '0.06em',
                         background: viewMode === key ? 'rgba(232,160,32,0.12)' : 'transparent',
-                        color: viewMode === key ? '#E8A020' : 'rgba(255,255,255,0.3)',
+                        color: viewMode === key ? '#E8A020' : 'rgba(255,255,255,0.55)',
                         border: viewMode === key ? '1px solid rgba(232,160,32,0.3)' : '1px solid transparent',
                         transition: 'all 0.18s',
                       }}

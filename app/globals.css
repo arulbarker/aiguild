@@ -9,7 +9,7 @@
   --surface:    #0F0E12;
   --surface-2:  #141319;
   --cream:      #F0E8D4;
-  --muted:      #4C4A54;
+  --muted:      rgba(255, 255, 255, 0.62);
   --border:     rgba(255, 255, 255, 0.06);
 }
 

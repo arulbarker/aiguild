@@ -79,7 +79,7 @@ function NodeBox({ mod, label, isActive, isCompleted, onSelect }) {
         style={{
           fontFamily: 'var(--font-mono)',
           fontSize: 11,
-          color: isCompleted ? '#E8A020' : 'rgba(255,255,255,0.35)',
+          color: isCompleted ? '#E8A020' : 'rgba(255,255,255,0.55)',
           minWidth: 20,
           flexShrink: 0,
         }}
@@ -88,7 +88,7 @@ function NodeBox({ mod, label, isActive, isCompleted, onSelect }) {
       </span>
 
       <ScrollTitle hovered={hovered}>
-        <span style={{ color: isActive ? '#E8A020' : isCompleted ? 'rgba(240,232,212,0.85)' : 'rgba(240,232,212,0.7)' }}>
+        <span style={{ color: isActive ? '#E8A020' : isCompleted ? 'rgba(240,232,212,0.9)' : 'rgba(240,232,212,0.82)' }}>
           {mod.title}
         </span>
       </ScrollTitle>
@@ -105,7 +105,7 @@ function NodeBox({ mod, label, isActive, isCompleted, onSelect }) {
           </span>
         )}
         {!canPlay && (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '1px 5px' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 4, padding: '1px 5px' }}>
             soon
           </span>
         )}

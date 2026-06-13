@@ -131,33 +131,20 @@ function ModuleCard({ mod, label, isActive, isCompleted, onSelect }) {
         )}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(7,7,10,0.35) 0%, transparent 50%)' }} />
 
-        {isCompleted && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', delay: mod.orderIndex * 0.08 + 0.2 }}
-            className="absolute top-3 right-3 flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full"
-            style={{ fontFamily: 'var(--font-mono)', background: 'rgba(7,7,10,0.7)', border: '1px solid rgba(232,160,32,0.5)', color: '#E8A020', backdropFilter: 'blur(8px)' }}
-          >
-            ✓ selesai
-          </motion.div>
-        )}
-
+        {/* Thumbnail bersih — hanya ikon aksi, tanpa teks */}
         <div className="absolute inset-0 flex items-center justify-center">
           {hasVideo && <PlayIcon />}
           {!hasVideo && hasMateri && <MateriIcon />}
-          {!hasVideo && !hasMateri && (
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.2em' }}>
-              SEGERA
-            </span>
-          )}
         </div>
       </motion.div>
 
       <div className="px-4 pt-3.5 pb-3" style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-start gap-3">
-          <span className="shrink-0 mt-0.5" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#E8A020', letterSpacing: '0.08em' }}>
-            {num}
+          <span
+            className="shrink-0 mt-0.5"
+            style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: isCompleted ? '#E8A020' : 'rgba(255,255,255,0.55)', letterSpacing: '0.08em' }}
+          >
+            {isCompleted ? '✓' : num}
           </span>
           <h3 className="leading-snug" style={{ fontSize: 15, fontWeight: 600, color: 'var(--cream)', letterSpacing: '-0.01em' }}>
             {mod.title}
@@ -187,7 +174,7 @@ function ModuleCard({ mod, label, isActive, isCompleted, onSelect }) {
           </motion.button>
         )}
         {!hasVideo && !hasMateri && (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.1em' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em' }}>
             Konten segera hadir
           </span>
         )}
