@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { buildSegments, displayNumber } from '@/lib/module-tree'
 
 function getYouTubeId(url) {
   if (!url) return null
@@ -77,7 +78,7 @@ const cardVariants = {
   }),
 }
 
-function ModuleCard({ mod, globalIndex, isActive, isCompleted, onSelect }) {
+function ModuleCard({ mod, isActive, isCompleted, onSelect }) {
   const hasVideo  = !!mod.youtubeUrl
   const hasMateri = !!mod.gammaUrl
   const canPlay   = hasVideo || hasMateri
@@ -85,11 +86,11 @@ function ModuleCard({ mod, globalIndex, isActive, isCompleted, onSelect }) {
   const thumbUrl  = ytId
     ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
     : getDriveThumb(mod.gammaUrl)
-  const num = String(globalIndex + 1).padStart(2, '0')
+  const num = displayNumber(mod)
 
   return (
     <motion.article
-      custom={globalIndex}
+      custom={mod.orderIndex}
       variants={cardVariants}
       initial="hidden"
       animate="visible"
@@ -134,7 +135,7 @@ function ModuleCard({ mod, globalIndex, isActive, isCompleted, onSelect }) {
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', delay: globalIndex * 0.08 + 0.2 }}
+            transition={{ type: 'spring', delay: mod.orderIndex * 0.08 + 0.2 }}
             className="absolute top-3 right-3 flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full"
             style={{ fontFamily: 'var(--font-mono)', background: 'rgba(7,7,10,0.7)', border: '1px solid rgba(232,160,32,0.5)', color: '#E8A020', backdropFilter: 'blur(8px)' }}
           >
@@ -195,94 +196,71 @@ function ModuleCard({ mod, globalIndex, isActive, isCompleted, onSelect }) {
   )
 }
 
-function buildDisplayGroups(modules) {
-  const groups = []
-  const placed = new Set()
-
-  for (let i = 0; i < modules.length; i++) {
-    const mod = modules[i]
-    if (placed.has(mod.id)) continue
-
-    const currParentKey = JSON.stringify([...(mod.parentIds ?? [])].sort())
-    const hasSameParent = (m) =>
-      m.id !== mod.id &&
-      !placed.has(m.id) &&
-      currParentKey !== '[]' &&
-      JSON.stringify([...(m.parentIds ?? [])].sort()) === currParentKey
-
-    const siblings = modules.filter(hasSameParent)
-
-    if (siblings.length > 0) {
-      const branch = [mod, ...siblings]
-      branch.forEach((m) => placed.add(m.id))
-      groups.push({ type: 'branch', modules: branch })
-    } else {
-      placed.add(mod.id)
-      groups.push({ type: 'single', modules: [mod] })
-    }
-  }
-  return groups
-}
-
 export default function ModuleFlowchart({ modules, completedIds = [], onSelect, activeId }) {
-  const groups = buildDisplayGroups(modules)
-
-  let globalIndex = 0
+  const segments = buildSegments(modules)
+  const isDone = (m) => completedIds.includes(m.id)
 
   return (
     <div className="flex flex-col max-w-2xl mx-auto w-full">
-      {groups.map((group, gi) => {
-        if (group.type === 'single') {
-          const mod = group.modules[0]
-          const idx = globalIndex++
-          const isLast = gi === groups.length - 1
+      {segments.map((seg, si) => {
+        const isLast = si === segments.length - 1
+
+        if (seg.type === 'single') {
+          const mod = seg.modules[0]
           return (
             <div key={mod.id}>
-              <ModuleCard
-                mod={mod}
-                globalIndex={idx}
-                isActive={activeId === mod.id}
-                isCompleted={completedIds.includes(mod.id)}
-                onSelect={onSelect}
-              />
-              {!isLast && <FlowConnector index={gi} />}
+              <ModuleCard mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
+              {!isLast && <FlowConnector index={si} />}
             </div>
           )
         }
 
-        const branchStartIndex = globalIndex
-        globalIndex += group.modules.length
-        const isLast = gi === groups.length - 1
+        if (seg.type === 'diamond') {
+          return (
+            <div key={seg.modules.map((m) => m.id).join('-')}>
+              <div className="flex items-center gap-3 my-2">
+                <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--amber)', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+                  PARALEL
+                </span>
+                <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+              </div>
+              <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                {seg.modules.map((mod) => (
+                  <ModuleCard key={mod.id} mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
+                ))}
+              </div>
+              {!isLast && <FlowConnector index={si} />}
+            </div>
+          )
+        }
 
+        // tracks — N kolom sejajar, tiap kolom punya rantai kartu sendiri
+        const count = seg.columns.length
         return (
-          <div key={group.modules.map((m) => m.id).join('-')}>
-            {/* Label cabang */}
+          <div key={seg.columns.map((c) => c[0].id).join('-')}>
             <div className="flex items-center gap-3 my-2">
               <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--amber)', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
-                {group.modules.every(m => !m.youtubeUrl && !m.gammaUrl) ? 'PILIH JALUR' : 'PARALEL'}
+                PILIH JALUR
               </span>
               <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
             </div>
 
-            {/* Branch cards — 2 kolom max */}
-            <div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}
-            >
-              {group.modules.map((mod, bi) => (
-                <ModuleCard
-                  key={mod.id}
-                  mod={mod}
-                  globalIndex={branchStartIndex + bi}
-                  isActive={activeId === mod.id}
-                  isCompleted={completedIds.includes(mod.id)}
-                  onSelect={onSelect}
-                />
-              ))}
+            <div className="overflow-x-auto -mx-1 px-1 pb-2">
+              <div
+                className="grid gap-3 items-start"
+                style={{ gridTemplateColumns: `repeat(${count}, minmax(230px, 1fr))`, minWidth: count * 240 }}
+              >
+                {seg.columns.map((chain) => (
+                  <div key={chain[0].id} className="flex flex-col gap-3">
+                    {chain.map((mod) => (
+                      <ModuleCard key={mod.id} mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
-
-            {!isLast && <FlowConnector index={gi} />}
           </div>
         )
       })}
