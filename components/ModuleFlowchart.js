@@ -120,20 +120,21 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
                 whileTap={canPlay ? { scale: 0.992 } : {}}
                 onClick={() => canPlay && onSelect?.(mod, hasVideo(mod) ? 'video' : 'materi')}
               >
-                {thumbUrl ? (
+                {/* Background selalu ada — muncul saat thumbnail gagal load */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: hasMateri(mod)
+                      ? 'linear-gradient(135deg, #12101E 0%, #0A0810 60%, #0E0C14 100%)'
+                      : 'linear-gradient(135deg, #0E0E12 0%, #09090C 100%)',
+                  }}
+                />
+                {thumbUrl && (
                   <img
                     src={thumbUrl} alt={mod.title}
-                    className="w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover"
                     style={{ filter: 'brightness(0.9) saturate(0.9)' }}
-                  />
-                ) : (
-                  <div
-                    className="w-full h-full"
-                    style={{
-                      background: hasMateri(mod)
-                        ? 'linear-gradient(135deg, #12101E 0%, #0A0810 60%, #0E0C14 100%)'
-                        : 'linear-gradient(135deg, #0E0E12 0%, #09090C 100%)',
-                    }}
+                    onError={(e) => { e.target.style.display = 'none' }}
                   />
                 )}
 
