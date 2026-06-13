@@ -1,10 +1,16 @@
-import { Syne, JetBrains_Mono } from 'next/font/google'
+import { Syne, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import PostHogProvider from '@/components/PostHogProvider'
 
 const syne = Syne({
   subsets: ['latin'],
   variable: '--font-syne',
+  weight: ['400', '500', '600', '700', '800'],
+})
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-jakarta',
   weight: ['400', '500', '600', '700', '800'],
 })
 
@@ -21,7 +27,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="id" className={`${syne.variable} ${mono.variable}`}>
+    <html lang="id" className={`${syne.variable} ${jakarta.variable} ${mono.variable}`}>
       <body>
         <PostHogProvider>
           {children}

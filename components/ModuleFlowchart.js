@@ -113,7 +113,7 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
                 transition: 'border-color 0.3s, box-shadow 0.3s',
               }}
             >
-              {/* Thumbnail / Cover */}
+              {/* Thumbnail / Cover — bersih, tanpa judul atau nomor */}
               <motion.div
                 className="relative overflow-hidden"
                 style={{ aspectRatio: '16/9', cursor: canPlay ? 'pointer' : 'default' }}
@@ -124,7 +124,7 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
                   <img
                     src={thumbUrl} alt={mod.title}
                     className="w-full h-full object-cover"
-                    style={{ filter: 'brightness(0.85) saturate(0.9)' }}
+                    style={{ filter: 'brightness(0.9) saturate(0.9)' }}
                   />
                 ) : (
                   <div
@@ -137,19 +137,11 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
                   />
                 )}
 
-                {/* Gradient bawah */}
+                {/* Gradient ringan — tidak menimpa thumbnail */}
                 <div
                   className="absolute inset-0"
-                  style={{ background: 'linear-gradient(to top, rgba(7,7,10,0.92) 0%, rgba(7,7,10,0.3) 45%, rgba(7,7,10,0.05) 100%)' }}
+                  style={{ background: 'linear-gradient(to top, rgba(7,7,10,0.35) 0%, transparent 50%)' }}
                 />
-
-                {/* Watermark nomor */}
-                <div
-                  className="absolute top-2 left-3 select-none pointer-events-none"
-                  style={{ fontFamily: 'var(--font-mono)', fontSize: 72, fontWeight: 100, color: 'rgba(232,160,32,0.18)', lineHeight: 1, letterSpacing: '-0.04em' }}
-                >
-                  {num}
-                </div>
 
                 {/* Badge selesai */}
                 {isCompleted && (
@@ -158,7 +150,7 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ type: 'spring', delay: i * 0.08 + 0.2 }}
                     className="absolute top-3 right-3 flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full"
-                    style={{ fontFamily: 'var(--font-mono)', background: 'rgba(232,160,32,0.12)', border: '1px solid rgba(232,160,32,0.3)', color: '#E8A020' }}
+                    style={{ fontFamily: 'var(--font-mono)', background: 'rgba(7,7,10,0.7)', border: '1px solid rgba(232,160,32,0.5)', color: '#E8A020', backdropFilter: 'blur(8px)' }}
                   >
                     ✓ selesai
                   </motion.div>
@@ -166,58 +158,61 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
 
                 {/* Ikon tengah */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  {hasVideo(mod)            && <PlayIcon />}
+                  {hasVideo(mod) && <PlayIcon />}
                   {!hasVideo(mod) && hasMateri(mod) && <MateriIcon />}
                   {!hasVideo(mod) && !hasMateri(mod) && (
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.15em' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.2em' }}>
                       SEGERA
                     </span>
                   )}
                 </div>
+              </motion.div>
 
-                {/* Judul overlay bawah */}
-                <div className="absolute bottom-0 left-0 right-0 px-5 pb-4 pt-8">
-                  <h3 className="text-white font-bold leading-tight" style={{ fontSize: 17, textShadow: '0 1px 8px rgba(0,0,0,0.8)' }}>
+              {/* Info — nomor + judul DI LUAR thumbnail */}
+              <div className="px-4 pt-3.5 pb-3" style={{ borderBottom: '1px solid var(--border)' }}>
+                <div className="flex items-start gap-3">
+                  <span
+                    className="shrink-0 mt-0.5"
+                    style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 400, color: '#E8A020', letterSpacing: '0.08em' }}
+                  >
+                    {num}
+                  </span>
+                  <h3
+                    className="leading-snug"
+                    style={{ fontSize: 15, fontWeight: 600, color: 'var(--cream)', letterSpacing: '-0.01em' }}
+                  >
                     {mod.title}
                   </h3>
                 </div>
-              </motion.div>
+              </div>
 
-              {/* Footer */}
-              <div
-                className="flex items-center justify-between px-4 py-3"
-                style={{ borderTop: '1px solid var(--border)' }}
-              >
-                <div className="flex items-center gap-2">
-                  {hasVideo(mod) && (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
-                      onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'video') }}
-                      className="text-xs px-3 py-1.5 rounded-full font-medium"
-                      style={{ background: 'rgba(232,160,32,0.1)', color: '#E8A020', border: '1px solid rgba(232,160,32,0.3)' }}
-                    >
-                      ▶&nbsp; Video
-                    </motion.button>
-                  )}
-                  {hasMateri(mod) && (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
-                      onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'materi') }}
-                      className="text-xs px-3 py-1.5 rounded-full font-medium"
-                      style={{ background: 'rgba(240,232,212,0.06)', color: 'var(--cream)', border: '1px solid rgba(240,232,212,0.14)' }}
-                    >
-                      ◈&nbsp; Materi
-                    </motion.button>
-                  )}
-                  {!hasVideo(mod) && !hasMateri(mod) && (
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.1em' }}>
-                      Konten segera hadir
-                    </span>
-                  )}
-                </div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.18)', letterSpacing: '0.05em' }}>
-                  {num}
-                </span>
+              {/* Footer — tombol aksi saja */}
+              <div className="flex items-center gap-2 px-4 py-3">
+                {hasVideo(mod) && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
+                    onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'video') }}
+                    className="text-xs px-3 py-1.5 rounded-full font-medium"
+                    style={{ background: 'rgba(232,160,32,0.1)', color: '#E8A020', border: '1px solid rgba(232,160,32,0.3)' }}
+                  >
+                    ▶&nbsp; Video
+                  </motion.button>
+                )}
+                {hasMateri(mod) && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
+                    onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'materi') }}
+                    className="text-xs px-3 py-1.5 rounded-full font-medium"
+                    style={{ background: 'rgba(240,232,212,0.06)', color: 'var(--cream)', border: '1px solid rgba(240,232,212,0.14)' }}
+                  >
+                    ◈&nbsp; Materi
+                  </motion.button>
+                )}
+                {!hasVideo(mod) && !hasMateri(mod) && (
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.1em' }}>
+                    Konten segera hadir
+                  </span>
+                )}
               </div>
             </motion.article>
 

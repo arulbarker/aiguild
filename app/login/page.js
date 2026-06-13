@@ -56,7 +56,7 @@ function LoginForm() {
         <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.25em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 8 }}>
           Platform Vibe Coding
         </p>
-        <h1 className="font-extrabold uppercase leading-none" style={{ fontSize: 'clamp(2.2rem, 8vw, 4rem)', letterSpacing: '-0.04em', color: 'var(--cream)' }}>
+        <h1 className="font-extrabold uppercase leading-none" style={{ fontSize: 'clamp(2.2rem, 8vw, 4rem)', letterSpacing: '-0.04em', color: 'var(--cream)', fontFamily: 'var(--font-syne)' }}>
           AI Guild
         </h1>
       </motion.div>

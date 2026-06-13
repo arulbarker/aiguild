@@ -85,7 +85,7 @@ export default function DashboardPage() {
 
                 <h1
                   className="uppercase leading-none font-extrabold"
-                  style={{ fontSize: 'clamp(1.4rem, 7.5vw, 3.6rem)', letterSpacing: '-0.03em', marginBottom: 20 }}
+                  style={{ fontSize: 'clamp(1.4rem, 7.5vw, 3.6rem)', letterSpacing: '-0.03em', marginBottom: 20, fontFamily: 'var(--font-syne)' }}
                 >
                   <span className="block" style={{ color: 'var(--cream)' }}>Perjalanan</span>
                   <span className="block" style={{ color: 'var(--amber)' }}>Vibe Coding</span>
