@@ -70,10 +70,10 @@ export default function DashboardPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.45 }}
           >
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-2xl mx-auto mb-12">
 
               <motion.header
-                className="mb-12 pt-4"
+                className="pt-4"
                 initial={{ opacity: 0, y: -16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -140,7 +140,9 @@ export default function DashboardPage() {
                   </div>
                 )}
               </motion.header>
+            </div>
 
+            <div className="w-full">
               {modules.length > 0 ? (
                 viewMode === 'compact' ? (
                   <ModuleFlowchartCompact

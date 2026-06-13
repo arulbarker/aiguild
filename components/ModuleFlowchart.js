@@ -200,15 +200,18 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
   const segments = buildSegments(modules)
   const isDone = (m) => completedIds.includes(m.id)
 
+  // Trunk kartu dibatasi lebar nyaman di tengah; track melebar keluar (fan-out)
+  const TRUNK = 'w-full max-w-2xl mx-auto px-4'
+
   return (
-    <div className="flex flex-col max-w-2xl mx-auto w-full">
+    <div className="flex flex-col w-full max-w-5xl mx-auto px-4">
       {segments.map((seg, si) => {
         const isLast = si === segments.length - 1
 
         if (seg.type === 'single') {
           const mod = seg.modules[0]
           return (
-            <div key={mod.id}>
+            <div key={mod.id} className={TRUNK}>
               <ModuleCard mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
               {!isLast && <FlowConnector index={si} />}
             </div>
@@ -217,7 +220,7 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
 
         if (seg.type === 'diamond') {
           return (
-            <div key={seg.modules.map((m) => m.id).join('-')}>
+            <div key={seg.modules.map((m) => m.id).join('-')} className={TRUNK}>
               <div className="flex items-center gap-3 my-2">
                 <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--amber)', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
@@ -235,11 +238,11 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
           )
         }
 
-        // tracks — N kolom sejajar, tiap kolom punya rantai kartu sendiri
+        // tracks — N kolom kartu sejajar yang melebar (fan-out dari trunk)
         const count = seg.columns.length
         return (
           <div key={seg.columns.map((c) => c[0].id).join('-')}>
-            <div className="flex items-center gap-3 my-2">
+            <div className={`${TRUNK} flex items-center gap-3 my-3`}>
               <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--amber)', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
                 PILIH JALUR
@@ -247,13 +250,13 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
               <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
             </div>
 
-            <div className="overflow-x-auto -mx-1 px-1 pb-2">
+            <div className="overflow-x-auto">
               <div
-                className="grid gap-3 items-start"
-                style={{ gridTemplateColumns: `repeat(${count}, minmax(230px, 1fr))`, minWidth: count * 240 }}
+                className="grid gap-4 items-start mx-auto"
+                style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))`, minWidth: count * 240, maxWidth: '100%' }}
               >
                 {seg.columns.map((chain) => (
-                  <div key={chain[0].id} className="flex flex-col gap-3">
+                  <div key={chain[0].id} className="flex flex-col gap-4">
                     {chain.map((mod) => (
                       <ModuleCard key={mod.id} mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
                     ))}

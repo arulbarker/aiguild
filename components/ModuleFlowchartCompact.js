@@ -152,8 +152,11 @@ export default function ModuleFlowchartCompact({ modules, completedIds = [], onS
   const segments = buildSegments(modules)
   const isDone = (m) => completedIds.includes(m.id)
 
+  // Trunk dibatasi lebar nyaman, ditengah. Track boleh melebar keluar.
+  const TRUNK = 'w-full max-w-2xl mx-auto px-4'
+
   return (
-    <div className="w-full max-w-lg mx-auto">
+    <div className="w-full max-w-5xl mx-auto px-4">
       {segments.map((seg, si) => {
         const isLast = si === segments.length - 1
         const next = segments[si + 1]
@@ -161,13 +164,13 @@ export default function ModuleFlowchartCompact({ modules, completedIds = [], onS
         if (seg.type === 'single') {
           const mod = seg.modules[0]
           return (
-            <div key={mod.id}>
+            <div key={mod.id} className={TRUNK}>
               <NodeBox mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
               {!isLast && (
                 next?.type === 'diamond'
                   ? <SplitConnector count={next.modules.length} />
                   : next?.type === 'tracks'
-                  ? <SplitConnector count={next.columns.length} />
+                  ? null
                   : <Arrow />
               )}
             </div>
@@ -176,8 +179,8 @@ export default function ModuleFlowchartCompact({ modules, completedIds = [], onS
 
         if (seg.type === 'diamond') {
           return (
-            <div key={seg.modules.map((m) => m.id).join('-')}>
-              <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${seg.modules.length}, 1fr)` }}>
+            <div key={seg.modules.map((m) => m.id).join('-')} className={TRUNK}>
+              <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${seg.modules.length}, 1fr)` }}>
                 {seg.modules.map((mod) => (
                   <NodeBox key={mod.id} mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
                 ))}
@@ -187,13 +190,13 @@ export default function ModuleFlowchartCompact({ modules, completedIds = [], onS
           )
         }
 
-        // tracks — N kolom sejajar, tiap kolom punya rantai sendiri
+        // tracks — N kolom sejajar yang melebar, fan-out dari trunk
         const count = seg.columns.length
         return (
-          <div key={seg.columns.map((c) => c[0].id).join('-')} className="overflow-x-auto -mx-1 px-1">
-            <div style={{ minWidth: count * 132 }}>
+          <div key={seg.columns.map((c) => c[0].id).join('-')} className="overflow-x-auto">
+            <div className="mx-auto" style={{ minWidth: count * 190, maxWidth: '100%' }}>
               <SplitConnector count={count} />
-              <div className="grid gap-2.5 items-start" style={{ gridTemplateColumns: `repeat(${count}, minmax(120px, 1fr))` }}>
+              <div className="grid gap-3 items-start" style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }}>
                 {seg.columns.map((chain) => (
                   <div key={chain[0].id} className="flex flex-col">
                     {chain.map((mod, ci) => (
