@@ -26,8 +26,12 @@ export async function middleware(request) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // Proteksi route /dashboard dan /modul
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/modul')) {
+  // Proteksi route /dashboard, /modul, /perpanjang
+  if (
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/modul') ||
+    pathname.startsWith('/perpanjang')
+  ) {
     if (!session) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
@@ -44,5 +48,5 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/login', '/dashboard/:path*', '/modul/:path*', '/admin/:path*'],
+  matcher: ['/login', '/dashboard/:path*', '/modul/:path*', '/perpanjang/:path*', '/admin/:path*'],
 }
