@@ -84,9 +84,9 @@ Sudah ada: verifikasi HMAC signature + idempotency by `orderId`. **Ditambah:**
 
 ## Penjagaan akses
 
-Middleware (`middleware.js`) jalan di edge → **tidak bisa query database**. Jadi cek expiry ditaruh di **server layout** halaman `/dashboard` & `/modul`:
-- Query `membershipExpiredAt` dari DB (±10ms di VPS, selalu akurat).
-- Kalau habis → redirect ke `/perpanjang`.
+Dashboard adalah client component yang ambil data dari `/api/modules`. Middleware (edge) tidak bisa query DB. Jadi cek expiry ditaruh di **dua titik server-side** yang menyajikan materi:
+- **`/api/modules` (GET):** kalau membership tidak aktif → balas `403 { error: 'membership_expired' }`. Dashboard client tangkap 403 → `router.push('/perpanjang')`.
+- **`/modul/[slug]/page.js` (server component):** kalau tidak aktif → `redirect('/perpanjang')`.
 - User expired **tetap bisa login** (supaya bisa lihat halaman perpanjang); yang dicabut hanya akses materi.
 
 ## Reminder email + cron

@@ -37,6 +37,7 @@ Semua detail ada di file-file berikut:
 → `.claude/docs-library/product-spec.md` — sumber kebenaran produk (apa, fitur, alur)
 → `.claude/docs-library/ideas-backlog.md` — tampungan ide baru & keputusan batal
 → `.claude/docs-library/membership-fase1-design.md` — desain membership langganan Mayar (Fase 1)
+→ `.claude/docs-library/membership-fase1-plan.md` — rencana implementasi membership (Fase 1)
 
 Aturan: ide baru → catat di backlog dulu → tanya user "sekarang/nanti/simpan".
 Keputusan dibatalkan → hapus dari product-spec, catat di backlog status BATAL.
