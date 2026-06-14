@@ -7,7 +7,7 @@ Sumber kebenaran produk ini.
 
 ## Produk ini apa
 
-Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun produk digital dengan bantuan AI. Model akses: **langganan bulanan Rp149.000 / 30 hari via Mayar.id** (Fase 1). User bayar → masa aktif diperpanjang → belajar via email magic link. Akses dicabut otomatis saat masa aktif habis.
+Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun produk digital dengan bantuan AI. Model akses: **langganan tahunan Rp1.497.000 / tahun (365 hari) via Mayar.id** (Fase 1). User bayar → masa aktif diperpanjang → belajar via email magic link. Akses dicabut otomatis saat masa aktif habis.
 
 ---
 
@@ -27,8 +27,8 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 - Konten dikelola via `lib/modules-seed.js` + `npm run seed` — bukan CMS
 
 ### Pembayaran & akses — langganan (Fase 1)
-- **Mayar.id** = platform langganan utama. Webhook `payment.paid` → perpanjang `membershipExpiredAt` +30 hari
-- **Stacking:** perpanjang saat masih aktif → +30 hari numpuk dari tanggal habis lama (user tak rugi sisa hari)
+- **Mayar.id** = platform langganan utama. Webhook `payment.paid` → perpanjang `membershipExpiredAt` +365 hari (Rp1.497.000/tahun)
+- **Stacking:** perpanjang saat masih aktif → +1 tahun numpuk dari tanggal habis lama (user tak rugi sisa hari)
 - **Gerbang akses:** `/api/modules`, `/api/progress` (403), `/modul/[slug]` & `/dashboard` (redirect `/perpanjang`) saat masa aktif habis. Admin selalu bypass
 - **Reminder H-3:** cron harian `/api/cron/check-membership` kirim email perpanjang (Resend), idempotent via `reminderSentAt`
 - **Gateway:** 1 webhook Mayar → Cloudflare Worker fan-out ke beberapa app (ai-guild & ruangsaku), filter produk via `MAYAR_PRODUCT_LINK`
@@ -47,11 +47,11 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 ## Alur user utama
 
 ```
-Langganan di Mayar.id (Rp149rb / 30 hari)
+Langganan di Mayar.id (Rp1.497rb / tahun)
         ↓
 Gateway (CF Worker) fan-out → webhook /api/webhook/mayar
         ↓
-Filter produk ai-guild → user upsert → membershipExpiredAt +30 hari
+Filter produk ai-guild → user upsert → membershipExpiredAt +365 hari
         ↓
 User buka /login → input email → klik magic link (email)
         ↓  (dev: auto-redirect tanpa email)
@@ -75,7 +75,7 @@ Reminder email H-3 sebelum habis
 | Magic link tanpa password | Lebih simpel untuk non-IT, tidak ada password forgotten |
 | JavaScript (bukan TypeScript) | Lebih cepat untuk solo developer |
 | Prisma 7 dengan adapter-pg | Prisma 7 sudah tidak punya binary engine, butuh driver adapter |
-| Langganan bulanan (bukan lifetime) — Fase 1 | Pendapatan berulang, lewat Mayar; ganti model "beli sekali" |
+| Langganan tahunan Rp1.497rb (bukan lifetime) — Fase 1 | Pendapatan berulang, lewat Mayar; ganti model "beli sekali". Paket bulanan tidak dipakai |
 | Schema via `prisma db push` (bukan migrasi) | Project tak punya history migrasi; kolom membership nullable = aman tanpa reset. Prod disinkron manual + backup (bukan auto-deploy) |
 
 ---

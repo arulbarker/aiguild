@@ -27,8 +27,8 @@ export default async function PerpanjangPage() {
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 28, lineHeight: 1.6 }}>
           {active
-            ? `Aktif sampai ${habis}. Kamu bisa perpanjang kapan saja — masa aktif numpuk +30 hari.`
-            : 'Perpanjang untuk lanjut belajar di AI Guild. Rp149.000 / 30 hari.'}
+            ? `Aktif sampai ${habis}. Kamu bisa perpanjang kapan saja — masa aktif numpuk +1 tahun.`
+            : 'Perpanjang untuk lanjut belajar di AI Guild. Rp1.497.000 / tahun.'}
         </p>
         <a
           href={payUrl}
@@ -37,7 +37,7 @@ export default async function PerpanjangPage() {
             padding: '14px 32px', borderRadius: 10, textDecoration: 'none', fontWeight: 700,
           }}
         >
-          Perpanjang Rp149.000
+          Perpanjang Rp1.497.000 / tahun
         </a>
         <p style={{ color: 'var(--muted)', fontSize: 12, marginTop: 24 }}>
           Setelah bayar, masa aktif diperbarui otomatis dalam beberapa menit.
