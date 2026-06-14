@@ -7,7 +7,7 @@ Sumber kebenaran produk ini.
 
 ## Produk ini apa
 
-Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun produk digital dengan bantuan AI. User beli akses sekali (lifetime) via Lynk.id atau Mayar.id, lalu belajar via email magic link.
+Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun produk digital dengan bantuan AI. Model akses: **langganan bulanan Rp149.000 / 30 hari via Mayar.id** (Fase 1). User bayar → masa aktif diperpanjang → belajar via email magic link. Akses dicabut otomatis saat masa aktif habis.
 
 ---
 
@@ -26,9 +26,15 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 - Progress user dilacak per modul
 - Konten dikelola via `lib/modules-seed.js` + `npm run seed` — bukan CMS
 
-### Pembayaran & akses
-- Lynk.id dan Mayar.id → webhook masuk → user dibuat → purchase dicatat
-- Tidak ada trial, tidak ada level berbeda — beli = akses semua modul
+### Pembayaran & akses — langganan (Fase 1)
+- **Mayar.id** = platform langganan utama. Webhook `payment.paid` → perpanjang `membershipExpiredAt` +30 hari
+- **Stacking:** perpanjang saat masih aktif → +30 hari numpuk dari tanggal habis lama (user tak rugi sisa hari)
+- **Gerbang akses:** `/api/modules`, `/api/progress` (403), `/modul/[slug]` & `/dashboard` (redirect `/perpanjang`) saat masa aktif habis. Admin selalu bypass
+- **Reminder H-3:** cron harian `/api/cron/check-membership` kirim email perpanjang (Resend), idempotent via `reminderSentAt`
+- **Gateway:** 1 webhook Mayar → Cloudflare Worker fan-out ke beberapa app (ai-guild & ruangsaku), filter produk via `MAYAR_PRODUCT_LINK`
+- Halaman `/perpanjang` (tombol bayar) & `/sukses` (pasca-bayar)
+- Lynk.id webhook masih ada di kode (legacy/produk lain), bukan model akses AI Guild lagi
+- Tidak ada trial, tidak ada level berbeda — aktif = akses semua modul
 - Refund dikelola manual oleh admin
 
 ### Admin panel
@@ -41,16 +47,20 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 ## Alur user utama
 
 ```
-Beli di Lynk.id / Mayar.id
+Langganan di Mayar.id (Rp149rb / 30 hari)
         ↓
-Webhook masuk → user + purchase disimpan
+Gateway (CF Worker) fan-out → webhook /api/webhook/mayar
+        ↓
+Filter produk ai-guild → user upsert → membershipExpiredAt +30 hari
         ↓
 User buka /login → input email → klik magic link (email)
         ↓  (dev: auto-redirect tanpa email)
-Session dibuat → redirect ke /dashboard
+Session dibuat → redirect ke /dashboard (akses aktif)
         ↓
 Flowchart modul → klik modul → viewer full-screen
-(YouTube tab | Materi tab)
+        ↓
+Masa aktif habis → gerbang redirect ke /perpanjang → bayar lagi (stacking)
+Reminder email H-3 sebelum habis
 ```
 
 ---
@@ -65,6 +75,8 @@ Flowchart modul → klik modul → viewer full-screen
 | Magic link tanpa password | Lebih simpel untuk non-IT, tidak ada password forgotten |
 | JavaScript (bukan TypeScript) | Lebih cepat untuk solo developer |
 | Prisma 7 dengan adapter-pg | Prisma 7 sudah tidak punya binary engine, butuh driver adapter |
+| Langganan bulanan (bukan lifetime) — Fase 1 | Pendapatan berulang, lewat Mayar; ganti model "beli sekali" |
+| Schema via `prisma db push` (bukan migrasi) | Project tak punya history migrasi; kolom membership nullable = aman tanpa reset |
 
 ---
 
