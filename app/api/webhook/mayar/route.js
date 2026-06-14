@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createHmac, timingSafeEqual } from 'crypto'
 import { prisma } from '@/lib/db'
+import { computeNewExpiry } from '@/lib/membership'
+import { isAiGuildProduct, extractEmail, extractOrderId } from '@/lib/mayar-webhook'
 
 function verifySignature(payload, signature) {
   const expected = createHmac('sha256', process.env.MAYAR_WEBHOOK_SECRET)
     .update(payload)
     .digest('hex')
-
   try {
     return timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
   } catch {
@@ -29,16 +30,27 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Payload tidak valid' }, { status: 400 })
   }
 
-  // Mayar mengirim event "payment.paid"
   if (payload.event !== 'payment.paid') {
     return NextResponse.json({ message: 'Event diabaikan' })
   }
 
-  const email = payload.data?.customer?.email?.toLowerCase().trim()
-  const orderId = payload.data?.transaction_id ?? null
+  if (!isAiGuildProduct(payload, process.env.MAYAR_PRODUCT_LINK)) {
+    console.log('Webhook: produk bukan ai-guild, diabaikan', JSON.stringify(payload.data?.product ?? {}))
+    return NextResponse.json({ message: 'Produk lain diabaikan' })
+  }
+
+  const email = extractEmail(payload)
+  const orderId = extractOrderId(payload)
 
   if (!email) {
     return NextResponse.json({ error: 'Email tidak ditemukan di payload' }, { status: 400 })
+  }
+
+  if (orderId) {
+    const existing = await prisma.purchase.findFirst({ where: { orderId, source: 'mayar' } })
+    if (existing) {
+      return NextResponse.json({ message: 'Sudah diproses' })
+    }
   }
 
   const user = await prisma.user.upsert({
@@ -47,20 +59,16 @@ export async function POST(request) {
     create: { email },
   })
 
-  if (orderId) {
-    const existing = await prisma.purchase.findFirst({
-      where: { orderId, source: 'mayar' },
-    })
-    if (!existing) {
-      await prisma.purchase.create({
-        data: { userId: user.id, source: 'mayar', orderId },
-      })
-    }
-  } else {
-    await prisma.purchase.create({
-      data: { userId: user.id, source: 'mayar' },
-    })
-  }
+  const newExpiry = computeNewExpiry(user.membershipExpiredAt, new Date())
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { membershipExpiredAt: newExpiry, reminderSentAt: null },
+  })
+
+  await prisma.purchase.create({
+    data: { userId: user.id, source: 'mayar', orderId },
+  })
 
   return NextResponse.json({ message: 'OK' })
 }
