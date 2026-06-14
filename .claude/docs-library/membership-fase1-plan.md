@@ -792,5 +792,12 @@ Tambah ringkasan fitur membership ke `.claude/docs-library/product-spec.md` (mod
 
 ## Catatan deploy penting
 
-- **Migrasi DB tidak ikut auto-seed.** `deploy.yml` cuma jalankan `npm run seed`. Migrasi struktur (`add_membership_fields`) harus dijalankan terpisah: tambah `npx prisma migrate deploy` ke pipeline, atau jalankan manual sekali di container prod. **Tanpa ini, kolom baru tidak ada di prod → webhook & query error.**
+- **Project pakai `prisma db push` (bukan migrasi).** Tidak ada folder `prisma/migrations`. Schema dev disinkron via `npx prisma db push`.
+- **Schema prod TIDAK disinkron otomatis** (sesuai aturan: perubahan DB prod hanya dengan perintah eksplisit + backup). `deploy.yml` cuma `prisma generate && seed`. Saat deploy Fase 1 ini, jalankan **sekali manual** di container prod setelah backup DB:
+  ```bash
+  docker run --rm --network aiguild-net --env-file /data/aiguild/.env.production \
+    -v /data/aiguild:/app -w /app node:20-alpine \
+    sh -c "npm ci && npx prisma generate && npx prisma db push"
+  ```
+  Kolom baru nullable → additive, aman (db push abort kalau ada data-loss di CI non-interaktif). **Tanpa langkah ini, kolom baru tidak ada di prod → webhook & query error.**
 - Cron belum ada infrastrukturnya — perlu dibuat scheduled job di Coolify/VPS (Task 11 Step 4.5).

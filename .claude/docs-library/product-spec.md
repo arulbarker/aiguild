@@ -76,7 +76,7 @@ Reminder email H-3 sebelum habis
 | JavaScript (bukan TypeScript) | Lebih cepat untuk solo developer |
 | Prisma 7 dengan adapter-pg | Prisma 7 sudah tidak punya binary engine, butuh driver adapter |
 | Langganan bulanan (bukan lifetime) — Fase 1 | Pendapatan berulang, lewat Mayar; ganti model "beli sekali" |
-| Schema via `prisma db push` (bukan migrasi) | Project tak punya history migrasi; kolom membership nullable = aman tanpa reset |
+| Schema via `prisma db push` (bukan migrasi) | Project tak punya history migrasi; kolom membership nullable = aman tanpa reset. Prod disinkron manual + backup (bukan auto-deploy) |
 
 ---
 
