@@ -20,6 +20,7 @@ export default function DashboardPage() {
   useEffect(() => {
     fetch('/api/modules').then(async (res) => {
       if (res.status === 401) { router.push('/login'); return }
+      if (res.status === 403) { router.push('/perpanjang'); return }
       const data = await res.json()
       setModules(data.modules ?? [])
       setCompleted(data.completedIds ?? [])

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { isMembershipActive } from '@/lib/membership'
 import ModuleViewerWrapper from './ModuleViewerWrapper'
 
 export async function generateMetadata({ params }) {
@@ -12,6 +13,11 @@ export async function generateMetadata({ params }) {
 export default async function ModulPage({ params }) {
   const session = await getSession()
   if (!session) redirect('/login')
+
+  const me = await prisma.user.findUnique({ where: { id: session.userId } })
+  if (!session.isAdmin && !isMembershipActive(me?.membershipExpiredAt, new Date())) {
+    redirect('/perpanjang')
+  }
 
   const { slug } = await params
   const mod = await prisma.module.findUnique({ where: { slug } })
