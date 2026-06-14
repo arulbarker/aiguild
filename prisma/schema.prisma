@@ -7,14 +7,16 @@ datasource db {
 }
 
 model User {
-  id          String         @id @default(uuid())
-  email       String         @unique
-  name        String?
-  isAdmin     Boolean        @default(false) @map("is_admin")
-  createdAt   DateTime       @default(now()) @map("created_at")
-  purchases   Purchase[]
-  progress    UserProgress[]
-  magicTokens MagicToken[]
+  id                  String         @id @default(uuid())
+  email               String         @unique
+  name                String?
+  isAdmin             Boolean        @default(false) @map("is_admin")
+  membershipExpiredAt DateTime?      @map("membership_expired_at")
+  reminderSentAt      DateTime?      @map("reminder_sent_at")
+  createdAt           DateTime       @default(now()) @map("created_at")
+  purchases           Purchase[]
+  progress            UserProgress[]
+  magicTokens         MagicToken[]
 
   @@map("users")
 }
