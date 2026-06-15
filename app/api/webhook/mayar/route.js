@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { createHash } from 'crypto'
 import { prisma } from '@/lib/db'
 import { computeNewExpiry } from '@/lib/membership'
 import { isAiGuildProduct, extractEmail, extractOrderId, extractAmount, isValidMayarToken } from '@/lib/mayar-webhook'
@@ -6,21 +7,21 @@ import { isAiGuildProduct, extractEmail, extractOrderId, extractAmount, isValidM
 export async function POST(request) {
   const rawBody = await request.text()
 
-  // Mayar mengautentikasi webhook dengan token statis di header Authorization: Bearer <token>.
-  // Diperiksa hanya kalau MAYAR_WEBHOOK_TOKEN diset — supaya tidak getas bila Mayar
-  // ternyata tak mengirim token. Gerbang utama lain: filter produk di bawah.
+  // Verifikasi token — FAIL-CLOSED. Gateway (yang kita kontrol) menyuntik token ini
+  // di header x-gateway-token, jadi selalu cocok untuk request sah; hit langsung tanpa token ditolak.
   const expectedToken = process.env.MAYAR_WEBHOOK_TOKEN
-  if (expectedToken) {
-    const headers = {
-      authorization: request.headers.get('authorization'),
-      'x-webhook-token': request.headers.get('x-webhook-token'),
-      'x-callback-token': request.headers.get('x-callback-token'),
-    }
-    if (!isValidMayarToken(headers, expectedToken)) {
-      return NextResponse.json({ error: 'Token webhook tidak valid' }, { status: 401 })
-    }
-  } else {
-    console.warn('Webhook Mayar: MAYAR_WEBHOOK_TOKEN belum diset — proteksi token dilewati, andalkan filter produk')
+  if (!expectedToken) {
+    console.error('Webhook Mayar: MAYAR_WEBHOOK_TOKEN belum diset — webhook ditolak')
+    return NextResponse.json({ error: 'Webhook belum dikonfigurasi' }, { status: 500 })
+  }
+  const headers = {
+    authorization: request.headers.get('authorization'),
+    'x-webhook-token': request.headers.get('x-webhook-token'),
+    'x-callback-token': request.headers.get('x-callback-token'),
+    'x-gateway-token': request.headers.get('x-gateway-token'),
+  }
+  if (!isValidMayarToken(headers, expectedToken)) {
+    return NextResponse.json({ error: 'Token webhook tidak valid' }, { status: 401 })
   }
 
   let payload
@@ -61,11 +62,11 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Nominal pembayaran kurang' }, { status: 402 })
   }
 
-  if (orderId) {
-    const existing = await prisma.purchase.findFirst({ where: { orderId, source: 'mayar' } })
-    if (existing) {
-      return NextResponse.json({ message: 'Sudah diproses' })
-    }
+  // Idempotency selalu aktif: pakai orderId, atau hash body bila id tak ada (cegah replay).
+  const dedupKey = orderId || `body:${createHash('sha256').update(rawBody).digest('hex').slice(0, 32)}`
+  const existing = await prisma.purchase.findFirst({ where: { orderId: dedupKey, source: 'mayar' } })
+  if (existing) {
+    return NextResponse.json({ message: 'Sudah diproses' })
   }
 
   const user = await prisma.user.upsert({
@@ -82,7 +83,7 @@ export async function POST(request) {
   })
 
   await prisma.purchase.create({
-    data: { userId: user.id, source: 'mayar', orderId },
+    data: { userId: user.id, source: 'mayar', orderId: dedupKey },
   })
 
   return NextResponse.json({ message: 'OK' })

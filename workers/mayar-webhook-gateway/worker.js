@@ -1,13 +1,17 @@
 // Mayar Webhook Gateway — fan-out 1 webhook URL ke beberapa app.
-// Tambah app baru di TARGETS. Meneruskan header x-mayar-signature.
+// Tambah app baru di TARGETS. Mayar dashboard tidak perlu di-update.
+//
+// Token: target dengan `secret:true` mendapat header x-gateway-token = env.AIGUILD_WEBHOOK_TOKEN
+// (rahasia bersama gateway↔aiguild). Set via: wrangler secret put AIGUILD_WEBHOOK_TOKEN
+// atau Cloudflare dashboard → Worker → Settings → Variables. ruangsaku TIDAK diubah.
 
 const TARGETS = [
-  'https://app.ruangsaku.com/api/webhooks/mayar',
-  'https://aiguild.online/api/webhook/mayar',
+  { url: 'https://app.ruangsaku.com/api/webhooks/mayar', secret: false },
+  { url: 'https://aiguild.online/api/webhook/mayar', secret: true },
 ]
 
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     if (request.method === 'GET') {
       return new Response(
         JSON.stringify({ ok: true, service: 'mayar-webhook-gateway', targets: TARGETS.length }),
@@ -20,17 +24,14 @@ export default {
 
     const body = await request.text()
 
-    // Teruskan header autentikasi Mayar apa adanya (token statis di Authorization).
-    const fwd = { 'Content-Type': 'application/json' }
-    for (const h of ['authorization', 'x-webhook-token', 'x-callback-token', 'x-mayar-signature']) {
-      const v = request.headers.get(h)
-      if (v) fwd[h] = v
-    }
-
     const results = await Promise.allSettled(
-      TARGETS.map((url) =>
-        fetch(url, { method: 'POST', headers: fwd, body }).then((r) => ({ url, status: r.status, ok: r.ok }))
-      )
+      TARGETS.map((t) => {
+        const headers = { 'Content-Type': 'application/json' }
+        if (t.secret && env && env.AIGUILD_WEBHOOK_TOKEN) {
+          headers['x-gateway-token'] = env.AIGUILD_WEBHOOK_TOKEN
+        }
+        return fetch(t.url, { method: 'POST', headers, body }).then((r) => ({ url: t.url, status: r.status, ok: r.ok }))
+      })
     )
 
     console.log('Mayar webhook fan-out:', JSON.stringify(
