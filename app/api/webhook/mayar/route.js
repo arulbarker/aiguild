@@ -1,26 +1,19 @@
 import { NextResponse } from 'next/server'
-import { createHmac, timingSafeEqual } from 'crypto'
 import { prisma } from '@/lib/db'
 import { computeNewExpiry } from '@/lib/membership'
-import { isAiGuildProduct, extractEmail, extractOrderId, extractAmount } from '@/lib/mayar-webhook'
-
-function verifySignature(payload, signature) {
-  const expected = createHmac('sha256', process.env.MAYAR_WEBHOOK_SECRET)
-    .update(payload)
-    .digest('hex')
-  try {
-    return timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
-  } catch {
-    return false
-  }
-}
+import { isAiGuildProduct, extractEmail, extractOrderId, extractAmount, isValidMayarToken } from '@/lib/mayar-webhook'
 
 export async function POST(request) {
   const rawBody = await request.text()
-  const signature = request.headers.get('x-mayar-signature') ?? ''
 
-  if (!verifySignature(rawBody, signature)) {
-    return NextResponse.json({ error: 'Signature tidak valid' }, { status: 401 })
+  // Mayar mengautentikasi webhook dengan token statis di header Authorization: Bearer <token>.
+  const headers = {
+    authorization: request.headers.get('authorization'),
+    'x-webhook-token': request.headers.get('x-webhook-token'),
+    'x-callback-token': request.headers.get('x-callback-token'),
+  }
+  if (!isValidMayarToken(headers, process.env.MAYAR_WEBHOOK_TOKEN)) {
+    return NextResponse.json({ error: 'Token webhook tidak valid' }, { status: 401 })
   }
 
   let payload
