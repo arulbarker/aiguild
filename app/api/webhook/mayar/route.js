@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createHmac, timingSafeEqual } from 'crypto'
 import { prisma } from '@/lib/db'
-import { computeNewExpiry } from '@/lib/membership'
-import { isAiGuildProduct, extractEmail, extractOrderId } from '@/lib/mayar-webhook'
+import { computeNewExpiry, EXPECTED_AMOUNT } from '@/lib/membership'
+import { isAiGuildProduct, extractEmail, extractOrderId, extractAmount } from '@/lib/mayar-webhook'
 
 function verifySignature(payload, signature) {
   const expected = createHmac('sha256', process.env.MAYAR_WEBHOOK_SECRET)
@@ -41,9 +41,21 @@ export async function POST(request) {
 
   const email = extractEmail(payload)
   const orderId = extractOrderId(payload)
+  const amount = extractAmount(payload)
 
   if (!email) {
     return NextResponse.json({ error: 'Email tidak ditemukan di payload' }, { status: 400 })
+  }
+
+  // Validasi nominal: tolak kalau bayar kurang dari harga tahunan.
+  // Fail-open kalau field nominal tidak ditemukan (payload Mayar belum dikonfirmasi).
+  const minAmount = Number(process.env.MAYAR_MIN_AMOUNT) || EXPECTED_AMOUNT
+  if (amount != null && amount < minAmount) {
+    console.warn('Webhook: nominal kurang dari harga', amount, '<', minAmount, 'order', orderId)
+    return NextResponse.json({ error: 'Nominal pembayaran kurang' }, { status: 402 })
+  }
+  if (amount == null) {
+    console.warn('Webhook: nominal tidak ditemukan di payload — validasi nominal dilewati', orderId)
   }
 
   if (orderId) {
