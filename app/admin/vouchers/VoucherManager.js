@@ -40,13 +40,7 @@ export default function VoucherManager() {
           </select>
           <input style={inp} type="number" placeholder={form.discountType === 'percentage' ? 'Nilai % (mis. 50)' : 'Nilai Rp'} value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required />
         </div>
-        <div className="flex gap-3">
-          <input style={inp} type="number" placeholder="Kuota" value={form.totalCoupons} onChange={(e) => setForm({ ...form, totalCoupons: e.target.value })} required />
-          <select style={inp} value={form.couponType} onChange={(e) => setForm({ ...form, couponType: e.target.value })}>
-            <option value="reusable">Reusable</option>
-            <option value="onetime">Sekali pakai</option>
-          </select>
-        </div>
+        <input style={inp} type="number" placeholder="Kuota" value={form.totalCoupons} onChange={(e) => setForm({ ...form, totalCoupons: e.target.value })} required />
         <input style={inp} type="number" placeholder="Minimum pembelian (Rp, opsional)" value={form.minimumPurchase} onChange={(e) => setForm({ ...form, minimumPurchase: e.target.value })} />
         <label style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)' }}>Kedaluwarsa</label>
         <input style={inp} type="datetime-local" value={form.expiredAt ? form.expiredAt.slice(0, 16) : ''} onChange={(e) => setForm({ ...form, expiredAt: e.target.value ? new Date(e.target.value).toISOString() : '' })} required />
