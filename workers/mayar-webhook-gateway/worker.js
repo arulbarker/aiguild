@@ -19,15 +19,17 @@ export default {
     }
 
     const body = await request.text()
-    const signature = request.headers.get('x-mayar-signature') ?? ''
+
+    // Teruskan header autentikasi Mayar apa adanya (token statis di Authorization).
+    const fwd = { 'Content-Type': 'application/json' }
+    for (const h of ['authorization', 'x-webhook-token', 'x-callback-token', 'x-mayar-signature']) {
+      const v = request.headers.get(h)
+      if (v) fwd[h] = v
+    }
 
     const results = await Promise.allSettled(
       TARGETS.map((url) =>
-        fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-mayar-signature': signature },
-          body,
-        }).then((r) => ({ url, status: r.status, ok: r.ok }))
+        fetch(url, { method: 'POST', headers: fwd, body }).then((r) => ({ url, status: r.status, ok: r.ok }))
       )
     )
 
