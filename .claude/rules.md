@@ -53,6 +53,16 @@ laporkan + tawarkan alternatif, terus kerja.
 - Tambah modul baru via `lib/modules-seed.js` + jalankan `npm run seed`
 - Jangan install library baru tanpa konfirmasi dulu
 
+### Dev server (`npm run dev`) — USER yang menyalakan
+- **User SELALU menjalankan `npm run dev` sendiri** — Claude DILARANG menyalakannya otomatis.
+  Saat butuh server hidup (build/test/cek browser), minta user yang start, jangan jalankan sendiri.
+- **Cukup SATU instance `npm run dev`** — jangan pernah ada lebih dari satu dev server jalan
+  bersamaan. Beberapa instance berbagi folder `.next` yang sama → build manifest tabrakan →
+  chunk JS/CSS 404 → halaman polos tanpa styling / 500 intermiten.
+- Gejala "halaman tidak tampil / tanpa CSS": cek dulu `netstat` apakah ada >1 dev server jalan
+  (port 3000/3001/3005...). Kalau ada → matikan semua, hapus `.next`, lalu **minta user**
+  start ulang satu saja. Bukan bug kode.
+
 ### Database — tabel yang tidak boleh diubah sembarangan
 - `users.email` — primary identifier, dipakai di magic token dan purchase
 - `modules.slug` — dipakai sebagai URL parameter di `/modul/[slug]`

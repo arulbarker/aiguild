@@ -7,7 +7,7 @@ console.log('✅ Database siap\n')
 
 console.log('🚀 Menjalankan dev server...\n')
 
-const dev = spawn('next', ['dev'], {
+const dev = spawn('next', ['dev', '-p', '3001'], {
   stdio: 'inherit',
   shell: true,
 })
