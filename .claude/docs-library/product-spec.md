@@ -39,10 +39,19 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 - Tidak ada trial, tidak ada level berbeda — aktif = akses semua modul
 - Refund dikelola manual oleh admin
 
-### Admin panel
-- `/admin/users` — lihat daftar user, revoke akses
-- `/admin/modules` — lihat daftar modul (read-only di UI)
-- `/admin/purchases` — riwayat pembelian dari kedua platform
+### Admin panel (brand amber/Sora, semua route dijaga `requireAdmin`)
+- `/admin` — ringkasan: member aktif/expired, total user, modul, pembelian, voucher
+- `/admin/users` — cari email; set/perpanjang (+1 thn)/cabut masa aktif manual; toggle admin
+- `/admin/modules` — CRUD penuh di UI (tambah/edit/hapus)
+- `/admin/purchases` — riwayat pembelian + search email
+- `/admin/vouchers` — buat voucher diskon (form) → terdaftar di Mayar via API kupon (`createMayarCoupon`); tabel `Voucher` lokal = cermin daftar; buyer ketik kode di checkout Mayar
+
+### Voucher diskon — Mayar (Opsi B)
+- Diskon SELALU dipotong di checkout Mayar (app tak proses harga/pembayaran)
+- Voucher dibuat dari admin panel → server kita panggil Mayar `POST /coupon/create` (`MAYAR_API_KEY` server-only)
+- Webhook bertumpu `productId` (bukan nominal) → pembeli berdiskon tetap dapat akses 1 tahun
+- Nonaktifkan voucher belum didukung API Mayar → manual di dashboard Mayar
+- Env: `MAYAR_API_KEY`, `MAYAR_API_BASE` (sandbox `api.mayar.club/hl/v1`, prod `api.mayar.id/hl/v1`)
 
 ---
 
