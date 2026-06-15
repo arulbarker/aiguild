@@ -1,5 +1,6 @@
-import { redirect } from 'next/navigation'
+import LandingClient from '@/components/LandingClient'
 
 export default function Home() {
-  redirect('/login')
+  const payUrl = process.env.MAYAR_PAYMENT_URL || '#'
+  return <LandingClient payUrl={payUrl} />
 }

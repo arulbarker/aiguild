@@ -10,12 +10,42 @@ jobs:
     steps:
       - name: Deploy ke VPS via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          MAYAR_PAYMENT_URL: ${{ secrets.MAYAR_PAYMENT_URL }}
+          MAYAR_API_BASE: ${{ secrets.MAYAR_API_BASE }}
+          MAYAR_PRODUCT_NAME: ${{ secrets.MAYAR_PRODUCT_NAME }}
+          MAYAR_API_KEY: ${{ secrets.MAYAR_API_KEY }}
+          MAYAR_WEBHOOK_TOKEN: ${{ secrets.MAYAR_WEBHOOK_TOKEN }}
         with:
           host: 187.77.122.42
           username: root
           key: ${{ secrets.VPS_SSH_KEY }}
+          envs: ADMIN_EMAIL,CRON_SECRET,MAYAR_PAYMENT_URL,MAYAR_API_BASE,MAYAR_PRODUCT_NAME,MAYAR_API_KEY,MAYAR_WEBHOOK_TOKEN
           script: |
+            ENVF=/data/aiguild/.env.production
+            touch "$ENVF"
+            upsert() {
+              # $1=key $2=value — lewati kalau value kosong (belum diset di GitHub Secrets)
+              [ -z "$2" ] && return 0
+              if grep -q "^$1=" "$ENVF"; then
+                sed -i "s|^$1=.*|$1=$2|" "$ENVF"
+              else
+                echo "$1=$2" >> "$ENVF"
+              fi
+            }
+            echo "=== Sinkronisasi env produksi dari GitHub Secrets ==="
+            upsert ADMIN_EMAIL "$ADMIN_EMAIL"
+            upsert CRON_SECRET "$CRON_SECRET"
+            upsert MAYAR_PAYMENT_URL "$MAYAR_PAYMENT_URL"
+            upsert MAYAR_API_BASE "$MAYAR_API_BASE"
+            upsert MAYAR_PRODUCT_NAME "$MAYAR_PRODUCT_NAME"
+            upsert MAYAR_API_KEY "$MAYAR_API_KEY"
+            upsert MAYAR_WEBHOOK_TOKEN "$MAYAR_WEBHOOK_TOKEN"
+
             bash /data/deploy-aiguild.sh
+
             echo "=== Sinkronisasi modul (seed aman, progress user dipertahankan) ==="
             cd /data/aiguild
             docker run --rm \
@@ -23,4 +53,4 @@ jobs:
               --env-file /data/aiguild/.env.production \
               -v /data/aiguild:/app -w /app \
               node:20-alpine \
-              sh -c "apk add --no-cache openssl && npm ci && npx prisma generate && npm run seed"
+              sh -c "apk add --no-cache openssl && npm ci && npx prisma generate && npx prisma db push && npm run seed"

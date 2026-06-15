@@ -1,10 +1,10 @@
-import { Syne, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google'
+import { Sora, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import PostHogProvider from '@/components/PostHogProvider'
 
-const syne = Syne({
+const sora = Sora({
   subsets: ['latin'],
-  variable: '--font-syne',
+  variable: '--font-display',
   weight: ['400', '500', '600', '700', '800'],
 })
 
@@ -27,7 +27,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="id" className={`${syne.variable} ${jakarta.variable} ${mono.variable}`}>
+    <html lang="id" className={`${sora.variable} ${jakarta.variable} ${mono.variable}`}>
       <body>
         <PostHogProvider>
           {children}

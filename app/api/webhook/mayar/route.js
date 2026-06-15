@@ -1,25 +1,27 @@
 import { NextResponse } from 'next/server'
-import { createHmac, timingSafeEqual } from 'crypto'
+import { createHash } from 'crypto'
 import { prisma } from '@/lib/db'
-
-function verifySignature(payload, signature) {
-  const expected = createHmac('sha256', process.env.MAYAR_WEBHOOK_SECRET)
-    .update(payload)
-    .digest('hex')
-
-  try {
-    return timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
-  } catch {
-    return false
-  }
-}
+import { computeNewExpiry } from '@/lib/membership'
+import { isAiGuildProduct, extractEmail, extractOrderId, extractAmount, isValidMayarToken } from '@/lib/mayar-webhook'
 
 export async function POST(request) {
   const rawBody = await request.text()
-  const signature = request.headers.get('x-mayar-signature') ?? ''
 
-  if (!verifySignature(rawBody, signature)) {
-    return NextResponse.json({ error: 'Signature tidak valid' }, { status: 401 })
+  // Verifikasi token — FAIL-CLOSED. Gateway (yang kita kontrol) menyuntik token ini
+  // di header x-gateway-token, jadi selalu cocok untuk request sah; hit langsung tanpa token ditolak.
+  const expectedToken = process.env.MAYAR_WEBHOOK_TOKEN
+  if (!expectedToken) {
+    console.error('Webhook Mayar: MAYAR_WEBHOOK_TOKEN belum diset — webhook ditolak')
+    return NextResponse.json({ error: 'Webhook belum dikonfigurasi' }, { status: 500 })
+  }
+  const headers = {
+    authorization: request.headers.get('authorization'),
+    'x-webhook-token': request.headers.get('x-webhook-token'),
+    'x-callback-token': request.headers.get('x-callback-token'),
+    'x-gateway-token': request.headers.get('x-gateway-token'),
+  }
+  if (!isValidMayarToken(headers, expectedToken)) {
+    return NextResponse.json({ error: 'Token webhook tidak valid' }, { status: 401 })
   }
 
   let payload
@@ -29,16 +31,42 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Payload tidak valid' }, { status: 400 })
   }
 
-  // Mayar mengirim event "payment.paid"
-  if (payload.event !== 'payment.paid') {
+  if (payload.event !== 'payment.received') {
     return NextResponse.json({ message: 'Event diabaikan' })
   }
 
-  const email = payload.data?.customer?.email?.toLowerCase().trim()
-  const orderId = payload.data?.transaction_id ?? null
+  // Gerbang produk: cocokkan productId (utama) / productName (fallback) dari env.
+  // Fail-closed — kalau env produk belum diset, webhook ditolak.
+  const productMatch = isAiGuildProduct(payload, {
+    productId: process.env.MAYAR_PRODUCT_ID,
+    productName: process.env.MAYAR_PRODUCT_NAME,
+  })
+  if (!productMatch) {
+    console.log('Webhook: produk bukan AI Guild, diabaikan', payload.data?.productId, payload.data?.productName)
+    return NextResponse.json({ message: 'Produk lain diabaikan' })
+  }
+
+  const email = extractEmail(payload)
+  const orderId = extractOrderId(payload)
+  const amount = extractAmount(payload)
 
   if (!email) {
     return NextResponse.json({ error: 'Email tidak ditemukan di payload' }, { status: 400 })
+  }
+
+  // Lantai nominal opsional (default mati) — diskon voucher boleh bayar kurang.
+  // Gerbang utama adalah kecocokan produk di atas, bukan nominal.
+  const minAmount = Number(process.env.MAYAR_MIN_AMOUNT) || 0
+  if (minAmount > 0 && amount != null && amount < minAmount) {
+    console.warn('Webhook: nominal di bawah lantai', amount, '<', minAmount, 'order', orderId)
+    return NextResponse.json({ error: 'Nominal pembayaran kurang' }, { status: 402 })
+  }
+
+  // Idempotency selalu aktif: pakai orderId, atau hash body bila id tak ada (cegah replay).
+  const dedupKey = orderId || `body:${createHash('sha256').update(rawBody).digest('hex').slice(0, 32)}`
+  const existing = await prisma.purchase.findFirst({ where: { orderId: dedupKey, source: 'mayar' } })
+  if (existing) {
+    return NextResponse.json({ message: 'Sudah diproses' })
   }
 
   const user = await prisma.user.upsert({
@@ -47,20 +75,16 @@ export async function POST(request) {
     create: { email },
   })
 
-  if (orderId) {
-    const existing = await prisma.purchase.findFirst({
-      where: { orderId, source: 'mayar' },
-    })
-    if (!existing) {
-      await prisma.purchase.create({
-        data: { userId: user.id, source: 'mayar', orderId },
-      })
-    }
-  } else {
-    await prisma.purchase.create({
-      data: { userId: user.id, source: 'mayar' },
-    })
-  }
+  const newExpiry = computeNewExpiry(user.membershipExpiredAt, new Date())
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { membershipExpiredAt: newExpiry, reminderSentAt: null },
+  })
+
+  await prisma.purchase.create({
+    data: { userId: user.id, source: 'mayar', orderId: dedupKey },
+  })
 
   return NextResponse.json({ message: 'OK' })
 }

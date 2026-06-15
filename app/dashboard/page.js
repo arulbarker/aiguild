@@ -20,6 +20,7 @@ export default function DashboardPage() {
   useEffect(() => {
     fetch('/api/modules').then(async (res) => {
       if (res.status === 401) { router.push('/login'); return }
+      if (res.status === 403) { router.push('/perpanjang'); return }
       const data = await res.json()
       setModules(data.modules ?? [])
       setCompleted(data.completedIds ?? [])
@@ -87,7 +88,7 @@ export default function DashboardPage() {
 
                 <h1
                   className="uppercase leading-none font-extrabold"
-                  style={{ fontSize: 'clamp(1.4rem, 7.5vw, 3.6rem)', letterSpacing: '-0.03em', marginBottom: 20, fontFamily: 'var(--font-syne)' }}
+                  style={{ fontSize: 'clamp(1.4rem, 7.5vw, 3.6rem)', letterSpacing: '-0.03em', marginBottom: 20, fontFamily: 'var(--font-display)' }}
                 >
                   <span className="block" style={{ color: 'var(--cream)' }}>Perjalanan</span>
                   <span className="block" style={{ color: 'var(--amber)' }}>Vibe Coding</span>

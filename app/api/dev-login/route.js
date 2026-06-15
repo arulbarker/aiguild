@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { SignJWT } from 'jose'
+import { prisma } from '@/lib/db'
 
 export async function GET(request) {
   if (process.env.NODE_ENV !== 'development') {
@@ -11,8 +12,13 @@ export async function GET(request) {
     return NextResponse.json({ error: 'ADMIN_EMAIL belum diset di .env.local' }, { status: 500 })
   }
 
+  const user = await prisma.user.findUnique({ where: { email } })
+  if (!user) {
+    return NextResponse.json({ error: `User ${email} belum ada di DB — jalankan npm run seed dulu` }, { status: 500 })
+  }
+
   const secret = new TextEncoder().encode(process.env.JWT_SECRET)
-  const token = await new SignJWT({ email, isAdmin: true })
+  const token = await new SignJWT({ userId: user.id, isAdmin: user.isAdmin })
     .setProtectedHeader({ alg: 'HS256' })
     .setExpirationTime('7d')
     .sign(secret)
