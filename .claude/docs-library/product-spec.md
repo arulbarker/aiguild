@@ -31,7 +31,9 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 - **Stacking:** perpanjang saat masih aktif → +1 tahun numpuk dari tanggal habis lama (user tak rugi sisa hari)
 - **Gerbang akses:** `/api/modules`, `/api/progress` (403), `/modul/[slug]` & `/dashboard` (redirect `/perpanjang`) saat masa aktif habis. Admin selalu bypass
 - **Reminder H-3:** cron harian `/api/cron/check-membership` kirim email perpanjang (Resend), idempotent via `reminderSentAt`
-- **Gateway:** 1 webhook Mayar → Cloudflare Worker fan-out ke beberapa app (ai-guild & ruangsaku), filter produk via `MAYAR_PRODUCT_LINK`
+- **Webhook Mayar:** event `payment.received`; field `data.customerEmail`, `data.id`, `data.amount`, `data.productId`/`data.productName` (dikonfirmasi dari docs Mayar)
+- **Gerbang produk:** cocokkan `data.productId` (env `MAYAR_PRODUCT_ID`) / `productName` (`MAYAR_PRODUCT_NAME`) — fail-closed. Nominal jadi lantai opsional (`MAYAR_MIN_AMOUNT`, default mati) supaya diskon voucher lolos
+- **Gateway:** 1 webhook Mayar → Cloudflare Worker fan-out ke beberapa app (ai-guild & ruangsaku)
 - Halaman `/perpanjang` (tombol bayar) & `/sukses` (pasca-bayar)
 - Lynk.id webhook masih ada di kode (legacy/produk lain), bukan model akses AI Guild lagi
 - Tidak ada trial, tidak ada level berbeda — aktif = akses semua modul

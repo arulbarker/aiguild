@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createHmac, timingSafeEqual } from 'crypto'
 import { prisma } from '@/lib/db'
-import { computeNewExpiry, EXPECTED_AMOUNT } from '@/lib/membership'
+import { computeNewExpiry } from '@/lib/membership'
 import { isAiGuildProduct, extractEmail, extractOrderId, extractAmount } from '@/lib/mayar-webhook'
 
 function verifySignature(payload, signature) {
@@ -30,12 +30,18 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Payload tidak valid' }, { status: 400 })
   }
 
-  if (payload.event !== 'payment.paid') {
+  if (payload.event !== 'payment.received') {
     return NextResponse.json({ message: 'Event diabaikan' })
   }
 
-  if (!isAiGuildProduct(payload, process.env.MAYAR_PRODUCT_LINK)) {
-    console.log('Webhook: produk bukan ai-guild, diabaikan', JSON.stringify(payload.data?.product ?? {}))
+  // Gerbang produk: cocokkan productId (utama) / productName (fallback) dari env.
+  // Fail-closed — kalau env produk belum diset, webhook ditolak.
+  const productMatch = isAiGuildProduct(payload, {
+    productId: process.env.MAYAR_PRODUCT_ID,
+    productName: process.env.MAYAR_PRODUCT_NAME,
+  })
+  if (!productMatch) {
+    console.log('Webhook: produk bukan AI Guild, diabaikan', payload.data?.productId, payload.data?.productName)
     return NextResponse.json({ message: 'Produk lain diabaikan' })
   }
 
@@ -47,15 +53,12 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Email tidak ditemukan di payload' }, { status: 400 })
   }
 
-  // Validasi nominal: tolak kalau bayar kurang dari harga tahunan.
-  // Fail-open kalau field nominal tidak ditemukan (payload Mayar belum dikonfirmasi).
-  const minAmount = Number(process.env.MAYAR_MIN_AMOUNT) || EXPECTED_AMOUNT
-  if (amount != null && amount < minAmount) {
-    console.warn('Webhook: nominal kurang dari harga', amount, '<', minAmount, 'order', orderId)
+  // Lantai nominal opsional (default mati) — diskon voucher boleh bayar kurang.
+  // Gerbang utama adalah kecocokan produk di atas, bukan nominal.
+  const minAmount = Number(process.env.MAYAR_MIN_AMOUNT) || 0
+  if (minAmount > 0 && amount != null && amount < minAmount) {
+    console.warn('Webhook: nominal di bawah lantai', amount, '<', minAmount, 'order', orderId)
     return NextResponse.json({ error: 'Nominal pembayaran kurang' }, { status: 402 })
-  }
-  if (amount == null) {
-    console.warn('Webhook: nominal tidak ditemukan di payload — validasi nominal dilewati', orderId)
   }
 
   if (orderId) {
