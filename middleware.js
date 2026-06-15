@@ -21,8 +21,8 @@ export async function middleware(request) {
     }
   }
 
-  // Redirect ke dashboard kalau sudah login dan buka /login
-  if (pathname === '/login' && session) {
+  // Redirect ke dashboard kalau sudah login dan buka landing/login
+  if ((pathname === '/login' || pathname === '/') && session) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
@@ -48,5 +48,5 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/login', '/dashboard/:path*', '/modul/:path*', '/perpanjang/:path*', '/admin/:path*'],
+  matcher: ['/', '/login', '/dashboard/:path*', '/modul/:path*', '/perpanjang/:path*', '/admin/:path*'],
 }

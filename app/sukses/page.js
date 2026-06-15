@@ -4,7 +4,7 @@ export default function SuksesPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--bg)' }}>
       <div className="max-w-md w-full text-center" style={{ fontFamily: 'var(--font-mono)' }}>
-        <h1 className="font-extrabold" style={{ fontSize: '2rem', color: 'var(--cream)', marginBottom: 16, fontFamily: 'var(--font-syne)' }}>
+        <h1 className="font-extrabold" style={{ fontSize: '2rem', color: 'var(--cream)', marginBottom: 16, fontFamily: 'var(--font-display)' }}>
           Pembayaran Berhasil 🎉
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 28, lineHeight: 1.6 }}>

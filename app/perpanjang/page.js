@@ -22,7 +22,7 @@ export default async function PerpanjangPage() {
         <p style={{ fontSize: 10, letterSpacing: '0.2em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 16 }}>
           AI GUILD · LANGGANAN
         </p>
-        <h1 className="font-extrabold" style={{ fontSize: '2rem', color: 'var(--cream)', marginBottom: 16, fontFamily: 'var(--font-syne)' }}>
+        <h1 className="font-extrabold" style={{ fontSize: '2rem', color: 'var(--cream)', marginBottom: 16, fontFamily: 'var(--font-display)' }}>
           {active ? 'Langganan Masih Aktif' : 'Langganan Habis'}
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 28, lineHeight: 1.6 }}>
