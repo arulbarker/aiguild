@@ -26,8 +26,20 @@ function isEmbeddable(url) {
 export default function ModuleViewer({ module: mod, initialTab, isCompleted, onComplete, onClose }) {
   const hasVideo  = !!(mod?.youtubeUrl)
   const hasMateri = !!(mod?.gammaUrl)
-  const [tab, setTab] = useState(initialTab ?? (hasVideo ? 'video' : 'materi'))
+  const hasPrompt = !!(mod?.promptText)
+  const [tab, setTab] = useState(initialTab ?? (hasVideo ? 'video' : hasMateri ? 'materi' : 'prompt'))
   const [marking, setMarking] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  async function handleCopyPrompt() {
+    try {
+      await navigator.clipboard.writeText(mod.promptText)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setCopied(false)
+    }
+  }
   const onCloseRef = useRef(onClose)
   useEffect(() => { onCloseRef.current = onClose }, [onClose])
 
@@ -110,6 +122,22 @@ export default function ModuleViewer({ module: mod, initialTab, isCompleted, onC
               }}
             >
               ◈ Materi
+            </motion.button>
+          )}
+          {hasPrompt && (
+            <motion.button
+              whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.92 }}
+              onClick={() => setTab('prompt')}
+              className="px-3 py-1.5 rounded-full text-xs font-medium"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                background: tab === 'prompt' ? '#E8A020' : 'rgba(255,255,255,0.04)',
+                color: tab === 'prompt' ? '#07070A' : 'var(--muted)',
+                border: tab === 'prompt' ? 'none' : '1px solid var(--border)',
+                transition: 'background 0.18s, color 0.18s',
+              }}
+            >
+              ⌘ Prompt
             </motion.button>
           )}
 
@@ -214,6 +242,48 @@ export default function ModuleViewer({ module: mod, initialTab, isCompleted, onC
             <p style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)', letterSpacing: '0.1em' }}>
               Materi belum tersedia
             </p>
+          </div>
+        )}
+
+        {tab === 'prompt' && hasPrompt && (
+          <div className="h-full overflow-y-auto px-4 py-5">
+            <div className="w-full max-w-3xl mx-auto">
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--amber)', textTransform: 'uppercase' }}>
+                  ⌘ Prompt siap pakai — salin & tempel ke Claude Code
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.92 }}
+                  onClick={handleCopyPrompt}
+                  className="px-4 py-2 rounded-full text-xs font-bold flex-shrink-0"
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    background: copied ? 'rgba(232,160,32,0.15)' : '#E8A020',
+                    color: copied ? '#E8A020' : '#07070A',
+                    border: copied ? '1px solid rgba(232,160,32,0.4)' : 'none',
+                    letterSpacing: '0.06em',
+                    transition: 'background 0.2s, color 0.2s',
+                  }}
+                >
+                  {copied ? '✓ Tersalin' : '⧉ Salin'}
+                </motion.button>
+              </div>
+              <pre
+                className="rounded-2xl p-4 overflow-x-auto"
+                style={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--cream)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 12,
+                  lineHeight: 1.6,
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                }}
+              >
+                {mod.promptText}
+              </pre>
+            </div>
           </div>
         )}
       </div>

@@ -47,6 +47,23 @@ function MateriIcon() {
   )
 }
 
+function PromptIcon() {
+  return (
+    <motion.div
+      className="flex items-center justify-center rounded-full"
+      style={{ width: 60, height: 60, background: '#E8A020' }}
+      whileHover={{ scale: 1.12, boxShadow: '0 0 0 12px rgba(232,160,32,0.12), 0 0 40px rgba(232,160,32,0.35)' }}
+      whileTap={{ scale: 0.88 }}
+      transition={{ type: 'spring', stiffness: 380, damping: 18 }}
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="#07070A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 26, height: 26 }}>
+        <polyline points="8 9 11 12 8 15" />
+        <line x1="13" y1="15" x2="16" y2="15" />
+      </svg>
+    </motion.div>
+  )
+}
+
 function FlowConnector({ index }) {
   return (
     <div className="flex flex-col items-center" style={{ height: 64 }}>
@@ -81,7 +98,9 @@ const cardVariants = {
 function ModuleCard({ mod, label, isActive, isCompleted, onSelect, isSection }) {
   const hasVideo  = !!mod.youtubeUrl
   const hasMateri = !!mod.gammaUrl
-  const canPlay   = hasVideo || hasMateri
+  const hasPrompt = !!mod.promptText
+  const canPlay   = hasVideo || hasMateri || hasPrompt
+  const defaultTab = hasVideo ? 'video' : hasMateri ? 'materi' : 'prompt'
   const ytId      = getYouTubeId(mod.youtubeUrl)
   const thumbUrl  = ytId
     ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
@@ -111,7 +130,7 @@ function ModuleCard({ mod, label, isActive, isCompleted, onSelect, isSection }) 
         className="relative overflow-hidden"
         style={{ aspectRatio: '16/9', cursor: canPlay ? 'pointer' : 'default' }}
         whileTap={canPlay ? { scale: 0.992 } : {}}
-        onClick={() => canPlay && onSelect?.(mod, hasVideo ? 'video' : 'materi')}
+        onClick={() => canPlay && onSelect?.(mod, defaultTab)}
       >
         <div
           className="absolute inset-0"
@@ -135,6 +154,7 @@ function ModuleCard({ mod, label, isActive, isCompleted, onSelect, isSection }) 
         <div className="absolute inset-0 flex items-center justify-center">
           {hasVideo && <PlayIcon />}
           {!hasVideo && hasMateri && <MateriIcon />}
+          {!hasVideo && !hasMateri && hasPrompt && <PromptIcon />}
         </div>
       </motion.div>
 
@@ -173,7 +193,17 @@ function ModuleCard({ mod, label, isActive, isCompleted, onSelect, isSection }) 
             ◈&nbsp; Materi
           </motion.button>
         )}
-        {!hasVideo && !hasMateri && (
+        {hasPrompt && (
+          <motion.button
+            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
+            onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'prompt') }}
+            className="text-xs px-3 py-1.5 rounded-full font-medium"
+            style={{ background: 'rgba(232,160,32,0.1)', color: '#E8A020', border: '1px solid rgba(232,160,32,0.3)' }}
+          >
+            ⌘&nbsp; Prompt
+          </motion.button>
+        )}
+        {!hasVideo && !hasMateri && !hasPrompt && (
           isSection ? (
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#E8A020', letterSpacing: '0.08em' }}>
               Materi ada di bawah ↓

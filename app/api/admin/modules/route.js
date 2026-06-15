@@ -23,14 +23,14 @@ export async function POST(request) {
   }
 
   const body = await request.json()
-  const { title, slug, description, youtubeUrl, gammaUrl, parentIds, orderIndex } = body
+  const { title, slug, description, youtubeUrl, gammaUrl, promptText, parentIds, orderIndex } = body
 
   if (!title || !slug) {
     return NextResponse.json({ error: 'title dan slug wajib diisi' }, { status: 400 })
   }
 
   const mod = await prisma.module.create({
-    data: { title, slug, description, youtubeUrl, gammaUrl, parentIds: parentIds ?? [], orderIndex: orderIndex ?? 0 },
+    data: { title, slug, description, youtubeUrl, gammaUrl, promptText, parentIds: parentIds ?? [], orderIndex: orderIndex ?? 0 },
   })
 
   return NextResponse.json({ module: mod })

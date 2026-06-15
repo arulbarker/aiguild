@@ -47,6 +47,7 @@ function ModuleItem({ mod, i, isDone, isActive, onSelect, setOpen }) {
   const [hovered, setHovered] = useState(false)
   const hasVideo  = !!mod.youtubeUrl
   const hasMateri = !!mod.gammaUrl
+  const hasPrompt = !!mod.promptText
   const hasBoth   = hasVideo && hasMateri
 
   function handleSubClick(tab) {
@@ -66,8 +67,8 @@ function ModuleItem({ mod, i, isDone, isActive, onSelect, setOpen }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onClick={() => {
-          if (hasVideo || hasMateri) {
-            onSelect?.(mod, hasVideo ? 'video' : 'materi')
+          if (hasVideo || hasMateri || hasPrompt) {
+            onSelect?.(mod, hasVideo ? 'video' : hasMateri ? 'materi' : 'prompt')
             setOpen(false)
           }
         }}

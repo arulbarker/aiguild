@@ -45,13 +45,15 @@ function ScrollTitle({ children, hovered }) {
 function NodeBox({ mod, label, isActive, isCompleted, onSelect, isSection }) {
   const hasVideo  = !!mod.youtubeUrl
   const hasMateri = !!mod.gammaUrl
-  const canPlay   = hasVideo || hasMateri
+  const hasPrompt = !!mod.promptText
+  const canPlay   = hasVideo || hasMateri || hasPrompt
+  const defaultTab = hasVideo ? 'video' : hasMateri ? 'materi' : 'prompt'
   const num       = label ?? displayNumber(mod)
   const [hovered, setHovered] = useState(false)
 
   return (
     <motion.button
-      onClick={() => canPlay && onSelect?.(mod, hasVideo ? 'video' : 'materi')}
+      onClick={() => canPlay && onSelect?.(mod, defaultTab)}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       whileTap={canPlay ? { scale: 0.97 } : {}}
@@ -102,6 +104,11 @@ function NodeBox({ mod, label, isActive, isCompleted, onSelect, isSection }) {
         {hasMateri && (
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,232,212,0.5)', background: 'rgba(240,232,212,0.05)', border: '1px solid rgba(240,232,212,0.12)', borderRadius: 4, padding: '1px 5px' }}>
             ◈
+          </span>
+        )}
+        {hasPrompt && (
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: '#E8A020', background: 'rgba(232,160,32,0.1)', border: '1px solid rgba(232,160,32,0.2)', borderRadius: 4, padding: '1px 5px' }}>
+            ⌘
           </span>
         )}
         {!canPlay && !isSection && (
