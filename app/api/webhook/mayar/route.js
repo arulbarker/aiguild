@@ -7,13 +7,20 @@ export async function POST(request) {
   const rawBody = await request.text()
 
   // Mayar mengautentikasi webhook dengan token statis di header Authorization: Bearer <token>.
-  const headers = {
-    authorization: request.headers.get('authorization'),
-    'x-webhook-token': request.headers.get('x-webhook-token'),
-    'x-callback-token': request.headers.get('x-callback-token'),
-  }
-  if (!isValidMayarToken(headers, process.env.MAYAR_WEBHOOK_TOKEN)) {
-    return NextResponse.json({ error: 'Token webhook tidak valid' }, { status: 401 })
+  // Diperiksa hanya kalau MAYAR_WEBHOOK_TOKEN diset — supaya tidak getas bila Mayar
+  // ternyata tak mengirim token. Gerbang utama lain: filter produk di bawah.
+  const expectedToken = process.env.MAYAR_WEBHOOK_TOKEN
+  if (expectedToken) {
+    const headers = {
+      authorization: request.headers.get('authorization'),
+      'x-webhook-token': request.headers.get('x-webhook-token'),
+      'x-callback-token': request.headers.get('x-callback-token'),
+    }
+    if (!isValidMayarToken(headers, expectedToken)) {
+      return NextResponse.json({ error: 'Token webhook tidak valid' }, { status: 401 })
+    }
+  } else {
+    console.warn('Webhook Mayar: MAYAR_WEBHOOK_TOKEN belum diset — proteksi token dilewati, andalkan filter produk')
   }
 
   let payload
