@@ -1,57 +1,43 @@
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import Link from 'next/link'
+import { summarizeMembers } from '@/lib/admin-stats'
+import AdminLayout from '@/components/AdminLayout'
 
 export const metadata = { title: 'Admin — AI Guild' }
 
-export default async function AdminPage() {
+export default async function AdminDashboard() {
   const session = await getSession()
   if (!session?.isAdmin) redirect('/')
 
-  const [userCount, moduleCount, purchaseCount] = await Promise.all([
-    prisma.user.count(),
+  const [users, modules, purchases, vouchers] = await Promise.all([
+    prisma.user.findMany({ select: { membershipExpiredAt: true } }),
     prisma.module.count(),
     prisma.purchase.count(),
+    prisma.voucher.count(),
   ])
+  const m = summarizeMembers(users)
+
+  const cards = [
+    { label: 'Member aktif', value: m.active, accent: true },
+    { label: 'Member expired', value: m.expired },
+    { label: 'Total user', value: m.total },
+    { label: 'Modul', value: modules },
+    { label: 'Pembelian', value: purchases },
+    { label: 'Voucher', value: vouchers },
+  ]
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-8">Admin Panel</h1>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          {[
-            { label: 'Total User', value: userCount, href: '/admin/users' },
-            { label: 'Total Modul', value: moduleCount, href: '/admin/modules' },
-            { label: 'Total Pembelian', value: purchaseCount, href: '/admin/purchases' },
-          ].map((stat) => (
-            <Link
-              key={stat.label}
-              href={stat.href}
-              className="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-purple-700 transition-colors"
-            >
-              <p className="text-gray-400 text-sm">{stat.label}</p>
-              <p className="text-3xl font-bold text-white mt-1">{stat.value}</p>
-            </Link>
-          ))}
-        </div>
-
-        <div className="flex gap-4">
-          <Link href="/admin/users" className="bg-purple-700 hover:bg-purple-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            Kelola User
-          </Link>
-          <Link href="/admin/modules" className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            Kelola Modul
-          </Link>
-          <Link href="/admin/purchases" className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            Lihat Pembelian
-          </Link>
-          <Link href="/dashboard" className="text-gray-500 hover:text-white px-4 py-2 rounded-lg text-sm transition-colors">
-            Kembali ke App
-          </Link>
-        </div>
+    <AdminLayout active="/admin">
+      <h1 className="font-extrabold mb-6" style={{ fontFamily: 'var(--font-display)', fontSize: 28 }}>Ringkasan</h1>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        {cards.map((c) => (
+          <div key={c.label} className="rounded-2xl p-6" style={{ background: 'var(--surface)', border: `1px solid ${c.accent ? 'rgba(232,160,32,0.3)' : 'var(--border)'}` }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{c.label}</p>
+            <p className="font-extrabold mt-2" style={{ fontFamily: 'var(--font-display)', fontSize: 36, color: c.accent ? 'var(--amber)' : 'var(--cream)' }}>{c.value}</p>
+          </div>
+        ))}
       </div>
-    </div>
+    </AdminLayout>
   )
 }
