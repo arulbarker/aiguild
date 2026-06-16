@@ -18,11 +18,13 @@ jobs:
           MAYAR_PRODUCT_NAME: ${{ secrets.MAYAR_PRODUCT_NAME }}
           MAYAR_API_KEY: ${{ secrets.MAYAR_API_KEY }}
           MAYAR_WEBHOOK_TOKEN: ${{ secrets.MAYAR_WEBHOOK_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         with:
           host: 187.77.122.42
           username: root
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: ADMIN_EMAIL,CRON_SECRET,MAYAR_PAYMENT_URL,MAYAR_API_BASE,MAYAR_PRODUCT_NAME,MAYAR_API_KEY,MAYAR_WEBHOOK_TOKEN
+          envs: ADMIN_EMAIL,CRON_SECRET,MAYAR_PAYMENT_URL,MAYAR_API_BASE,MAYAR_PRODUCT_NAME,MAYAR_API_KEY,MAYAR_WEBHOOK_TOKEN,TELEGRAM_BOT_TOKEN,TELEGRAM_CHAT_ID
           script: |
             ENVF=/data/aiguild/.env.production
             touch "$ENVF"
@@ -43,6 +45,8 @@ jobs:
             upsert MAYAR_PRODUCT_NAME "$MAYAR_PRODUCT_NAME"
             upsert MAYAR_API_KEY "$MAYAR_API_KEY"
             upsert MAYAR_WEBHOOK_TOKEN "$MAYAR_WEBHOOK_TOKEN"
+            upsert TELEGRAM_BOT_TOKEN "$TELEGRAM_BOT_TOKEN"
+            upsert TELEGRAM_CHAT_ID "$TELEGRAM_CHAT_ID"
 
             bash /data/deploy-aiguild.sh
 
