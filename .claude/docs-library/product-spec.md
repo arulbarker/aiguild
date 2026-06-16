@@ -21,10 +21,17 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 ### Konten — flowchart modul
 - Modul tersusun sebagai DAG (Directed Acyclic Graph) — bukan tree linear
 - Satu modul bisa punya banyak parent (multiple prerequisite)
-- Setiap modul berisi: YouTube embed (video) + Google Drive PDF embed (materi) — Gamma.app TIDAK digunakan (X-Frame-Options: SAMEORIGIN memblokir embedding)
-- Progress tracking manual: user klik "Tandai Selesai", tidak otomatis saat buka modul
+- **4 tipe konten per modul** (bebas kombinasi): `youtubeUrl` (video), `gammaUrl` (Google Drive PDF embed — Gamma.app TIDAK dipakai, X-Frame-Options blokir), `promptText` (prompt copy-paste + tombol Salin), `htmlContent` (materi HTML inline, di-render via `dangerouslySetInnerHTML` — sumber tepercaya seed/admin)
+- Viewer punya tab per tipe konten yang ada (Video / Materi / Prompt / Penjelasan)
+- **Dua sinyal progress terpisah:** `lastViewedAt` (modul DIBUKA) vs `completed` (DITANDAI SELESAI via tombol). Centang hijau = `completed`; jumlah centang = jumlah konten
+- **Badge per-user BARU/UPDATE (jendela 14 hari):** BARU = ditambah <14 hari & user belum buka; UPDATE = `contentUpdatedAt` <14 hari & belum dibuka sejak diubah. Hilang begitu user buka modul
 - Progress user dilacak per modul
-- Konten dikelola via `lib/modules-seed.js` + `npm run seed` — bukan CMS
+- Konten dikelola via `lib/modules-seed.js` + `npm run seed` (kartu prompt/HTML, `parentIds`/urutan) ATAU panel admin (video/materi/judul/urutan) — bukan CMS penuh
+
+### Notifikasi (Telegram)
+- Saat admin **tambah** modul (panel) → kirim "📚 Modul baru" ke grup Telegram; **ubah konten** modul → set `contentUpdatedAt` + kirim "✏️ Modul diperbarui" (link clickable)
+- Hanya dari aksi panel admin (`/api/admin/modules` POST/PATCH) — perubahan via seed/deploy TIDAK notif (cegah spam tiap deploy)
+- `lib/telegram.js` (`sendTelegram`/`notifyModule`), token & chat id dari env (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`), aman gagal kalau env kosong
 
 ### Pembayaran & akses — langganan (Fase 1)
 - **Mayar.id** = platform langganan utama. Webhook `payment.paid` → perpanjang `membershipExpiredAt` +365 hari (Rp1.497.000/tahun)
@@ -43,7 +50,7 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 ### Admin panel (brand amber/Sora, semua route dijaga `requireAdmin`)
 - `/admin` — ringkasan: member aktif/expired, total user, modul, pembelian, voucher
 - `/admin/users` — cari email; set/perpanjang (+1 thn)/cabut masa aktif manual; toggle admin
-- `/admin/modules` — CRUD penuh di UI (tambah/edit/hapus)
+- `/admin/modules` — CRUD di UI (tambah/edit/hapus). Field UI: judul, slug, video, materi (Drive), urutan, deskripsi. `promptText`/`htmlContent`/`parentIds` belum ada di UI → masih via seed
 - `/admin/purchases` — riwayat pembelian + search email
 - `/admin/vouchers` — buat voucher diskon (form) → terdaftar di Mayar via API kupon (`createMayarCoupon`); tabel `Voucher` lokal = cermin daftar; buyer ketik kode di checkout Mayar
 
