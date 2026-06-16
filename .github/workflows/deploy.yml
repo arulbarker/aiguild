@@ -3,6 +3,12 @@ name: Deploy ke VPS
 on:
   push:
     branches: [master]
+    # Dokumen tidak memengaruhi app → tidak perlu redeploy.
+    # Catatan: deploy tetap jalan kalau push mencampur dokumen + file lain.
+    paths-ignore:
+      - '.claude/**'
+      - '**.md'
+      - 'docs/**'
 
 jobs:
   deploy:
