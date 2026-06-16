@@ -24,7 +24,7 @@ export default function AdminModulesPage() {
 
   function startEdit(mod) {
     setEditing(mod.id)
-    setForm({ title: mod.title, description: mod.description ?? '', youtubeUrl: mod.youtubeUrl ?? '', gammaUrl: mod.gammaUrl ?? '', orderIndex: mod.orderIndex })
+    setForm({ title: mod.title, description: mod.description ?? '', youtubeUrl: mod.youtubeUrl ?? '', gammaUrl: mod.gammaUrl ?? '', orderIndex: mod.orderIndex, promptText: mod.promptText ?? '' })
   }
 
   async function saveEdit(id) {
@@ -83,6 +83,21 @@ export default function AdminModulesPage() {
                       <input style={inp} type={type ?? 'text'} value={form[key]} onChange={(e) => setForm({ ...form, [key]: type === 'number' ? Number(e.target.value) : e.target.value })} />
                     </div>
                   ))}
+                  <div>
+                    <label style={{ fontSize: 11, color: 'var(--muted)', display: 'block', marginBottom: 4 }}>
+                      Prompt (teks siap salin) — tab ⌘ Prompt
+                    </label>
+                    <textarea
+                      style={{ ...inp, minHeight: 220, fontFamily: 'var(--font-mono)', fontSize: 12, lineHeight: 1.6, resize: 'vertical', whiteSpace: 'pre' }}
+                      value={form.promptText ?? ''}
+                      onChange={(e) => setForm({ ...form, promptText: e.target.value })}
+                      placeholder="Kosongkan kalau kartu ini tidak punya prompt. Edit di sini langsung tersimpan ke database — tidak akan ketimpa saat seed."
+                      spellCheck={false}
+                    />
+                    <p style={{ fontSize: 10.5, color: 'var(--muted)', marginTop: 4, lineHeight: 1.5 }}>
+                      Materi HTML (tab Penjelasan) dikelola lewat kode/IDE, bukan di sini.
+                    </p>
+                  </div>
                   <div className="flex gap-2 pt-1">
                     <button onClick={() => saveEdit(mod.id)} style={{ ...btnSm, color: '#07070A', background: 'var(--amber)', fontWeight: 700 }}>Simpan</button>
                     <button onClick={() => setEditing(null)} style={{ ...btnSm, color: 'var(--muted)', border: '1px solid var(--border)' }}>Batal</button>
@@ -97,6 +112,8 @@ export default function AdminModulesPage() {
                     <div className="flex gap-3 mt-2" style={{ fontSize: 11 }}>
                       {mod.youtubeUrl && <span style={{ color: 'var(--amber)' }}>YouTube ✓</span>}
                       {mod.gammaUrl && <span style={{ color: 'var(--amber)' }}>Materi ✓</span>}
+                      {mod.promptText && <span style={{ color: 'var(--amber)' }}>Prompt ✓</span>}
+                      {mod.htmlContent && <span style={{ color: 'var(--amber)' }}>Penjelasan ✓</span>}
                     </div>
                   </div>
                   <div className="flex gap-2">

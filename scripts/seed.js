@@ -1,11 +1,23 @@
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import pg from 'pg'
+import { readFileSync } from 'node:fs'
 import { MODULES_SEED } from '../lib/modules-seed.js'
 import dotenv from 'dotenv'
 import { resolve } from 'path'
 
 dotenv.config({ path: resolve(process.cwd(), '.env.local') })
+
+// Konten berat (HTML materi + teks prompt) disimpan sebagai file aset terpisah,
+// dibaca saat seed (Node, fs aman) — supaya modules-seed.js tetap ringan dan
+// tidak ikut membengkakkan bundle browser (LandingClient mengimpornya).
+const readContent = (f) => readFileSync(resolve(process.cwd(), 'lib/card-content', f), 'utf8')
+const CARD_CONTENT = {
+  'tiga-file-ajaib': { htmlContent: readContent('tiga-file-ajaib.html') },
+  'claude-md-global': { promptText: readContent('claude-md-global.txt') },
+  'magic-prompt-init': { promptText: readContent('magic-prompt-init.txt') },
+  'magic-prompt-existing': { promptText: readContent('magic-prompt-existing.txt') },
+}
 
 const { Pool } = pg
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
@@ -31,13 +43,19 @@ async function main() {
 
   // 1. Upsert tiap modul. Slug yang sudah ada → update (ID dipertahankan,
   //    jadi userProgress tetap nyambung). Slug baru → create.
-  for (const mod of MODULES_SEED) {
-    const { parentIds: _slugParentIds, ...rest } = mod
+  //
+  //    promptText = CREATE-ONLY: diisi sekali saat kartu dibuat, lalu jadi
+  //    milik admin panel. update TIDAK menyertakan promptText agar editan
+  //    admin tidak pernah ketimpa saat seed diulang. htmlContent tetap ikut
+  //    update (sumber kebenaran = kode/IDE, menyebar saat npm run seed).
+  for (const rawMod of MODULES_SEED) {
+    const mod = { ...rawMod, ...(CARD_CONTENT[rawMod.slug] ?? {}) }
+    const { parentIds: _slugParentIds, promptText, ...rest } = mod
 
     const upserted = await prisma.module.upsert({
       where: { slug: mod.slug },
       update: { ...rest, parentIds: [] },
-      create: { ...rest, parentIds: [] },
+      create: { ...rest, promptText: promptText ?? null, parentIds: [] },
     })
 
     slugToId[mod.slug] = upserted.id

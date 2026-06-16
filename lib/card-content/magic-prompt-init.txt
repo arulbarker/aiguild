@@ -1,0 +1,544 @@
+# Magic Prompt — Project Baru
+# Jalankan SEKALI setelah /init — setelah ini semua berjalan otomatis
+
+---
+
+Sekarang lakukan setup sistem library .claude/ untuk project baru ini.
+Ikuti semua langkah tanpa skip. Jangan mulai coding sampai semua selesai dan aku konfirmasi.
+
+## Langkah 1 — Audit semua yang ada
+
+Scan seluruh isi project:
+- Baca CLAUDE.md yang baru dibuat oleh /init
+- Temukan semua file .md yang ada (termasuk dari Superpower atau brainstorming)
+- Pahami tech stack, tujuan project, dan konteks bisnis dari semua file tersebut
+- Sorting semua file .md yang ditemukan dengan aturan ini:
+
+```
+Tanya: "Siapa yang butuh file ini?"
+├── Claude butuh saat coding project ini
+│   → .claude/docs-library/nama-topik.md
+│
+├── Claude butuh di SEMUA project (reusable/template)
+│   → catat sebagai rekomendasi untuk dipindah ke ~/.claude/templates/
+│   → jangan pindahkan sendiri, laporkan ke user dulu
+│
+├── User / customer / end-user butuh
+│   → docs/nama-file.md di ROOT project (bukan di .claude/)
+│
+└── Tidak jelas → tanyakan ke user sebelum simpan ke mana pun
+```
+
+Kalau satu file .md berisi campuran topik → pecah jadi beberapa file sesuai topik, tapi minta konfirmasi dulu sebelum eksekusi.
+
+Laporkan hasil sorting ini sebelum lanjut ke langkah 2.
+
+---
+
+## Langkah 2 — Buat struktur folder .claude/
+
+Buat struktur ini:
+
+```
+.claude/
+├── CLAUDE.md
+├── rules.md
+├── SESSION.md
+├── skills/
+│   ├── git-workflow.md
+│   ├── deploy.md
+│   ├── new-feature.md
+│   ├── dev-server.md     ← cara run dev web app (kalau web app)
+│   ├── vps-setup.md      ← SOP 4 tahap VPS (kalau pakai VPS/Coolify)
+│   ├── gas-performance.md ← pola performa (kalau app GAS)
+│   └── doc-sync.md
+├── docs-library/
+│   ├── README.md
+│   ├── product-spec.md      ← rangkum hasil brainstorming jadi spec produk
+│   ├── ideas-backlog.md     ← tampungan ide baru (kosong dulu)
+│   └── environments.md      ← konfigurasi dev vs prod (kalau app pakai database)
+└── archive/          ← untuk dokumen tidak relevan di masa depan
+```
+
+### Tentang product-spec.md
+Rangkum hasil brainstorming/plan menjadi dokumen hidup berisi:
+- Produk ini apa dan untuk siapa
+- Fitur inti (yang sudah diputuskan, bukan semua ide)
+- Alur user utama
+- Keputusan penting beserta alasannya
+Ini adalah sumber kebenaran produk. Hanya diupdate saat ada keputusan baru yang disetujui user.
+
+### Tentang ideas-backlog.md
+Buat dengan template kosong:
+```markdown
+# Ideas Backlog
+
+Tampungan ide baru DAN keputusan yang dibatalkan.
+Format: tanggal — judul — konteks 1-2 kalimat — status (nanti/simpan/BATAL + alasan)
+
+Ide disetujui dikerjakan → pindah ke product-spec.md
+Keputusan dibatalkan → hapus dari product-spec.md, catat di sini dengan status BATAL
+```
+Aturan dua arah:
+- Ide baru → catat di sini dulu → tanya: "sekarang, nanti, atau simpan?" → product-spec hanya diupdate untuk yang disetujui
+- Keputusan dibatalkan → hapus dari product-spec → catat di sini status BATAL + alasan → cek apakah ada kode/dokumen terkait yang perlu dibereskan, tanya user
+
+---
+
+## Langkah 3 — Isi setiap file berdasarkan konteks project ini
+
+### .claude/rules.md
+### Standar profesional inti (WAJIB ditulis apa adanya ke rules.md, jangan diubah)
+Tulis blok berikut ke bagian atas rules.md persis seperti ini:
+
+```markdown
+## Standar inti (tidak bisa dikalahkan aturan lain)
+
+### Local-first (lokal dulu, deploy kemudian)
+Berlaku SEMUA platform. Bangun & sempurnakan di lokal sampai mulus,
+baru deploy ke prod. Prod tempat penyajian, bukan eksperimen. Jangan kebalik.
+Pengecualian GAS: tidak ada "lokal" — pakai 2 deployment (dev+prod) + 2 spreadsheet (dev+prod).
+App pribadi/internal sederhana GAS boleh prod-saja (asal tidak ada data orang lain & risiko kecil).
+TIDAK relevan untuk GAS: CI/CD, Prisma/migrasi SQL, npm run dev, Vitest.
+TETAP berlaku untuk GAS: git (version control + backup), Chrome DevTools (debug bareng), keamanan, performa GAS.
+
+### Git
+- Branch utama (master/main) itu SUCI — dilarang commit/push langsung
+- Selalu buat branch baru: feat/ fix/ docs/ chore/
+- Conventional commits. Commit tiap perubahan berarti
+- STOP setelah push — merge HANYA dengan perintah eksplisit user
+- Setelah merge berhasil → tawarkan hapus branch yang sudah selesai (lokal + remote).
+  Syarat: branch benar-benar sudah ter-merge. Jangan hapus yang belum di-merge.
+
+### Keamanan (prioritas tertinggi)
+- Rahasia (token/API key/kredensial) DILARANG di kode & file .md — pakai .env + placeholder
+- Semua pintu masuk data (form, API, webhook, upload) wajib divalidasi
+- Error message tidak boleh bocorkan detail internal
+- Least privilege: tiap komponen akses seminimal yang dibutuhkan
+- Identifikasi stack project ini → terapkan best practice keamanannya
+  (contoh: Supabase = RLS wajib; VPS = firewall + SSH key + DB tidak publik;
+  mobile = API key jangan hardcode; webhook = verifikasi signature)
+- Temuan security review tidak boleh di-skip tanpa keputusan eksplisit user
+
+### Testing (workflow 3 lapis — era AI)
+Filosofi: test yang KALAU RUSAK paling bikin celaka, bukan semua.
+- Lapis 1 — AI manual check: Claude + Chrome DevTools real-time, untuk dev harian (valid sbg E2E manual)
+- Lapis 2 — Automated test HANYA fungsi kritis: hitung uang, auth, pembayaran, upload file
+  Alat: Vitest (JS/TS), pytest (Python), JUnit (Kotlin), manual editor (GAS)
+  Jangan test hal kosmetik (warna, teks statis)
+- Lapis 3 — CI/CD: GitHub Actions jalankan test otomatis tiap push. WAJIB semua web app. Gratis.
+  Test gagal → merge diblokir
+- Smoke test wajib sebelum setiap push
+
+### Monitoring
+- PostHog + Sentry wajib SEBELUM launch ke user nyata —
+  tapi bukan blocker saat development/prototype
+
+### Environment dev vs prod (untuk app dengan database)
+- Dev (lokal) dan prod (server) terpisah total: app, database, Docker, kredensial
+- DILARANG menyentuh database/environment PROD tanpa perintah eksplisit user
+- Kredensial prod tidak pernah di laptop — hidup di env server
+- Migrasi database: test di dev dulu, ke prod hanya dengan perintah eksplisit + backup
+- Default Claude selalu kerja di dev — kalau ragu environment mana, tanya dulu
+- Prisma/ORM: db push untuk fase eksperimen (belum ada user), beralih ke migrate SEBELUM
+  prod punya data. Jangan pakai db push terus sampai prod berdata (Prisma minta reset)
+- Kapan tanya soal DB: dev = bebas; prod + perubahan aman (kolom nullable/tabel baru) = jalan;
+  prod + berbahaya (reset/drop/ubah tipe) = STOP + WAJIB tanya + ingatkan backup
+
+### Aturan prioritas saat konflik
+1. Perintah eksplisit user saat ini (terkuat)
+2. rules.md ini
+3. CLAUDE.md project
+4. CLAUDE.md global (kalau ada)
+Kecuali: standar inti di atas tidak bisa dikalahkan apapun
+
+### Anti-stuck
+Jangan jadikan aturan apapun sebagai blocker yang bikin berhenti kerja.
+Kalau aturan tidak bisa dipenuhi karena keterbatasan platform →
+laporkan + tawarkan alternatif, terus kerja.
+```
+
+Setelah blok inti di atas, lanjutkan rules.md dengan aturan spesifik project:
+Aturan wajib spesifik project ini:
+- Aturan git: nama branch default, format branch, konvensi commit
+- Aturan coding: naming convention, folder structure, hal yang tidak boleh diubah
+- Aturan UI jika ada: warna brand, komponen wajib, bahasa teks
+- Aturan database: tabel atau kolom yang tidak boleh diubah sembarangan
+- Environment variables yang wajib ada sebelum run/deploy
+- Kapan harus tanya dulu sebelum eksekusi
+- Aturan rahasia: token/API key/kredensial DILARANG di file .md — pakai placeholder, nilai asli di .env
+
+### .claude/SESSION.md
+Isi dengan template ini:
+
+```markdown
+# Session — [tanggal hari ini]
+
+## Status project saat ini
+[kondisi awal project — fitur apa yang sudah direncanakan, konteks bisnis]
+
+## Sudah selesai
+-
+
+## Target sesi ini
+-
+
+## Sedang dikerjakan
+File:
+Konteks:
+
+## Blocker / ada masalah
+-
+
+## Catatan penting
+-
+
+## Catatan: SESSION.md harus RINGKAS
+Isi poin penting & status berjalan saja (keputusan kritis, hal yang sedang dikerjakan).
+BUKAN log kronologis. Kalau pakai plugin .remember/, kronologi lengkap sudah ditangani di sana.
+
+## Checklist akhir sesi (wajib sebelum tutup)
+Trigger: user ketik "tutup sesi" → jalankan seluruh checklist ini, laporkan hasilnya
+- [ ] Update SESSION.md dengan poin penting & status berjalan (ringkas, bukan log — kronologi ditangani .remember/ kalau dipakai)
+- [ ] Ada file .md baru dari plugin/skill apapun? Sorting dulu sebelum simpan
+- [ ] Ada file di docs-library/ yang perlu diupdate? Laporkan
+- [ ] Ada aturan baru yang perlu masuk rules.md? Tanyakan dulu
+- [ ] Ada pola kerja baru yang perlu jadi skill? Tanyakan dulu
+- [ ] Semua perubahan KODE sudah di-commit ke branch yang benar (SESSION.md sendiri di-gitignore, tidak ikut commit)
+```
+
+### .claude/skills/git-workflow.md
+SOP git spesifik project ini:
+- Branch default (master/main — sesuaikan)
+- Format nama branch: feat/nama-fitur, fix/nama-bug, docs/nama-doc, chore/nama-task
+- Commit setiap ada perubahan berarti — jangan tunggu selesai semua
+- Format conventional commits: feat / fix / docs / chore
+- Langkah dari mulai task sampai PR siap
+- STOP setelah push — jangan merge tanpa perintah eksplisit dari user
+
+### .claude/skills/deploy.md
+Cara deploy spesifik project ini:
+- Platform deploy yang dipakai (Vercel / Coolify / lainnya)
+- Environment variables yang perlu dicek sebelum deploy
+- Langkah-langkah deploy step by step
+- Checklist sebelum deploy ke production
+- Cara rollback kalau ada masalah
+- SOP promote dev → prod:
+  1. Pastikan semua test & smoke test lulus di dev
+  2. /code-review --fix dan /security-review (kalau menyentuh auth/payment/data)
+  3. Commit & push ke branch, merge hanya dengan perintah eksplisit user
+  4. Kalau ada migrasi DB: test di dev → ingatkan user backup prod → eksekusi dengan konfirmasi
+  5. Deploy → verifikasi app live jalan → cek monitoring (Sentry/PostHog) tidak ada error baru
+
+### SOP rollback (saat prod bermasalah)
+Tulis di deploy.md cara rollback spesifik project ini:
+- Rollback KODE: cara balik ke deployment sebelumnya di platform ini
+  (Vercel: redeploy versi lama / Coolify: rollback / git revert)
+- Rollback DATABASE: cara restore dari backup (kalau ada migrasi yang perlu dibalik)
+- Catatan: rollback kode mudah, rollback DB tidak selalu bisa — backup wajib sebelum migrasi
+- Prinsip: stabilkan dulu (rollback kode), baru investigasi penyebab
+
+### Setup CI/CD (kalau web app)
+Kalau project ini web app, buat workflow GitHub Actions di `.github/workflows/ci.yml`:
+- Trigger: setiap push dan pull request
+- Jalankan: install dependencies → lint → test (Vitest/pytest) → build
+- Kalau test gagal → merge ke main diblokir
+- Gunakan jatah gratis GitHub Actions (cukup untuk solo dev)
+- Untuk GAS: LEWATI CI/CD — tidak ada build/test step yang bisa diotomasi. Desktop/mobile: opsional
+Catat konfigurasi CI/CD ini di deploy.md.
+
+### .claude/docs-library/environments.md
+Buat HANYA jika project pakai database/punya environment terpisah. Isi:
+- Daftar environment: dev (lokal) dan prod (server) — URL/domain masing-masing
+- Database: nama/lokasi DB dev vs prod, cara koneksi masing-masing
+- Environment variables: daftar key yang dibutuhkan (TANPA nilai asli — pakai placeholder)
+  Contoh: DATABASE_URL=<dev: localhost, prod: di env server>
+- Cara switch environment saat development
+- Docker: file compose dev vs prod kalau pakai VPS/Coolify
+- Catatan keras: kredensial prod TIDAK ada di file ini, hidup di env server
+Kalau project tidak pakai database (misal landing page statis), lewati file ini.
+
+### .claude/skills/new-feature.md
+Checklist setiap kali membuat fitur baru:
+- Buat branch dulu dengan format yang benar
+- Setup test file sesuai platform (Vitest untuk JS/TS modern, pytest untuk Python, JUnit untuk Kotlin, manual test via editor untuk GAS)
+- Pasang PostHog event tracking untuk fitur baru
+- Pasang Sentry error boundary kalau relevan
+- Jalankan /verify setelah fitur selesai
+- Jalankan smoke test sebelum push
+- Pastikan test CI/CD lulus (kalau web app) sebelum merge
+- Jalankan /code-review --fix sebelum buat PR
+- Fitur menyentuh auth/pembayaran/input user/endpoint baru? WAJIB /security-review sebelum PR
+- STOP — tunggu perintah eksplisit sebelum merge
+
+### .claude/skills/dev-server.md
+Buat HANYA jika project ini web app (Next.js, landing page, web app apapun yang jalan di browser).
+Kalau project non-web (GAS, desktop, mobile), LEWATI file ini.
+
+Isi dengan instruksi ini persis:
+
+```markdown
+# Skill: dev-server
+
+## Kapan aktif
+Saat mulai menjalankan/mengecek run dev web app ini.
+
+## Penting: user biasanya sudah jalankan npm run dev sendiri
+User sering menjalankan npm run dev sendiri sebagai preview live saat vibe coding.
+Jadi SEBELUM menjalankan dev server, cek dulu:
+1. Apakah dev server sudah jalan? (cek port 3000/sejenisnya, atau tanya user singkat)
+2. SUDAH jalan → JANGAN jalankan lagi (hindari dobel server rebutan port → error/pindah port bikin bingung). Pakai yang sudah ada.
+3. BELUM jalan → baru jalankan npm run dev
+
+## Cara kerja default
+- Pastikan dulu server belum jalan (lihat di atas), baru jalankan kalau perlu
+- Buka via Chrome DevTools MCP — supaya Claude dan user lihat layar yang SAMA real-time
+- Gunakan untuk: cek hasil perubahan langsung, debug error runtime, inspect console,
+  cek network request, lihat tampilan UI
+- Ini live server interaktif: user lihat, Claude lihat, bisa debug bareng
+
+## Yang TIDAK dilakukan
+- Jangan jalankan Playwright otomatis untuk dev biasa — itu untuk E2E test terstruktur,
+  dipakai HANYA kalau user minta eksplisit
+- GAS: Chrome DevTools tetap dipakai (ada HTML frontend), TAPI tanpa npm run dev — preview lewat deployment URL dev
+- Jangan pakai Chrome DevTools untuk project non-web murni (desktop, mobile)
+
+## Beda Chrome DevTools vs Playwright (biar tidak ketuker)
+- Chrome DevTools = nonton bareng real-time, debug interaktif → DEFAULT untuk dev
+- Playwright = robot QA otomatis di background → manual saja, kalau user minta
+```
+
+### .claude/skills/vps-setup.md
+Buat HANYA jika project deploy ke VPS/Coolify (bukan Vercel/Netlify).
+Isi dengan SOP 4 tahap ini persis:
+
+```markdown
+# Skill: vps-setup
+
+## Prinsip
+Local-first. Kuasai di lokal sampai mulus DULU, baru naik ke VPS.
+
+## 4 Tahap (jangan loncat)
+1. LOKAL: bikin docker-compose.dev.yml → app + DB dev jalan di localhost sempurna
+2. FILE PROD: bikin docker-compose.prod.yml + .env.prod.example (struktur sama dev, beda config)
+3. COOLIFY: connect GitHub → isi env prod di dashboard Coolify (BUKAN file lokal) → setup DB prod terpisah → deploy
+4. HARIAN: ngoding lokal → test → push → Coolify auto-deploy
+
+## 3 error yang dicegah
+- Kunci ketuker: env prod di Coolify, env dev di laptop
+- Kotak beda isi: docker-compose dev & prod konsisten
+- DB ketuker: seed pakai upsert (bukan deleteMany+create), DB prod hanya di Coolify
+
+## Seed/migrasi aman
+JANGAN "hapus semua lalu isi ulang" (deleteMany+create) — hapus data user di prod.
+Pakai upsert: data lama diupdate (id dipertahankan), data baru ditambah, data user aman.
+```
+
+Kalau project pakai VPS, sekalian buat docker-compose.dev.yml, docker-compose.prod.yml,
+dan .env.prod.example (template tanpa nilai asli). Kalau pakai Vercel/Netlify, LEWATI skill ini.
+
+### .claude/skills/gas-performance.md
+Buat HANYA jika project ini app GAS (Google Apps Script) dengan banyak layar/menu.
+Kalau bukan GAS, LEWATI file ini.
+
+Isi dengan instruksi ini persis:
+
+```markdown
+# Skill: gas-performance
+
+## Kapan aktif
+Saat bikin/edit frontend app GAS yang punya banyak layar/menu.
+
+## Struktur file (cek tujuan project dulu)
+- GAS untuk DIJUAL sebagai template → file tunggal: Code.gs + index.html saja.
+  Pembeli non-teknis, copy-paste 2 file lebih mudah. Di dalam file pakai pemisah
+  section komentar yang jelas (// === 1. KONFIGURASI === dst).
+- GAS untuk pakai sendiri/kompleks → boleh pisah file (Code.gs, Auth.gs, Utils.gs).
+
+## Masalah yang dicegah
+Pindah menu lelet karena tiap layar panggil google.script.run sendiri (~0,5-2 dtk/panggilan).
+Ini kesalahan ARSITEKTUR, bukan bug. AI sering generate pola salah ini secara default.
+
+## Patokan emas
+Server dipanggil 1x saat LOGIN (bootstrap), BUKAN tiap pindah menu.
+Kalau ada google.script.run jalan tiap buka layar → tanda bahaya, balik ke bootstrap.
+
+## Pola WAJIB
+1. bootstrap(token): 1 fungsi server kembalikan SEMUA data semua layar sekaligus.
+   Tiap bagian dibungkus try/catch (safe()) agar role ditolak tidak gagal total.
+2. Cache di client (window.API): layar baca dari cache, di-prime saat login.
+   Tiap method list*/get* dibungkus cached(key, fetcher).
+3. Invalidate saat mutasi: tiap save/delete/createTx → drop(key terkait).
+4. Memoize getSpreadsheet_: openById 1x per request (paling mahal).
+5. Render bertahap: jangan kunci seluruh layar nunggu 1 data lambat.
+6. Multi-device: stale-while-revalidate — cache instan, ambil ulang diam-diam bila tua.
+   Data tidak pernah hilang (cache hanya tampilan, semua tulisan langsung ke spreadsheet).
+
+## Lantai GAS (tidak bisa dihilangkan)
+Cold start ~1-3 dtk panggilan pertama saat idle. Untuk realtime sejati / kecepatan VPS
+→ harus pindah Next.js + Supabase. Untuk skala kecil (1 toko), pola di atas cukup.
+Jangan over-engineer.
+
+## Prompt cepat untuk project GAS baru
+"Pasang pola performa GAS dari awal (lihat rules.md): server saat login, bukan tiap pindah menu."
+```
+
+### .claude/skills/doc-sync.md
+Isi dengan instruksi ini persis:
+
+```markdown
+# Skill: doc-sync
+
+## Kapan aktif otomatis
+Ketika user ketik: "sync docs" / "audit library" / "cek dokumen" / "update docs"
+
+## Yang harus dilakukan
+1. Baca semua file di .claude/docs-library/
+2. Scan SELURUH project untuk file .md liar — file yang tidak terdaftar
+   di CLAUDE.md dan tidak di lokasi yang benar (dari plugin apapun,
+   skill apapun, atau Claude sendiri). Pengecualian: README.md,
+   LICENSE.md, CHANGELOG.md, folder docs/, node_modules/
+3. Baca kondisi kode saat ini (struktur folder, dependencies, schema)
+4. Sorting SEMUA file .md baru/liar dengan pertanyaan "Siapa yang butuh file ini?":
+   - Claude butuh saat coding project ini → .claude/docs-library/
+   - Claude butuh di semua project → laporkan untuk dipindah ke ~/.claude/templates/
+   - User/customer butuh → docs/ di root project
+   - Tidak jelas → tanyakan ke user
+5. Kalau satu file berisi campuran topik → rekomendasikan untuk dipecah, konfirmasi dulu
+6. Buat laporan lengkap:
+   - File yang masih akurat ✓
+   - File yang outdated — sebutkan apa yang berubah
+   - File yang tidak relevan — sebutkan alasannya
+   - File liar yang ditemukan + rekomendasi lokasinya
+   - File yang perlu dipecah
+7. Tunggu konfirmasi user sebelum eksekusi apapun
+8. Untuk file tidak relevan: jangan hapus langsung
+   Tawarkan 3 opsi ke user:
+   a. Hapus permanen
+   b. Arsip ke .claude/archive/ (tidak aktif dibaca tapi tersimpan)
+   c. Update isinya supaya relevan lagi
+9. Eksekusi sesuai pilihan user
+10. Catat semua perubahan di SESSION.md
+
+## Yang TIDAK boleh dilakukan
+- Jangan update, hapus, atau pindahkan file tanpa konfirmasi user
+- Jangan pecah file tanpa konfirmasi user
+- Kalau ada konflik antara dokumen dan kode → percayai kode, laporkan ke user
+- File di .claude/archive/ tidak perlu didaftarkan di CLAUDE.md
+```
+
+### .claude/docs-library/README.md
+Isi dengan ini:
+
+```markdown
+# docs-library
+
+Dokumentasi teknis project ini — digunakan Claude Code sebagai referensi saat coding.
+
+## Aturan folder ini
+- Satu topik = satu file, nama kebab-case
+- Setiap file baru wajib didaftarkan di CLAUDE.md
+- Selalu update jika ada perubahan kode yang relevan
+- File tidak relevan → arsip ke .claude/archive/, jangan hapus langsung
+
+## Cara sorting file .md baru
+Tanya: "Siapa yang butuh file ini?"
+- Claude butuh untuk project ini → simpan di sini
+- Claude butuh di semua project → pindah ke ~/.claude/templates/
+- User/customer butuh → simpan di docs/ root project
+```
+
+---
+
+## Langkah 4 — Tulis ulang CLAUDE.md jadi daftar isi
+
+Tulis ulang CLAUDE.md dengan struktur ini:
+
+```markdown
+# [Nama Project]
+
+## Tentang project ini
+[1-3 kalimat: project ini apa, untuk siapa, tujuannya apa]
+
+## Tech stack
+[list tech stack spesifik project ini]
+
+## Cara baca library ini
+Semua detail ada di file-file berikut:
+
+### Aturan wajib
+→ .claude/rules.md
+
+### Status & progress harian
+→ .claude/SESSION.md
+
+### SOP & cara kerja
+→ .claude/skills/git-workflow.md
+→ .claude/skills/deploy.md
+→ .claude/skills/new-feature.md
+→ .claude/skills/dev-server.md — cara run dev web app (Chrome DevTools live)
+→ .claude/skills/doc-sync.md — ketik "sync docs" untuk audit dokumen
+
+### Produk & ide
+→ .claude/docs-library/product-spec.md — sumber kebenaran produk (apa, fitur, alur)
+→ .claude/docs-library/ideas-backlog.md — tampungan ide baru & keputusan batal
+→ .claude/docs-library/environments.md — konfigurasi dev vs prod (kalau ada)
+Aturan: ide baru → catat di backlog dulu → tanya user "sekarang/nanti/simpan".
+Keputusan dibatalkan → hapus dari product-spec, catat di backlog status BATAL.
+Environment: default kerja di DEV. Prod hanya disentuh dengan perintah eksplisit user.
+
+### Dokumentasi teknis
+→ .claude/docs-library/README.md
+[tambahkan file docs-library/ yang ada di sini]
+
+## Aturan otomatis setiap sesi
+- Baca file library yang RELEVAN dengan task saat ini saja — jangan semua
+- Hemat token: baca kode seperlunya (grep dulu, baru baca bagian relevan), pilih model sesuai berat task (Sonnet untuk ringan, Opus untuk kompleks). AI tidak bisa ganti model sendiri — saat task berat, AI ingatkan user untuk ganti via /model. JANGAN skip security/testing/backup demi hemat
+- Kata kunci: "tutup sesi" = checklist akhir sesi | "sync docs" = audit semua dokumen
+- Ide baru dari user → ideas-backlog.md dulu, tanya "sekarang/nanti/simpan"
+- File .md baru dari sumber apapun → sorting dulu ("siapa yang butuh?")
+
+## Aturan cepat (wajib diingat)
+[3-5 poin paling kritis project ini — detail lengkap di rules.md]
+
+## Catatan khusus
+[hal unik project ini yang tidak ada di global CLAUDE.md]
+```
+
+---
+
+## Langkah 5 — Pindahkan dan organisir file .md lama
+
+Berdasarkan hasil sorting di Langkah 1:
+- File untuk project ini → pindahkan ke .claude/docs-library/ dengan nama kebab-case
+- File reusable → catat rekomendasinya, laporkan ke user untuk dipindah ke ~/.claude/templates/
+- File untuk end-user → pindahkan ke docs/ di root project
+- File campuran topik → pecah sesuai konfirmasi user
+
+---
+
+## Langkah 6 — Setup .gitignore dan scan rahasia
+
+1. Pastikan .gitignore project berisi minimal:
+```
+.claude/SESSION.md
+.claude/archive/
+.remember/
+.env
+.env.local
+```
+2. Khusus project yang akan dijual sebagai template: masukkan SELURUH `.claude/` ke .gitignore
+3. Scan semua file .md yang baru dibuat/dipindahkan: ada token, API key, deployment ID,
+   atau kredensial lain? Ganti dengan placeholder seperti `<FONNTE_TOKEN>`,
+   catat "nilai asli di .env", dan laporkan ke user
+
+## Langkah 7 — Validasi akhir
+
+Laporkan:
+1. Semua file yang berhasil dibuat beserta lokasinya
+2. Hasil sorting file .md lama — mana yang dipindahkan ke mana
+3. File yang direkomendasikan untuk ~/.claude/templates/ (reusable)
+4. 3 topik prioritas yang paling butuh dokumentasi di docs-library/
+5. Hal ambigu atau butuh klarifikasi
+
+JANGAN mulai coding apapun sampai aku konfirmasi laporan ini.

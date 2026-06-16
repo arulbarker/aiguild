@@ -1,0 +1,358 @@
+# Profil Global — [ISI NAMA KAMU]
+#
+# ════════════════════════════════════════════════════════════
+# TEMPLATE CLAUDE.md GLOBAL — untuk peserta AI Guild Bootcamp
+# ════════════════════════════════════════════════════════════
+# Cara pakai:
+# 1. Isi semua bagian [DALAM KURUNG SIKU] sesuai dirimu
+# 2. Simpan file ini ke: C:\Users\NamaKamu\.claude\CLAUDE.md
+#    (Mac/Linux: ~/.claude/CLAUDE.md)
+# 3. Bagian "Standar profesional" JANGAN diubah — itu sudah teruji.
+#    Cukup isi bagian pribadi di atasnya.
+# ════════════════════════════════════════════════════════════
+
+## Siapa aku
+- [Ceritakan dirimu: pelajar / freelancer / pemilik bisnis / dll]
+- [Apa yang kamu bangun: web app / mobile app / automasi / dll]
+- [Tujuanmu belajar vibe coding: bikin produk sendiri / kerja / iseng / dll]
+- Vibe coder — fokus membangun dengan bantuan AI, bukan menghafal sintaks
+
+## Cara komunikasi yang aku mau
+- Bahasa: [Indonesia / Inggris / campur]
+- [Pilih gaya: "jelaskan sederhana dengan analogi" / "langsung teknis" / "to the point"]
+- Setiap penjelasan teknis: kasih versi mudah dengan analogi sehari-hari
+- Kalau ada beberapa solusi, tunjukkan yang paling simpel dulu
+- Jangan asumsikan aku hafal sintaks — aku vibe coder
+- Kalau aku salah arah, bilang jujur dengan sopan tapi tegas
+- Kalau ada risiko di keputusanku, ingatkan sekali — lalu hormati keputusanku
+
+## Tech stack yang aku pakai
+# Isi sesuai yang KAMU pakai. Hapus yang tidak relevan, tambah yang kurang.
+- Frontend/Backend: [contoh: Next.js + TypeScript / React / dll]
+- Database: [contoh: Supabase / Firebase / MySQL / Spreadsheet]
+- Deploy: [contoh: Vercel / Netlify / VPS / dll]
+- Automasi: [contoh: Google Apps Script / n8n / dll — kalau pakai]
+- Mobile: [contoh: Kotlin / Flutter / React Native — kalau bikin mobile]
+- AI & API: [contoh: Gemini / Claude / OpenAI / DeepSeek]
+- Pembayaran: [contoh: Midtrans / Stripe / dll — kalau jualan]
+
+## Cara kerja yang aku suka
+- [Tulis preferensi pribadimu, contoh di bawah — sesuaikan/hapus:]
+- Jangan tambahkan komentar di kode kecuali aku minta
+- Jangan overengineer — solusi paling simpel yang jalan dulu
+- Jangan install library baru tanpa tanya aku dulu
+- Kalau mau ubah banyak file sekaligus, tanya dulu
+- Mobile-first untuk UI
+
+
+## Standar profesional yang WAJIB diterapkan di setiap project
+
+> Bekerja seperti dev profesional sungguhan — bukan sekadar vibe coding yang asal jalan.
+
+### Prinsip paling dasar: LOCAL-FIRST (lokal dulu, deploy kemudian)
+
+Hukum besi development — berlaku SEMUA platform (Vercel, VPS, Netlify, apapun) tanpa kecuali.
+
+```
+1. Bangun & sempurnakan di LOKAL → app jalan mulus, test lulus
+2. Baru DEPLOY ke prod → prod tempat penyajian, BUKAN tempat eksperimen
+3. Ada perubahan? Balik ke lokal dulu → jangan ngoding langsung di prod
+```
+
+Kenapa: deploy sambil ngoding = debugging di dua tempat sekaligus, bingung sumber error.
+Lokal stabil 100% dulu, baru naik. Ini kesalahan paling umum vibe coder pemula.
+
+Pengecualian GAS (Google Apps Script): tidak ada "lokal" — pakai 2 deployment (dev+prod)
++ 2 spreadsheet (dev+prod). App pribadi sederhana boleh prod-saja kalau tidak ada data orang lain.
+Tidak relevan untuk GAS: CI/CD, migrasi SQL, npm run dev. Tetap berlaku: git, Chrome DevTools (debug bareng).
+
+### Git workflow (tidak boleh dilanggar)
+- `master` branch itu **suci** — tidak boleh disentuh langsung
+- SELALU buat branch baru sebelum mulai apapun:
+  - `feat/nama-fitur` — untuk fitur baru
+  - `fix/nama-bug` — untuk perbaikan bug
+  - `docs/nama-dokumen` — untuk update dokumentasi
+  - `chore/nama-task` — untuk task non-fitur
+- Commit setiap ada perubahan yang berarti — jangan tunggu selesai semua
+- Format commit wajib conventional commits:
+  - `feat: tambahkan halaman profil user`
+  - `fix: perbaiki kalkulasi total pengeluaran`
+  - `docs: update README cara install`
+- STOP setelah push — **jangan pernah merge sendiri**
+- Merge hanya boleh dilakukan jika ada perintah eksplisit dariku
+- Setelah merge berhasil → hapus branch yang sudah selesai (lokal + remote) biar tidak menumpuk. Jangan hapus branch yang belum di-merge
+- Kalau mau revert, gunakan commit hash — jangan force push
+
+### Testing — workflow 3 lapis (era AI / vibe coding)
+
+Filosofi: jangan test SEMUA. Test yang **kalau rusak paling bikin celaka**. Kode dihasilkan AI lebih cepat dari kemampuan review manusia — jadi fokus ke yang kritis, bukan coverage 100%.
+
+**Lapis 1 — AI manual check (sehari-hari, untuk semua perubahan)**
+- Claude + Chrome DevTools MCP cek hasil real-time saat dev — ini valid sebagai E2E manual testing
+- Cepat, untuk verifikasi visual dan cek alur cepat. Menutup ~80% kebutuhan harian
+- Keterbatasan: tidak bisa simulasi upload file — untuk itu pakai Lapis 2
+
+**Lapis 2 — Automated test (HANYA fungsi kritis)**
+- Alat per platform: Vitest (JS/TS modern), pytest (Python), JUnit/Compose (Kotlin)
+- GAS TIDAK pakai Vitest — pakai test function manual di editor + helper diagnostic (seperti `requestAuthorization`)
+- **Yang WAJIB di-test (fungsi kritis):**
+  - Fungsi yang menghitung uang/saldo/transaksi
+  - Alur auth (login, register, session)
+  - Alur pembayaran (payment gateway yang kamu pakai)
+  - Alur upload file (di sini Playwright menang dari Chrome DevTools)
+- **Yang TIDAK perlu di-test:** styling, warna tombol, teks statis, hal kosmetik
+- Playwright untuk E2E otomatis — dipakai untuk alur kritis berulang, bukan dev harian
+
+**Lapis 3 — CI/CD (penjaga gerbang, WAJIB semua web app)**
+- GitHub Actions jalankan Lapis 2 otomatis setiap push — gratis (jatah bulanan jauh dari cukup untuk solo dev)
+- Test gagal → merge diblokir, kode bermasalah tidak masuk ke main/prod
+- Setup sekali via file `.github/workflows/`, lalu jalan otomatis selamanya
+- Wajib untuk semua web app. Project non-web (GAS, desktop, mobile) opsional sesuai kebutuhan
+
+**Aturan pendukung:**
+- **Smoke test** wajib sebelum setiap push: semua halaman utama bisa dibuka, fungsi kritis tidak error, tidak ada console.error baru
+- Gunakan `/verify` setelah fitur baru (kalau `/run-skill-generator` belum disetup, smoke test manual saja — jangan stuck)
+
+### Kalau pakai VPS (Coolify/Docker) — urutan anti-error
+Kalau kamu deploy ke VPS, ikuti urutan ini (jangan loncat ke VPS dulu):
+1. Kuasai di LOKAL dulu — docker-compose.dev.yml, app jalan di localhost sempurna
+2. Siapkan file prod terpisah — docker-compose.prod.yml + .env.prod.example
+3. Baru setup di Coolify — env prod diisi di dashboard Coolify (bukan file lokal)
+4. Alur harian: ngoding lokal → push → Coolify auto-deploy
+Detail lengkap: minta Claude pandu lewat 4 tahap ini saat setup project VPS.
+
+### Pemisahan environment dev vs prod (WAJIB untuk web app & app dengan database)
+
+Prinsip: dev (lokal) dan prod (production) terpisah TOTAL — app, database, Docker, dan kredensial masing-masing punya sendiri.
+
+```
+DEV (lokal)                      PROD (server: VPS/Vercel)
+- localhost                      - domain asli, live publik
+- database DEV (data dummy)      - database PROD (DATA ASLI USER)
+- Docker container dev           - Docker container prod
+- .env.local                     - .env di server (TIDAK di laptop)
+- bebas eksperimen               - hati-hati, jangan rusak
+```
+
+Rekomendasi untuk solo dev: **dev pakai database lokal/terpisah total, prod hanya diakses saat deploy.** Kalau butuh data realistis saat dev, pakai seed script (data dummy), bukan copy data user asli.
+
+Aturan keselamatan (tidak bisa dikalahkan apapun):
+- Claude DILARANG menyentuh database/environment PROD tanpa perintah eksplisit user — default selalu kerja di dev
+- Kredensial prod TIDAK PERNAH ada di file lokal/laptop — hidup di environment variable server (Vercel env, Coolify env, atau .env di server)
+- Sebelum operasi apapun yang menyentuh data: pastikan environment yang aktif — kalau ragu, tanya dulu
+- Berlaku untuk dua workflow: VPS+Coolify (semua self-host) dan Vercel+Supabase
+
+### Migrasi database (perubahan struktur: tambah/ubah tabel/kolom)
+- SELALU test migrasi di dev dulu — jalankan, verifikasi, baru lanjut
+- Migrasi ke PROD hanya dengan perintah eksplisit user — tidak pernah otomatis
+- Buat file migration yang versioned (bukan ubah DB langsung) supaya bisa di-track dan di-rollback
+- Sebelum migrasi prod: ingatkan user untuk backup database dulu
+- Migrasi yang destructive (drop kolom/tabel, ubah tipe data): jelaskan risikonya ke user sebelum eksekusi, tunggu konfirmasi
+- Kalau pakai Prisma: db push untuk eksperimen awal (belum ada user), beralih ke migrate SEBELUM prod punya data. Jangan db push terus sampai prod berdata
+- Kapan AI tanya soal DB: di dev = bebas; di prod + perubahan aman (kolom nullable) = jalan; di prod + berbahaya (reset/drop) = STOP + wajib tanya + backup dulu
+
+### Kata kunci "push ke prod" (SOP otomatis)
+
+Saat user bilang `"push ke prod"` / `"push ke produksi"` / `"deploy ke prod"`, Claude jalankan SOP ini berurutan — JANGAN skip langkah:
+
+```
+1. CEK KESIAPAN DEV
+   - Semua test & smoke test lulus di dev?
+   - Tidak ada error di console/runtime?
+   - Kalau ada yang gagal → STOP, laporkan, jangan lanjut
+
+2. REVIEW (kalau perubahan signifikan)
+   - /code-review --fix
+   - /security-review kalau menyentuh auth/payment/data/endpoint baru
+
+3. CEK PERUBAHAN DATABASE  ← titik paling rawan
+   - Ada perubahan struktur DB (tabel/kolom baru) sejak deploy terakhir?
+   - KALAU ADA:
+     a. Ingatkan user: "ada migrasi DB, backup prod dulu sebelum lanjut?"
+     b. Tunggu konfirmasi user
+     c. Jalankan migrasi ke prod dengan hati-hati
+     d. Verifikasi struktur prod sesuai
+   - KALAU TIDAK ADA → lanjut
+
+4. DEPLOY KODE
+   - Push ke branch, merge ke production (hanya dengan konfirmasi user)
+   - Deploy ke platform (Vercel/Coolify)
+
+5. VERIFIKASI PASCA-DEPLOY
+   - App live bisa dibuka tanpa error?
+   - Cek monitoring (Sentry/PostHog) — ada error baru muncul?
+   - Laporkan status ke user: berhasil / ada masalah
+```
+
+Penting yang harus Claude SELALU ingat: kode berpindah otomatis, tapi **database TIDAK ikut otomatis**. Selalu cek langkah 3 sebelum deploy — ini penyebab error prod paling umum.
+
+### Kata kunci "rollback" (saat prod bermasalah)
+
+Saat user bilang `"rollback"` / `"prod error, balikkan"`, Claude bedakan dua jenis:
+
+```
+ROLLBACK KODE (mudah & aman)
+- Vercel/Coolify simpan versi sebelumnya — balik ke deployment terakhir yang stabil
+- Atau git revert ke commit sebelum deploy bermasalah
+- Lakukan ini dulu untuk hentikan pendarahan
+
+ROLLBACK DATABASE (hati-hati, tidak selalu bisa)
+- Kalau migrasi sudah hapus kolom/ubah data → data mungkin sudah hilang
+- Restore dari backup yang dibuat sebelum migrasi (inilah kenapa backup wajib)
+- Kalau tidak ada backup → laporkan jujur ke user, jangan pura-pura bisa
+- Jangan pernah jalankan rollback DB destruktif tanpa konfirmasi eksplisit user
+```
+
+Prinsip: saat prod error, **stabilkan dulu (rollback kode), baru investigasi**. Jangan panik bikin perubahan baru di prod.
+
+### Code review (wajib sebelum merge)
+- Gunakan `/code-review --fix` setiap ada perubahan signifikan
+- Gunakan `/simplify` untuk cleanup kode yang sudah jalan tapi berantakan
+
+### Keamanan (security workflow — WAJIB, prioritas tertinggi)
+
+Kapan WAJIB jalankan `/security-review`:
+- Sebelum merge fitur yang menyentuh: auth/login, pembayaran, upload file, input user yang disimpan ke database, API endpoint baru, webhook
+- Sebelum SETIAP deploy ke production — apapun fiturnya
+- Setelah install library/dependency baru
+
+Checklist keamanan sebelum launch production:
+- `/security-review` lulus tanpa temuan critical/high
+- `npm audit` (atau `pip-audit` untuk Python) — tidak ada vulnerability critical di dependencies
+- Semua rahasia di .env / environment variables platform — tidak ada yang hardcoded di kode
+- Input user di-validate dan di-sanitize (anti SQL injection, XSS)
+- Endpoint sensitif punya auth check — tidak bisa diakses tanpa login
+- Rate limiting untuk endpoint publik (anti abuse/spam)
+- Error message ke user tidak membocorkan detail internal (stack trace, query, path file)
+
+Aturan plugin keamanan:
+- Kalau ada plugin/MCP keamanan terinstall (CodeRabbit, Sentry, dll) — gunakan, jangan diabaikan
+- Temuan keamanan dari plugin/review TIDAK BOLEH di-skip tanpa keputusan eksplisit user
+- Jangan pernah menonaktifkan warning keamanan demi "biar cepat jalan"
+
+Prinsip universal (berlaku di SEMUA project, stack apapun):
+- Semua pintu masuk data (form, API, webhook, file upload, query param) wajib di-validate
+- Semua pintu keluar rahasia (log, error message, response API) wajib dicek tidak bocor
+- Prinsip least privilege: setiap komponen hanya dapat akses seminimal yang dibutuhkan
+- Defense in depth: jangan andalkan satu lapisan keamanan saja
+
+Aturan adaptif per platform — **saat setup project, identifikasi stack-nya lalu terapkan yang relevan. Kalau stack-nya tidak ada di daftar ini, riset best practice keamanannya dan tulis ke rules.md project:**
+- **Supabase:** Row Level Security (RLS) WAJIB aktif di semua tabel — tanpa pengecualian
+- **Next.js/web app:** API routes wajib validasi session sebelum operasi sensitif; CORS dikonfigurasi ketat
+- **GAS:** oauthScopes minimal di appsscript.json; akses web app sesuai kebutuhan (jangan ANYONE_ANONYMOUS kalau tidak perlu)
+- **VPS/Coolify:** firewall aktif (hanya port yang dipakai), SSH pakai key bukan password, fail2ban terpasang, auto security updates aktif, database tidak terekspos ke publik (bind ke localhost/network internal), HTTPS wajib via reverse proxy
+- **Cloudflare Workers:** secrets via wrangler secret, bukan hardcode; validasi origin untuk webhook
+- **Desktop app (PyQt6/Electron):** jangan simpan kredensial plaintext — pakai keyring/credential manager OS; auto-update dari sumber terverifikasi
+- **Mobile Kotlin:** API key tidak hardcode di APK (bisa di-decompile) — pakai backend proxy; EncryptedSharedPreferences untuk data sensitif lokal
+- **Spreadsheet sebagai DB:** sheet privat, jangan share publik; akses hanya via service yang terkontrol
+- **Webhook apapun:** selalu verifikasi signature/token — jangan percaya request mentah
+
+### Monitoring (wajib sebelum launch production)
+- **PostHog** — analytics user behavior, wajib terpasang SEBELUM launch ke user nyata
+- **Sentry** — error tracking, wajib terpasang SEBELUM launch ke user nyata
+- Saat fase prototype/development: keduanya belum wajib — jangan jadikan blocker untuk mulai coding
+- **Pengecualian platform:**
+  - GAS: Sentry backend tidak praktis — gunakan `console.log` + Execution log + debug panel di UI sebagai gantinya. PostHog bisa dipasang di sisi HTML frontend kalau relevan
+  - Desktop app (PyQt6/Electron): Sentry punya SDK untuk keduanya — pasang sebelum rilis
+  - Mobile Kotlin: gunakan Sentry Android SDK sebelum rilis
+- Aturan kuncinya: **jangan launch ke user yang bayar tanpa monitoring** — tapi jangan biarkan setup monitoring menghambat development awal
+
+### Browser testing (khusus web app)
+- **Chrome DevTools MCP** — DEFAULT untuk development. Saat run dev di web app, buka via Chrome DevTools MCP supaya Claude dan user lihat layar yang sama secara real-time. Cocok untuk: debug visual, inspect error runtime, cek console, cek network request, lihat hasil perubahan langsung
+- **Playwright MCP** — TIDAK dipakai otomatis. Hanya saat user minta eksplisit untuk E2E test terstruktur (alur login, checkout, form submit otomatis). Jangan jalankan Playwright tanpa diminta
+- Beda keduanya: Chrome DevTools = nonton bareng real-time (interaktif), Playwright = robot QA otomatis di background (verifikasi). Untuk dev sehari-hari pakai Chrome DevTools
+- Keduanya hanya untuk web app — jangan setup untuk project non-web (GAS, desktop app, mobile)
+
+### Coding style
+- Jangan tambahkan komentar di kode kecuali aku minta
+- Jangan overengineer — solusi paling simpel yang jalan dulu
+- Jangan install library baru tanpa tanya aku dulu
+- Kalau mau ubah sesuatu yang besar atau menyentuh banyak file, tanya dulu
+- Mobile-first selalu untuk UI
+- Jangan tambahkan fitur yang tidak diminta
+
+---
+
+## Workflow brainstorming → project (WAJIB diikuti)
+
+Ini alur kerja standar untuk setiap project baru:
+
+```
+1. BRAINSTORMING BEBAS
+   - Gunakan Superpower untuk catat semua ide sebagai .md
+   - Belum perlu struktur, belum perlu rapi
+   - Fokus: keluarkan semua ide dulu
+
+2. JALANKAN /init
+   - Setelah brainstorming selesai
+   - Claude scan semua file yang ada
+   - CLAUDE.md pertama dibuat (masih flat/berantakan)
+
+3. REFACTOR JADI STRUKTUR LIBRARY (WAJIB, jangan skip)
+   - User akan memberikan prompt refactor khusus untuk ini
+   - Hasil akhirnya: CLAUDE.md jadi daftar isi ringkas,
+     semua detail terpecah ke rules.md, skills/, docs-library/, SESSION.md
+   - Sekali jalan, selamanya otomatis
+
+4. BARU MULAI CODING
+   - Semua konteks sudah terstruktur
+   - Sesi-sesi berikutnya berjalan otomatis via CLAUDE.md project
+```
+
+Untuk project lama yang belum punya struktur library: user akan memberikan prompt setup khusus — sifatnya additive, tidak merusak yang sudah ada.
+
+### Aturan pengelolaan file .md selama project berjalan
+- Semua file .md baru HARUS masuk ke folder yang tepat:
+  - Catatan riset / ide → `.claude/docs-library/`
+  - SOP cara kerja → `.claude/skills/`
+  - Aturan project → `.claude/rules.md`
+  - Status harian → `.claude/SESSION.md` (isi poin penting & status berjalan saja, ringkas — bukan log. Kalau pakai plugin memory otomatis seperti Claude Remember/`.remember/`, kronologi sudah ditangani plugin; pastikan `.remember/` masuk `.gitignore`)
+  - Panduan untuk end-user/customer → `docs/` di root project
+- Setelah bikin file baru di docs-library/, langsung daftarkan di CLAUDE.md
+- File .md di luar `.claude/` hanya boleh untuk: `README.md`, folder `docs/` (panduan end-user), dan file standar seperti `LICENSE.md` atau `CHANGELOG.md`
+- File dari plugin Superpower default masuk `.claude/docs-library/` — selalu daftarkan di CLAUDE.md setelahnya
+
+---
+
+
+## Konteks pribadi (opsional — isi kalau relevan)
+# Contoh: platform jualan yang kamu pakai, target user, dll
+- [Kosongkan atau isi sesuai kebutuhanmu]
+
+## Yang JANGAN dilakukan (hard rules)
+- Jangan jelaskan hal yang tidak ditanya
+- Jangan suggest solusi enterprise/kompleks untuk kebutuhan simpel
+- Jangan commit atau push langsung ke master/main
+- Jangan merge PR tanpa perintah eksplisit dariku
+- Jangan tambahkan fitur yang tidak diminta
+- Jangan launch ke user nyata tanpa monitoring terpasang
+- Jangan buat PR tanpa smoke test lulus dulu
+- Jangan jadikan aturan apapun sebagai blocker yang bikin stuck — kalau ada aturan yang tidak bisa dipenuhi karena keterbatasan platform, laporkan dan tawarkan alternatif, jangan berhenti kerja
+
+## Struktur library per project
+Setiap project punya struktur ini di `.claude/`:
+```
+.claude/
+├── CLAUDE.md          ← daftar isi, ringkas
+├── rules.md           ← aturan wajib project ini
+├── SESSION.md         ← status kerja & poin penting (ringkas, bukan log)
+├── skills/
+│   ├── git-workflow.md
+│   ├── deploy.md
+│   ├── new-feature.md
+│   ├── dev-server.md  ← kalau web app
+│   └── doc-sync.md    ← ketik "sync docs" untuk audit
+├── docs-library/
+│   ├── README.md
+│   ├── product-spec.md
+│   ├── ideas-backlog.md
+│   └── environments.md ← kalau pakai database
+└── archive/           ← dokumen tidak aktif
+```
+Kalau butuh info spesifik project, cari di file-file tersebut.
+
+# ════════════════════════════════════════════════════════════
+# Template ini disediakan AI Guild Bootcamp.
+# Bagian standar profesional di atas adalah hasil best practice —
+# kamu bisa pakai apa adanya. Isi bagian pribadi sesuai dirimu.
+# ════════════════════════════════════════════════════════════

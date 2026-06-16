@@ -1,0 +1,384 @@
+<div class="tfa-doc">
+  <style>
+    .tfa-doc { --tfa-amber:#E8A020; --tfa-cream:#F0E8D4; --tfa-ink:#07070A; max-width:880px; margin:0 auto; padding:4px 2px 64px; color:rgba(240,232,212,0.86); font-size:14.5px; line-height:1.65; }
+    .tfa-doc *{ box-sizing:border-box; }
+    .tfa-slide{ position:relative; border:1px solid var(--border,rgba(255,255,255,0.1)); border-radius:18px; padding:26px 24px; background:var(--surface,rgba(255,255,255,0.03)); margin-bottom:18px; overflow:hidden; }
+    .tfa-slide::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:linear-gradient(180deg,var(--tfa-amber),rgba(232,160,32,0)); }
+    .tfa-badge{ font-family:var(--font-mono,monospace); font-size:10.5px; letter-spacing:0.22em; color:var(--tfa-amber); text-transform:uppercase; margin:0 0 14px; display:flex; align-items:center; gap:8px; }
+    .tfa-badge span{ opacity:0.45; color:var(--tfa-cream); }
+    .tfa-ico{ font-size:32px; line-height:1; margin-bottom:12px; }
+    .tfa-slide h2{ font-family:var(--font-display,inherit); font-size:21px; font-weight:800; color:var(--tfa-cream); margin:0 0 12px; letter-spacing:-0.01em; line-height:1.25; }
+    .tfa-lead{ color:rgba(240,232,212,0.7); font-size:14px; margin:0 0 14px; }
+    .tfa-slide ul{ list-style:none; margin:0 0 4px; padding:0; }
+    .tfa-slide li{ position:relative; padding-left:20px; margin:7px 0; }
+    .tfa-slide li::before{ content:"▸"; position:absolute; left:0; color:var(--tfa-amber); font-size:12px; top:1px; }
+    .tfa-slide b, .tfa-slide strong{ color:var(--tfa-cream); }
+    .tfa-h3{ font-family:var(--font-mono,monospace); font-size:11.5px; letter-spacing:0.14em; text-transform:uppercase; color:var(--tfa-amber); margin:18px 0 8px; }
+    .tfa-quote{ margin:18px 0 2px; border-left:3px solid var(--tfa-amber); background:rgba(232,160,32,0.06); border-radius:0 12px 12px 0; padding:14px 18px; color:var(--tfa-cream); font-size:15px; font-style:italic; line-height:1.55; }
+    .tfa-quote.big{ font-size:17px; }
+    .tfa-note{ margin-top:14px; border:1px dashed rgba(232,160,32,0.4); border-radius:12px; padding:13px 16px; background:rgba(232,160,32,0.04); font-size:13.5px; }
+    .tfa-note b{ color:var(--tfa-amber); }
+    .tfa-grid{ display:grid; gap:12px; margin:14px 0 4px; }
+    .tfa-card{ border:1px solid var(--border,rgba(255,255,255,0.1)); border-radius:14px; padding:15px 16px; background:rgba(255,255,255,0.02); }
+    .tfa-card .ttl{ font-family:var(--font-mono,monospace); color:var(--tfa-amber); font-size:13.5px; font-weight:700; margin:0 0 4px; }
+    .tfa-card .meta{ font-family:var(--font-mono,monospace); font-size:11px; color:rgba(240,232,212,0.5); margin:0 0 8px; }
+    .tfa-card .q{ font-style:italic; color:rgba(240,232,212,0.7); font-size:13px; margin:8px 0 0; }
+    .tfa-split{ display:grid; gap:12px; margin:14px 0 4px; }
+    .tfa-pill{ display:inline-block; font-family:var(--font-mono,monospace); font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; padding:3px 9px; border-radius:999px; border:1px solid rgba(232,160,32,0.4); color:var(--tfa-amber); margin-bottom:8px; }
+    .tfa-ok{ border:1px solid rgba(74,222,128,0.3); border-radius:12px; padding:13px 15px; background:rgba(74,222,128,0.05); }
+    .tfa-ok .lbl{ color:#4ade80; font-weight:700; font-size:13px; margin-bottom:6px; }
+    .tfa-no{ border:1px solid rgba(248,113,113,0.3); border-radius:12px; padding:13px 15px; background:rgba(248,113,113,0.05); }
+    .tfa-no .lbl{ color:#f87171; font-weight:700; font-size:13px; margin-bottom:6px; }
+    .tfa-ok ul li::before{ content:"✓"; color:#4ade80; }
+    .tfa-no ul li::before{ content:"✕"; color:#f87171; }
+    .tfa-steps{ counter-reset:tfa; list-style:none; padding:0; margin:14px 0 4px; }
+    .tfa-steps li{ counter-increment:tfa; position:relative; padding:10px 0 10px 44px; border-bottom:1px solid rgba(255,255,255,0.06); }
+    .tfa-steps li:last-child{ border-bottom:none; }
+    .tfa-steps li::before{ content:counter(tfa); position:absolute; left:0; top:9px; width:28px; height:28px; border-radius:8px; background:rgba(232,160,32,0.12); color:var(--tfa-amber); border:1px solid rgba(232,160,32,0.35); display:flex; align-items:center; justify-content:center; font-family:var(--font-mono,monospace); font-size:13px; font-weight:700; }
+    .tfa-flow{ font-family:var(--font-mono,monospace); font-size:12.5px; color:rgba(240,232,212,0.82); background:rgba(0,0,0,0.28); border:1px solid var(--border,rgba(255,255,255,0.08)); border-radius:12px; padding:14px 16px; margin:14px 0 4px; line-height:1.7; white-space:pre-wrap; }
+    .tfa-flow b{ color:var(--tfa-amber); }
+    .tfa-check{ list-style:none; padding:0; margin:14px 0 4px; }
+    .tfa-check li{ position:relative; padding:7px 0 7px 28px; }
+    .tfa-check li::before{ content:"✓"; position:absolute; left:0; top:7px; color:var(--tfa-ink); background:var(--tfa-amber); width:18px; height:18px; border-radius:5px; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+    /* Cover */
+    .tfa-cover{ text-align:center; padding:44px 24px; border:1px solid rgba(232,160,32,0.3); background:radial-gradient(120% 120% at 50% 0%, rgba(232,160,32,0.12), rgba(255,255,255,0.02) 60%); }
+    .tfa-cover::before{ display:none; }
+    .tfa-cover .kick{ font-family:var(--font-mono,monospace); font-size:11px; letter-spacing:0.28em; text-transform:uppercase; color:var(--tfa-amber); margin-bottom:18px; }
+    .tfa-cover .big3{ font-size:46px; line-height:1; margin-bottom:14px; letter-spacing:0.04em; }
+    .tfa-cover h1{ font-family:var(--font-display,inherit); font-size:30px; font-weight:800; color:var(--tfa-cream); margin:0 0 12px; letter-spacing:-0.02em; }
+    .tfa-cover p{ color:rgba(240,232,212,0.7); font-size:15px; max-width:560px; margin:0 auto; }
+    @media (max-width:640px){
+      .tfa-doc{ font-size:14px; }
+      .tfa-slide{ padding:22px 17px; border-radius:15px; }
+      .tfa-slide h2{ font-size:18.5px; }
+      .tfa-cover{ padding:34px 18px; }
+      .tfa-cover .big3{ font-size:36px; }
+      .tfa-cover h1{ font-size:23px; }
+      .tfa-cover p{ font-size:13.5px; }
+      .tfa-ico{ font-size:28px; }
+    }
+  </style>
+
+  <!-- SLIDE 1 — COVER -->
+  <div class="tfa-slide tfa-cover">
+    <div class="kick">AI GUILD · BOOTCAMP</div>
+    <div class="big3">📄 🚀 🔧</div>
+    <h1>3 File Ajaib AI Guild</h1>
+    <p>Rahasia di Balik Claude Code yang Bekerja seperti Developer Profesional</p>
+  </div>
+
+  <!-- SLIDE 2 -->
+  <div class="tfa-slide">
+    <div class="tfa-badge">02 <span>/ 16</span></div>
+    <div class="tfa-ico">⚖️</div>
+    <h2>Kenapa 3 File Ini Mengubah Segalanya</h2>
+    <div class="tfa-h3">Masalah Claude Code tanpa setup</div>
+    <ul>
+      <li>Lupa konteks project setiap sesi baru</li>
+      <li>Tidak punya standar kerja profesional</li>
+      <li>Build asal jalan — tanpa keamanan &amp; testing</li>
+      <li>Sering deploy yang merusak production</li>
+      <li>Tidak ada struktur dokumentasi</li>
+    </ul>
+    <div class="tfa-h3">Solusi: 3 File Ajaib AI Guild</div>
+    <p class="tfa-lead">Disusun dari pengalaman membangun 10+ aplikasi nyata — best practice yang sudah teruji.</p>
+    <div class="tfa-grid" style="grid-template-columns:1fr;">
+      <div class="tfa-card"><p class="ttl">📄 CLAUDE.md Global</p><div class="meta">identitas &amp; standarmu</div></div>
+      <div class="tfa-card"><p class="ttl">🚀 Magic Prompt Init</p><div class="meta">untuk project baru</div></div>
+      <div class="tfa-card"><p class="ttl">🔧 Magic Prompt Existing</p><div class="meta">untuk project lama</div></div>
+    </div>
+    <div class="tfa-quote big">"Tanpa 3 file ini — Claude Code itu pintar. Dengan 3 file ini — Claude Code itu pintar DAN profesional."</div>
+  </div>
+
+  <!-- SLIDE 3 -->
+  <div class="tfa-slide">
+    <div class="tfa-badge">03 <span>/ 16</span></div>
+    <div class="tfa-ico">🗺️</div>
+    <h2>Gambaran Besar — Bagaimana Ketiganya Bekerja</h2>
+    <div class="tfa-grid" style="grid-template-columns:1fr;">
+      <div class="tfa-card">
+        <p class="ttl">📄 FILE 1 — CLAUDE.md Global</p>
+        <div class="meta">Lokasi: ~/.claude/CLAUDE.md · Berlaku: SEMUA project</div>
+        <p>Isi: siapa kamu + standar profesional.</p>
+        <p class="q">"Identitas &amp; aturan hidupmu sebagai developer."</p>
+      </div>
+      <div class="tfa-card">
+        <p class="ttl">🚀 FILE 2 — Magic Prompt Init</p>
+        <div class="meta">Dipakai: saat mulai project BARU</div>
+        <p>Fungsi: setup struktur library .claude/.</p>
+        <p class="q">"Fondasi rapi untuk project dari nol."</p>
+      </div>
+      <div class="tfa-card">
+        <p class="ttl">🔧 FILE 3 — Magic Prompt Existing</p>
+        <div class="meta">Dipakai: untuk project LAMA yang sudah jalan</div>
+        <p>Fungsi: pasang sistem tanpa merusak yang ada.</p>
+        <p class="q">"Rapikan project lama tanpa bongkar ulang."</p>
+      </div>
+    </div>
+    <div class="tfa-quote">"Satu file global untuk semua, dua magic prompt untuk situasi berbeda."</div>
+  </div>
+
+  <!-- SLIDE 4 -->
+  <div class="tfa-slide">
+    <div class="tfa-badge">04 <span>/ 16</span></div>
+    <div class="tfa-ico">📄</div>
+    <h2>File 1 — CLAUDE.md Global</h2>
+    <p class="tfa-lead">Ini "identitas permanen" kamu yang dibaca Claude di SETIAP project.</p>
+    <div class="tfa-h3">Lokasi penyimpanan</div>
+    <ul>
+      <li>Windows: <b>C:\Users\NamaKamu\.claude\CLAUDE.md</b></li>
+      <li>Mac/Linux: <b>~/.claude/CLAUDE.md</b></li>
+    </ul>
+    <div class="tfa-split">
+      <div class="tfa-card">
+        <span class="tfa-pill">🧑 Bagian Pribadi</span>
+        <ul>
+          <li>Siapa kamu &amp; apa yang kamu bangun</li>
+          <li>Cara komunikasi yang kamu mau</li>
+          <li>Tech stack yang kamu pakai</li>
+          <li>Cara kerja yang kamu suka</li>
+        </ul>
+      </div>
+      <div class="tfa-card">
+        <span class="tfa-pill">⚙️ Standar Profesional — JANGAN diubah</span>
+        <ul>
+          <li>Prinsip local-first</li>
+          <li>Git workflow</li>
+          <li>Testing 3 lapis</li>
+          <li>Keamanan &amp; Monitoring</li>
+          <li>Environment dev vs prod</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tfa-quote">"Bagian pribadi = tentang kamu. Bagian standar = best practice yang sudah teruji — jangan diutak-atik."</div>
+  </div>
+
+  <!-- SLIDE 5 -->
+  <div class="tfa-slide">
+    <div class="tfa-badge">05 <span>/ 16</span></div>
+    <div class="tfa-ico">📝</div>
+    <h2>CLAUDE.md Global — Bagian yang Kamu Isi</h2>
+    <p class="tfa-lead">Hanya 4 bagian ini yang perlu kamu isi:</p>
+    <div class="tfa-grid" style="grid-template-columns:1fr;">
+      <div class="tfa-card"><p class="ttl">🧑 Siapa Aku</p><p class="q">"Saya pemilik UMKM yang mau bikin aplikasi untuk bisnis sendiri."</p></div>
+      <div class="tfa-card"><p class="ttl">🗣️ Cara Komunikasi</p><p class="q">"Bahasa Indonesia, jelaskan dengan analogi sederhana, jangan asumsikan saya hafal sintaks."</p></div>
+      <div class="tfa-card"><p class="ttl">🛠️ Tech Stack</p><p class="q">"Google Apps Script + Sheets, atau Next.js + Supabase."</p></div>
+      <div class="tfa-card"><p class="ttl">⚙️ Cara Kerja yang Disuka</p><p class="q">"Jangan overengineer, solusi simpel dulu, tanya dulu sebelum install library baru."</p></div>
+    </div>
+    <div class="tfa-note"><b>Yang penting:</b> kamu tidak perlu tahu teknis untuk isi ini. Cukup ceritakan dirimu apa adanya.</div>
+    <div class="tfa-quote">"Isi bagian ini seperti memperkenalkan diri ke asisten baru."</div>
+  </div>
+
+  <!-- SLIDE 6 -->
+  <div class="tfa-slide">
+    <div class="tfa-badge">06 <span>/ 16</span></div>
+    <div class="tfa-ico">🎤</div>
+    <h2>Cara Termudah — Biarkan AI yang Mewawancara</h2>
+    <p class="tfa-lead">Kamu tidak perlu isi template manual. Cukup minta Claude mewawancarai kamu.</p>
+    <div class="tfa-h3">Prompt yang dipakai</div>
+    <div class="tfa-flow">"Aku punya template CLAUDE.md ini. Tolong tanya aku satu per satu untuk mengisi semua bagian [dalam kurung siku], lalu berikan versi final yang lengkap.
+
+[paste isi template CLAUDE.md]"</div>
+    <div class="tfa-h3">Yang akan terjadi</div>
+    <ul>
+      <li>Claude bertanya satu per satu: "Siapa kamu?" · "Tech stack apa?" · "Gaya komunikasi?"</li>
+      <li>Kamu jawab santai → Claude rangkum jadi file final</li>
+      <li>Simpan ke ~/.claude/CLAUDE.md</li>
+    </ul>
+    <div class="tfa-note"><b>Analogi:</b> seperti isi formulir didampingi petugas. Kamu tidak perlu paham tiap kolom — petugas tanya, kamu jawab, selesai.</div>
+    <div class="tfa-quote big">"5 menit dipandu AI — lebih baik dari 15 menit bingung sendiri."</div>
+  </div>
+
+  <!-- SLIDE 7 -->
+  <div class="tfa-slide">
+    <div class="tfa-badge">07 <span>/ 16</span></div>
+    <div class="tfa-ico">⚠️</div>
+    <h2>PENTING — Bagian Standar Jangan Disentuh</h2>
+    <p class="tfa-lead">Bagian "Standar Profesional" berisi best practice yang sudah teruji: local-first, git workflow, testing 3 lapis, keamanan, monitoring, pemisahan dev vs prod.</p>
+    <div class="tfa-h3">⚠️ Jangan ubah, karena</div>
+    <ul>
+      <li>Sudah teruji dari pengalaman nyata</li>
+      <li>Saling terkait satu sama lain</li>
+      <li>Kalau diutak-atik — sistem bisa rusak</li>
+      <li>Melindungi kamu dari kesalahan fatal</li>
+    </ul>
+    <div class="tfa-split">
+      <div class="tfa-ok"><div class="lbl">Yang BOLEH</div><ul><li>Isi bagian pribadi</li><li>Pakai bagian standar apa adanya</li></ul></div>
+      <div class="tfa-no"><div class="lbl">Yang TIDAK boleh</div><ul><li>Hapus / ubah aturan standar</li><li>"Sederhanakan" karena merasa ribet</li></ul></div>
+    </div>
+    <div class="tfa-quote big">"Bagian standar itu seperti rem mobil. Kamu tidak paham cara kerjanya — tapi jangan pernah copot."</div>
+  </div>
+
+  <!-- SLIDE 8 -->
+  <div class="tfa-slide">
+    <div class="tfa-badge">08 <span>/ 16</span></div>
+    <div class="tfa-ico">🚀</div>
+    <h2>File 2 — Magic Prompt Init (Project Baru)</h2>
+    <p class="tfa-lead">Dipakai saat kamu mulai project dari NOL. Dijalankan SEKALI — setelah itu otomatis.</p>
+    <div class="tfa-h3">Apa yang dilakukan</div>
+    <ul>
+      <li>Scan semua file &amp; brainstorming yang ada</li>
+      <li>Buat struktur folder .claude/ yang rapi</li>
+      <li>Isi semua file aturan &amp; dokumentasi</li>
+      <li>Rangkum ide jadi product-spec</li>
+      <li>Setup keamanan &amp; gitignore</li>
+    </ul>
+    <div class="tfa-flow">📁 .claude/
+  ├── CLAUDE.md       <b>(daftar isi project)</b>
+  ├── rules.md        <b>(aturan project)</b>
+  ├── SESSION.md      <b>(status harian)</b>
+  ├── skills/         <b>(SOP cara kerja)</b>
+  └── docs-library/   <b>(dokumentasi)</b></div>
+    <div class="tfa-quote">"Satu prompt — project langsung terstruktur seperti dikerjakan tim profesional."</div>
+  </div>
+
+  <!-- SLIDE 9 -->
+  <div class="tfa-slide">
+    <div class="tfa-badge">09 <span>/ 16</span></div>
+    <div class="tfa-ico">🧭</div>
+    <h2>Cara Pakai Magic Prompt Init</h2>
+    <p class="tfa-lead">Urutan untuk project BARU:</p>
+    <ol class="tfa-steps">
+      <li><b>Brainstorming dulu</b> dengan Claude — tuangkan semua ide aplikasimu</li>
+      <li><b>Jalankan /init</b> di Claude Code — Claude scan &amp; buat CLAUDE.md awal</li>
+      <li><b>Paste Magic Prompt Init</b> — copy seluruh isi → paste ke Claude</li>
+      <li><b>Claude kerjakan semua langkah</b> — buat struktur, isi file, setup keamanan</li>
+      <li><b>Review laporan Claude</b> — Claude lapor apa yang sudah dibuat</li>
+      <li><b>Konfirmasi → baru mulai coding</b> — sistem sudah siap, semua otomatis</li>
+    </ol>
+    <div class="tfa-note"><b>Penting:</b> Magic Prompt Init akan BERHENTI dan minta konfirmasi sebelum mulai coding. Ini disengaja — agar kamu cek dulu semuanya benar.</div>
+    <div class="tfa-quote">"Jalankan sekali di awal — nikmati struktur rapi selamanya."</div>
+  </div>
+
+  <!-- SLIDE 10 -->
+  <div class="tfa-slide">
+    <div class="tfa-badge">10 <span>/ 16</span></div>
+    <div class="tfa-ico">🔧</div>
+    <h2>File 3 — Magic Prompt Existing (Project Lama)</h2>
+    <p class="tfa-lead">Dipakai untuk project yang SUDAH berjalan tapi belum punya struktur rapi.</p>
+    <div class="tfa-h3">Bedanya dengan Init</div>
+    <ul>
+      <li><b>Init</b> = untuk project kosong dari nol</li>
+      <li><b>Existing</b> = untuk project yang sudah ada isinya</li>
+    </ul>
+    <div class="tfa-no" style="margin-top:14px;">
+      <div class="lbl">Yang membuat ini AMAN</div>
+      <ul style="margin-top:4px;">
+        <li>TIDAK merusak apapun yang sudah ada</li>
+        <li>TIDAK menghapus tanpa izin</li>
+        <li>Konfirmasi di setiap langkah</li>
+        <li>Sifatnya menambah, bukan membongkar</li>
+      </ul>
+    </div>
+    <div class="tfa-quote big">"Punya project lama yang berantakan? File ini merapikannya — tanpa risiko merusak yang sudah jalan."</div>
+  </div>
+
+  <!-- SLIDE 11 -->
+  <div class="tfa-slide">
+    <div class="tfa-badge">11 <span>/ 16</span></div>
+    <div class="tfa-ico">🛡️</div>
+    <h2>Kenapa Magic Prompt Existing Aman Dipakai</h2>
+    <p class="tfa-lead">Ketakutan terbesar: "Project saya sudah jalan, takut rusak kalau diutak-atik." File ini dirancang khusus untuk menghilangkan ketakutan itu.</p>
+    <ul>
+      <li>🛡️ <b>Audit dulu, eksekusi belakangan</b> — Claude lapor kondisi sebelum ubah apapun</li>
+      <li>🛡️ <b>Berhenti di setiap langkah</b> — minta konfirmasi sebelum lanjut</li>
+      <li>🛡️ <b>Tidak menimpa file yang ada</b> — file lama dibiarkan, hanya menambah baru</li>
+      <li>🛡️ <b>Additive, bukan destructive</b> — menambah struktur, bukan membongkar</li>
+      <li>🛡️ <b>Konfirmasi sebelum pindah/hapus</b> — tidak ada yang dihapus tanpa izinmu</li>
+    </ul>
+    <div class="tfa-quote">"Dibuat dengan prinsip: lebih baik bertanya dua kali daripada merusak satu kali."</div>
+  </div>
+
+  <!-- SLIDE 12 -->
+  <div class="tfa-slide">
+    <div class="tfa-badge">12 <span>/ 16</span></div>
+    <div class="tfa-ico">📚</div>
+    <h2>Apa Itu Struktur Library .claude/</h2>
+    <p class="tfa-lead">Kedua Magic Prompt menghasilkan struktur yang sama — namanya library .claude/</p>
+    <div class="tfa-flow">📄 CLAUDE.md    <b>→ daftar isi ringkas project</b>
+📋 rules.md     <b>→ aturan wajib project ini</b>
+📅 SESSION.md   <b>→ status &amp; progress harian</b>
+
+📁 skills/          <b>→ SOP cara kerja</b>
+   git-workflow · deploy · new-feature
+   dev-server · doc-sync
+
+📁 docs-library/    <b>→ dokumentasi</b>
+   product-spec · ideas-backlog · environments
+
+📁 archive/         <b>→ dokumen tidak aktif</b></div>
+    <div class="tfa-quote">"Setiap project jadi perpustakaan rapi — Claude tahu persis di mana cari informasi."</div>
+  </div>
+
+  <!-- SLIDE 13 -->
+  <div class="tfa-slide">
+    <div class="tfa-badge">13 <span>/ 16</span></div>
+    <div class="tfa-ico">🔑</div>
+    <h2>Bonus — Kata Kunci Ajaib yang Otomatis</h2>
+    <p class="tfa-lead">Setelah setup, kamu punya "kata kunci ajaib" yang memicu aksi otomatis Claude.</p>
+    <div class="tfa-grid" style="grid-template-columns:1fr;">
+      <div class="tfa-card"><p class="ttl">🔑 "tutup sesi"</p><p>Claude jalankan checklist akhir sesi — commit, update SESSION.md, rapikan sebelum berhenti kerja.</p></div>
+      <div class="tfa-card"><p class="ttl">🔑 "sync docs"</p><p>Claude audit semua dokumen — cek mana yang outdated, mana file liar, rapikan struktur.</p></div>
+      <div class="tfa-card"><p class="ttl">🔑 "push ke prod"</p><p>Claude jalankan SOP deploy aman — cek testing, cek database, baru deploy.</p></div>
+      <div class="tfa-card"><p class="ttl">🔑 "rollback"</p><p>Claude balikkan ke versi stabil saat production bermasalah.</p></div>
+    </div>
+    <div class="tfa-quote big">"Satu kata kunci — serangkaian aksi profesional berjalan otomatis."</div>
+  </div>
+
+  <!-- SLIDE 14 -->
+  <div class="tfa-slide">
+    <div class="tfa-badge">14 <span>/ 16</span></div>
+    <div class="tfa-ico">💡</div>
+    <h2>Bonus — Sistem yang Mencegah Scope Creep</h2>
+    <div class="tfa-h3">Masalah yang dicegah</div>
+    <p class="tfa-lead">Vibe coder sering tergoda tambah fitur di tengah build → aplikasi tidak selesai-selesai.</p>
+    <div class="tfa-h3">Solusi: Sistem Ideas Backlog</div>
+    <ul>
+      <li>Punya ide baru di tengah build → Claude catat dulu di ideas-backlog.md</li>
+      <li>Claude tanya: <b>"sekarang, nanti, atau simpan?"</b></li>
+      <li>Hanya yang disetujui yang dikerjakan → MVP tetap prioritas</li>
+    </ul>
+    <div class="tfa-split">
+      <div class="tfa-ok"><div class="lbl">Ide disetujui</div><p style="margin:0;">masuk product-spec</p></div>
+      <div class="tfa-no"><div class="lbl">Keputusan dibatalkan</div><p style="margin:0;">catat status BATAL</p></div>
+    </div>
+    <div class="tfa-quote">"Ide baru ditampung dulu — bukan langsung dikerjakan. Itu rahasia aplikasi yang selesai."</div>
+  </div>
+
+  <!-- SLIDE 15 -->
+  <div class="tfa-slide">
+    <div class="tfa-badge">15 <span>/ 16</span></div>
+    <div class="tfa-ico">🧩</div>
+    <h2>Alur Lengkap — Dari Terima File Sampai Coding</h2>
+    <ol class="tfa-steps">
+      <li><b>Terima 3 file</b> dari bootcamp</li>
+      <li><b>Setup CLAUDE.md Global</b> (sekali seumur hidup) — paste template + minta Claude wawancara → simpan ke ~/.claude/CLAUDE.md</li>
+      <li><b>Mulai project — pilih situasimu:</b><br>• Project BARU → brainstorming → /init → paste Magic Prompt Init<br>• Project LAMA → paste Magic Prompt Existing</li>
+      <li><b>Claude setup struktur library</b> otomatis</li>
+      <li><b>Review &amp; konfirmasi</b> laporan Claude</li>
+      <li><b>Mulai coding</b> — sistem jalan otomatis</li>
+    </ol>
+    <div class="tfa-note">Setelah ini: setiap sesi Claude langsung paham project, ikuti standar profesional, dan tidak perlu brief ulang.</div>
+    <div class="tfa-quote big">"Setup sekali di awal — profesional selamanya."</div>
+  </div>
+
+  <!-- SLIDE 16 -->
+  <div class="tfa-slide">
+    <div class="tfa-badge">16 <span>/ 16</span></div>
+    <div class="tfa-ico">🎓</div>
+    <h2>Sekarang Kamu Punya Sistem Profesional</h2>
+    <ul class="tfa-check">
+      <li>Paham fungsi CLAUDE.md Global</li>
+      <li>Tahu cara isi lewat wawancara AI</li>
+      <li>Sadar bagian standar tidak boleh diubah</li>
+      <li>Paham Magic Prompt Init untuk project baru</li>
+      <li>Paham Magic Prompt Existing untuk project lama</li>
+      <li>Kenal struktur library .claude/</li>
+      <li>Tahu kata kunci ajaib &amp; sistem backlog</li>
+    </ul>
+    <div class="tfa-note">Ketiga file ini bukan sekadar template — ini hasil pengalaman membangun puluhan aplikasi nyata. Dengan ini, Claude Code-mu bekerja seperti developer profesional sungguhan.</div>
+    <div class="tfa-quote big">"Pemula biasa pakai Claude Code apa adanya. Anggota AI Guild pakai Claude Code dengan sistem yang membuatnya bekerja seperti developer berpengalaman. Itulah bedanya."</div>
+    <p class="tfa-lead" style="margin-top:14px; text-align:center;">Setup 3 file ini — lalu mulai membangun dengan standar profesional.</p>
+  </div>
+
+</div>
