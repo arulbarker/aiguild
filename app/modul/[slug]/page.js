@@ -32,7 +32,7 @@ export default async function ModulPage({ params }) {
 
   const allModules = await prisma.module.findMany({ orderBy: { orderIndex: 'asc' } })
   const progress = await prisma.userProgress.findMany({ where: { userId: session.userId } })
-  const completedIds = progress.map((p) => p.moduleId)
+  const completedIds = progress.filter((p) => p.completed).map((p) => p.moduleId)
 
   return (
     <ModuleViewerWrapper

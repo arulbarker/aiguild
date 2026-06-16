@@ -77,6 +77,15 @@ async function main() {
 
   console.log(`Selesai: ${MODULES_SEED.length} modul tersinkron.`)
 
+  // Backfill satu kali (idempoten): sebelum fitur 'completed', setiap baris progress
+  // berarti "selesai". Tandai true untuk progress lama (dibuat sebelum 16 Jun 2026)
+  // agar progress user prod tidak hilang. Baris baru (view) tetap completed=false.
+  const backfill = await prisma.userProgress.updateMany({
+    where: { completed: false, lastViewedAt: { lt: new Date('2026-06-16T00:00:00Z') } },
+    data: { completed: true },
+  })
+  if (backfill.count > 0) console.log(`Backfill progress lama → selesai: ${backfill.count} baris.`)
+
   const adminEmail = process.env.ADMIN_EMAIL
   if (adminEmail) {
     await prisma.user.upsert({

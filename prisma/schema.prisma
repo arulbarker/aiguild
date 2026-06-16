@@ -56,6 +56,7 @@ model UserProgress {
   module       Module   @relation(fields: [moduleId], references: [id])
   moduleId     String   @map("module_id")
   lastViewedAt DateTime @default(now()) @updatedAt @map("last_viewed_at")
+  completed    Boolean  @default(false)
 
   @@id([userId, moduleId])
   @@map("user_progress")

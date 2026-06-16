@@ -14,13 +14,15 @@ export async function POST(request) {
     return NextResponse.json({ error: 'membership_expired' }, { status: 403 })
   }
 
-  const { moduleId } = await request.json()
+  const { moduleId, completed } = await request.json()
   if (!moduleId) return NextResponse.json({ error: 'moduleId diperlukan' }, { status: 400 })
 
+  // Buka modul = catat view (hapus badge). Tandai Selesai = set completed=true.
+  // lastViewedAt selalu ikut diperbarui (kolom @updatedAt).
   await prisma.userProgress.upsert({
     where: { userId_moduleId: { userId: session.userId, moduleId } },
-    update: { lastViewedAt: new Date() },
-    create: { userId: session.userId, moduleId },
+    update: completed === true ? { completed: true, lastViewedAt: new Date() } : { lastViewedAt: new Date() },
+    create: { userId: session.userId, moduleId, completed: completed === true },
   })
 
   return NextResponse.json({ message: 'OK' })

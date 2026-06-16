@@ -19,6 +19,7 @@ export async function GET() {
     prisma.userProgress.findMany({ where: { userId: session.userId } }),
   ])
 
-  const completedIds = progress.map((p) => p.moduleId)
-  return NextResponse.json({ modules, completedIds })
+  const completedIds = progress.filter((p) => p.completed).map((p) => p.moduleId)
+  const viewed = progress.map((p) => ({ moduleId: p.moduleId, lastViewedAt: p.lastViewedAt }))
+  return NextResponse.json({ modules, completedIds, viewed })
 }

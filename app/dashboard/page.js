@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 export default function DashboardPage() {
   const [modules, setModules]        = useState([])
   const [completedIds, setCompleted] = useState([])
+  const [viewedMap, setViewedMap]    = useState({})
   const [activeModule, setActive]    = useState(null)
   const [initialTab, setInitialTab]  = useState('video')
   const [loading, setLoading]        = useState(true)
@@ -24,6 +25,9 @@ export default function DashboardPage() {
       const data = await res.json()
       setModules(data.modules ?? [])
       setCompleted(data.completedIds ?? [])
+      const map = {}
+      ;(data.viewed ?? []).forEach((v) => { map[v.moduleId] = v.lastViewedAt })
+      setViewedMap(map)
       setLoading(false)
     })
   }, [router])
@@ -31,6 +35,13 @@ export default function DashboardPage() {
   function handleSelectModule(mod, tab = 'video') {
     setInitialTab(tab)
     setActive(mod)
+    // Buka modul = "dibaca" → catat view supaya badge BARU/UPDATE hilang.
+    setViewedMap((prev) => ({ ...prev, [mod.id]: new Date().toISOString() }))
+    fetch('/api/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ moduleId: mod.id }),
+    }).catch(() => {})
   }
 
   async function handleComplete(modId) {
@@ -38,10 +49,12 @@ export default function DashboardPage() {
     await fetch('/api/progress', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ moduleId: modId }),
+      body: JSON.stringify({ moduleId: modId, completed: true }),
     })
     setCompleted((prev) => [...prev, modId])
   }
+
+  const modulesWithView = modules.map((m) => ({ ...m, lastViewedAt: viewedMap[m.id] ?? null }))
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
@@ -147,14 +160,14 @@ export default function DashboardPage() {
               {modules.length > 0 ? (
                 viewMode === 'compact' ? (
                   <ModuleFlowchartCompact
-                    modules={modules}
+                    modules={modulesWithView}
                     completedIds={completedIds}
                     onSelect={handleSelectModule}
                     activeId={activeModule?.id}
                   />
                 ) : (
                   <ModuleFlowchart
-                    modules={modules}
+                    modules={modulesWithView}
                     completedIds={completedIds}
                     onSelect={handleSelectModule}
                     activeId={activeModule?.id}
