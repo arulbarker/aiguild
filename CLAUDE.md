@@ -31,6 +31,7 @@ Semua detail ada di file-file berikut:
 → `.claude/skills/git-workflow.md`
 → `.claude/skills/deploy.md`
 → `.claude/skills/new-feature.md`
+→ `.claude/skills/insert-modul.md` — sisip/urutkan ulang kartu modul (geser orderIndex + sambung parentIds)
 → `.claude/skills/doc-sync.md` — ketik **"sync docs"** untuk audit dokumen
 
 ### Produk & ide

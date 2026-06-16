@@ -52,6 +52,8 @@ laporkan + tawarkan alternatif, terus kerja.
 - `lib/db.js` menggunakan Lazy Proxy — jangan ubah pola ini
 - Tambah modul baru via `lib/modules-seed.js` + jalankan `npm run seed`
 - Jangan install library baru tanpa konfirmasi dulu
+- **Schema pakai `prisma db push` (BUKAN `migrate`)** — dev & prod (`deploy.yml`). Project tak punya history migrasi; kolom nullable = aman tanpa reset. Beralih ke `migrate` butuh baseline dulu
+- **Tambah kolom DB → WAJIB restart dev server** setelahnya. Prisma client "memotret" struktur saat start; kolom baru tidak terbaca sampai proses di-restart (gejala: error `Unknown argument` / field hilang di response API). Urutan: edit schema → `db push` + `generate` → restart `npm run dev` (minta user) → `npm run seed`
 
 ### Dev server (`npm run dev`) — USER yang menyalakan
 - **User SELALU menjalankan `npm run dev` sendiri** — Claude DILARANG menyalakannya otomatis.
@@ -65,8 +67,18 @@ laporkan + tawarkan alternatif, terus kerja.
 
 ### Database — tabel yang tidak boleh diubah sembarangan
 - `users.email` — primary identifier, dipakai di magic token dan purchase
-- `modules.slug` — dipakai sebagai URL parameter di `/modul/[slug]`
+- `modules.slug` — dipakai sebagai URL parameter di `/modul/[slug]` + identitas upsert seed; JANGAN ubah saat reorder modul (progress user putus)
 - `modules.parent_ids` — relasi DAG, perubahan akan merusak flowchart
+
+### Modul, konten & flowchart
+- **Nomor kartu = `orderIndex + 1`; posisi visual ditentukan `parentIds` (DAG), bukan orderIndex.** Sisip/urutkan kartu → lihat skill `insert-modul.md` (geser orderIndex + sambung parentIds)
+- 4 tipe konten modul: `youtubeUrl`, `gammaUrl` (Drive `/preview`), `promptText`, `htmlContent`
+- `htmlContent` di-render via `dangerouslySetInnerHTML` — AMAN karena hanya dari seed/admin (tepercaya). Kalau suatu hari bisa diisi non-admin → WAJIB sanitasi dulu
+- Google Drive embed: `.../file/d/<ID>/preview` (bukan `/view`)
+
+### Notifikasi Telegram
+- Notif modul (`lib/telegram.js`) HANYA terpicu dari aksi panel admin (`/api/admin/modules` POST/PATCH). Perubahan via seed/deploy TIDAK notif (cegah spam tiap deploy)
+- Token & chat id dari env (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`) — dev di `.env.local`, prod di GitHub Secrets. Aman gagal kalau env kosong (notif di-skip, app tidak error)
 
 ### Environment variables wajib sebelum run
 ```
