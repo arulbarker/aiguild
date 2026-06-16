@@ -29,6 +29,7 @@ model Module {
   youtubeUrl  String?        @map("youtube_url")
   gammaUrl    String?        @map("gamma_url")
   promptText  String?        @map("prompt_text")
+  htmlContent String?        @map("html_content")
   parentIds   String[]       @default([]) @map("parent_ids")
   orderIndex  Int            @default(0) @map("order_index")
   createdAt   DateTime       @default(now()) @map("created_at")

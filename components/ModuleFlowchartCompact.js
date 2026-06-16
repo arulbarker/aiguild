@@ -46,8 +46,9 @@ function NodeBox({ mod, label, isActive, isCompleted, onSelect, isSection }) {
   const hasVideo  = !!mod.youtubeUrl
   const hasMateri = !!mod.gammaUrl
   const hasPrompt = !!mod.promptText
-  const canPlay   = hasVideo || hasMateri || hasPrompt
-  const defaultTab = hasVideo ? 'video' : hasMateri ? 'materi' : 'prompt'
+  const hasHtml   = !!mod.htmlContent
+  const canPlay   = hasVideo || hasMateri || hasPrompt || hasHtml
+  const defaultTab = hasVideo ? 'video' : hasMateri ? 'materi' : hasPrompt ? 'prompt' : 'penjelasan'
   const num       = label ?? displayNumber(mod)
   const [hovered, setHovered] = useState(false)
 
@@ -109,6 +110,11 @@ function NodeBox({ mod, label, isActive, isCompleted, onSelect, isSection }) {
         {hasPrompt && (
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: '#E8A020', background: 'rgba(232,160,32,0.1)', border: '1px solid rgba(232,160,32,0.2)', borderRadius: 4, padding: '1px 5px' }}>
             ⌘
+          </span>
+        )}
+        {hasHtml && (
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,232,212,0.5)', background: 'rgba(240,232,212,0.05)', border: '1px solid rgba(240,232,212,0.12)', borderRadius: 4, padding: '1px 5px' }}>
+            ◈
           </span>
         )}
         {!canPlay && !isSection && (

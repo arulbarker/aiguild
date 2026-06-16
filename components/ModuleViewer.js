@@ -27,7 +27,8 @@ export default function ModuleViewer({ module: mod, initialTab, isCompleted, onC
   const hasVideo  = !!(mod?.youtubeUrl)
   const hasMateri = !!(mod?.gammaUrl)
   const hasPrompt = !!(mod?.promptText)
-  const [tab, setTab] = useState(initialTab ?? (hasVideo ? 'video' : hasMateri ? 'materi' : 'prompt'))
+  const hasHtml   = !!(mod?.htmlContent)
+  const [tab, setTab] = useState(initialTab ?? (hasVideo ? 'video' : hasMateri ? 'materi' : hasPrompt ? 'prompt' : 'penjelasan'))
   const [marking, setMarking] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -140,6 +141,22 @@ export default function ModuleViewer({ module: mod, initialTab, isCompleted, onC
               ⌘ Prompt
             </motion.button>
           )}
+          {hasHtml && (
+            <motion.button
+              whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.92 }}
+              onClick={() => setTab('penjelasan')}
+              className="px-3 py-1.5 rounded-full text-xs font-medium"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                background: tab === 'penjelasan' ? 'rgba(240,232,212,0.12)' : 'rgba(255,255,255,0.04)',
+                color: tab === 'penjelasan' ? 'var(--cream)' : 'var(--muted)',
+                border: tab === 'penjelasan' ? '1px solid rgba(240,232,212,0.2)' : '1px solid var(--border)',
+                transition: 'background 0.18s, color 0.18s',
+              }}
+            >
+              ◈ Penjelasan
+            </motion.button>
+          )}
 
           {/* Tombol selesai */}
           <motion.button
@@ -242,6 +259,15 @@ export default function ModuleViewer({ module: mod, initialTab, isCompleted, onC
             <p style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)', letterSpacing: '0.1em' }}>
               Materi belum tersedia
             </p>
+          </div>
+        )}
+
+        {tab === 'penjelasan' && hasHtml && (
+          <div className="h-full overflow-y-auto px-4 py-5">
+            <div
+              className="w-full"
+              dangerouslySetInnerHTML={{ __html: mod.htmlContent }}
+            />
           </div>
         )}
 

@@ -99,8 +99,9 @@ function ModuleCard({ mod, label, isActive, isCompleted, onSelect, isSection }) 
   const hasVideo  = !!mod.youtubeUrl
   const hasMateri = !!mod.gammaUrl
   const hasPrompt = !!mod.promptText
-  const canPlay   = hasVideo || hasMateri || hasPrompt
-  const defaultTab = hasVideo ? 'video' : hasMateri ? 'materi' : 'prompt'
+  const hasHtml   = !!mod.htmlContent
+  const canPlay   = hasVideo || hasMateri || hasPrompt || hasHtml
+  const defaultTab = hasVideo ? 'video' : hasMateri ? 'materi' : hasPrompt ? 'prompt' : 'penjelasan'
   const ytId      = getYouTubeId(mod.youtubeUrl)
   const thumbUrl  = ytId
     ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
@@ -155,6 +156,7 @@ function ModuleCard({ mod, label, isActive, isCompleted, onSelect, isSection }) 
           {hasVideo && <PlayIcon />}
           {!hasVideo && hasMateri && <MateriIcon />}
           {!hasVideo && !hasMateri && hasPrompt && <PromptIcon />}
+          {!hasVideo && !hasMateri && !hasPrompt && hasHtml && <MateriIcon />}
         </div>
       </motion.div>
 
@@ -203,7 +205,17 @@ function ModuleCard({ mod, label, isActive, isCompleted, onSelect, isSection }) 
             ⌘&nbsp; Prompt
           </motion.button>
         )}
-        {!hasVideo && !hasMateri && !hasPrompt && (
+        {hasHtml && (
+          <motion.button
+            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
+            onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'penjelasan') }}
+            className="text-xs px-3 py-1.5 rounded-full font-medium"
+            style={{ background: 'rgba(240,232,212,0.06)', color: 'var(--cream)', border: '1px solid rgba(240,232,212,0.14)' }}
+          >
+            ◈&nbsp; Penjelasan
+          </motion.button>
+        )}
+        {!hasVideo && !hasMateri && !hasPrompt && !hasHtml && (
           isSection ? (
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#E8A020', letterSpacing: '0.08em' }}>
               Materi ada di bawah ↓
