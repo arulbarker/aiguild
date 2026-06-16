@@ -2,7 +2,29 @@
 
 import { motion } from 'framer-motion'
 import { useState, useRef, useEffect } from 'react'
-import { buildSegments, displayNumber } from '@/lib/module-tree'
+import { buildSegments, displayNumber, moduleBadge, contentTypes } from '@/lib/module-tree'
+
+const C_TYPE = {
+  video:      { icon: '▶', amber: true },
+  materi:     { icon: '◈', amber: false },
+  prompt:     { icon: '⌘', amber: true },
+  penjelasan: { icon: '◈', amber: false },
+}
+
+function CBadge({ kind }) {
+  const isBaru = kind === 'baru'
+  return (
+    <span style={{
+      fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700, letterSpacing: '0.08em',
+      textTransform: 'uppercase', borderRadius: 4, padding: '1px 5px',
+      background: isBaru ? '#E8A020' : 'rgba(120,170,255,0.15)',
+      color: isBaru ? '#07070A' : '#A9C7FF',
+      border: isBaru ? 'none' : '1px solid rgba(120,170,255,0.35)',
+    }}>
+      {isBaru ? 'Baru' : 'Upd'}
+    </span>
+  )
+}
 
 function ScrollTitle({ children, hovered }) {
   const wrapRef = useRef(null)
@@ -50,6 +72,8 @@ function NodeBox({ mod, label, isActive, isCompleted, onSelect, isSection }) {
   const canPlay   = hasVideo || hasMateri || hasPrompt || hasHtml
   const defaultTab = hasVideo ? 'video' : hasMateri ? 'materi' : hasPrompt ? 'prompt' : 'penjelasan'
   const num       = label ?? displayNumber(mod)
+  const types     = contentTypes(mod)
+  const badge     = moduleBadge(mod)
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -87,7 +111,7 @@ function NodeBox({ mod, label, isActive, isCompleted, onSelect, isSection }) {
           flexShrink: 0,
         }}
       >
-        {isCompleted ? '✓' : num}
+        {num}
       </span>
 
       <ScrollTitle hovered={hovered}>
@@ -97,26 +121,18 @@ function NodeBox({ mod, label, isActive, isCompleted, onSelect, isSection }) {
       </ScrollTitle>
 
       <div className="flex items-center gap-1 flex-shrink-0">
-        {hasVideo && (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: '#E8A020', background: 'rgba(232,160,32,0.1)', border: '1px solid rgba(232,160,32,0.2)', borderRadius: 4, padding: '1px 5px' }}>
-            ▶
-          </span>
-        )}
-        {hasMateri && (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,232,212,0.5)', background: 'rgba(240,232,212,0.05)', border: '1px solid rgba(240,232,212,0.12)', borderRadius: 4, padding: '1px 5px' }}>
-            ◈
-          </span>
-        )}
-        {hasPrompt && (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: '#E8A020', background: 'rgba(232,160,32,0.1)', border: '1px solid rgba(232,160,32,0.2)', borderRadius: 4, padding: '1px 5px' }}>
-            ⌘
-          </span>
-        )}
-        {hasHtml && (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,232,212,0.5)', background: 'rgba(240,232,212,0.05)', border: '1px solid rgba(240,232,212,0.12)', borderRadius: 4, padding: '1px 5px' }}>
-            ◈
-          </span>
-        )}
+        {badge && <CBadge kind={badge} />}
+        {types.map((t) => (
+          isCompleted ? (
+            <span key={t} style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: '#6EE7A0', background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.35)', borderRadius: 4, padding: '1px 5px' }}>
+              ✓
+            </span>
+          ) : (
+            <span key={t} style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: C_TYPE[t].amber ? '#E8A020' : 'rgba(240,232,212,0.5)', background: C_TYPE[t].amber ? 'rgba(232,160,32,0.1)' : 'rgba(240,232,212,0.05)', border: C_TYPE[t].amber ? '1px solid rgba(232,160,32,0.2)' : '1px solid rgba(240,232,212,0.12)', borderRadius: 4, padding: '1px 5px' }}>
+              {C_TYPE[t].icon}
+            </span>
+          )
+        ))}
         {!canPlay && !isSection && (
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 4, padding: '1px 5px' }}>
             soon

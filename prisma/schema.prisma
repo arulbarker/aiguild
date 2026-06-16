@@ -30,6 +30,7 @@ model Module {
   gammaUrl    String?        @map("gamma_url")
   promptText  String?        @map("prompt_text")
   htmlContent String?        @map("html_content")
+  contentUpdatedAt DateTime? @map("content_updated_at")
   parentIds   String[]       @default([]) @map("parent_ids")
   orderIndex  Int            @default(0) @map("order_index")
   createdAt   DateTime       @default(now()) @map("created_at")

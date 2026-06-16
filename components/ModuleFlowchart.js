@@ -1,7 +1,33 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { buildSegments, displayNumber } from '@/lib/module-tree'
+import { buildSegments, displayNumber, moduleBadge, contentTypes } from '@/lib/module-tree'
+
+const TYPE_META = {
+  video:      { tab: 'video',      label: '▶  Video',      amber: true },
+  materi:     { tab: 'materi',     label: '◈  Materi',     amber: false },
+  prompt:     { tab: 'prompt',     label: '⌘  Prompt',     amber: true },
+  penjelasan: { tab: 'penjelasan', label: '◈  Penjelasan', amber: false },
+}
+
+function NewBadge({ kind }) {
+  const isBaru = kind === 'baru'
+  return (
+    <span
+      className="absolute top-2.5 left-2.5 z-10"
+      style={{
+        fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+        textTransform: 'uppercase', padding: '3px 8px', borderRadius: 6,
+        background: isBaru ? '#E8A020' : 'rgba(120,170,255,0.18)',
+        color: isBaru ? '#07070A' : '#A9C7FF',
+        border: isBaru ? 'none' : '1px solid rgba(120,170,255,0.4)',
+        boxShadow: isBaru ? '0 2px 10px rgba(232,160,32,0.4)' : 'none',
+      }}
+    >
+      {isBaru ? 'Baru' : 'Update'}
+    </span>
+  )
+}
 
 function getYouTubeId(url) {
   if (!url) return null
@@ -107,6 +133,8 @@ function ModuleCard({ mod, label, isActive, isCompleted, onSelect, isSection }) 
     ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
     : getDriveThumb(mod.gammaUrl)
   const num = label ?? displayNumber(mod)
+  const types = contentTypes(mod)
+  const badge = moduleBadge(mod)
 
   return (
     <motion.article
@@ -133,6 +161,7 @@ function ModuleCard({ mod, label, isActive, isCompleted, onSelect, isSection }) 
         whileTap={canPlay ? { scale: 0.992 } : {}}
         onClick={() => canPlay && onSelect?.(mod, defaultTab)}
       >
+        {badge && <NewBadge kind={badge} />}
         <div
           className="absolute inset-0"
           style={{
@@ -166,7 +195,7 @@ function ModuleCard({ mod, label, isActive, isCompleted, onSelect, isSection }) 
             className="shrink-0 mt-0.5"
             style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: isCompleted ? '#E8A020' : 'rgba(255,255,255,0.55)', letterSpacing: '0.08em' }}
           >
-            {isCompleted ? '✓' : num}
+            {num}
           </span>
           <h3 className="leading-snug" style={{ fontSize: 15, fontWeight: 600, color: 'var(--cream)', letterSpacing: '-0.01em' }}>
             {mod.title}
@@ -174,48 +203,31 @@ function ModuleCard({ mod, label, isActive, isCompleted, onSelect, isSection }) 
         </div>
       </div>
 
-      <div className="flex items-center gap-2 px-4 py-3">
-        {hasVideo && (
-          <motion.button
-            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
-            onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'video') }}
-            className="text-xs px-3 py-1.5 rounded-full font-medium"
-            style={{ background: 'rgba(232,160,32,0.1)', color: '#E8A020', border: '1px solid rgba(232,160,32,0.3)' }}
-          >
-            ▶&nbsp; Video
-          </motion.button>
-        )}
-        {hasMateri && (
-          <motion.button
-            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
-            onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'materi') }}
-            className="text-xs px-3 py-1.5 rounded-full font-medium"
-            style={{ background: 'rgba(240,232,212,0.06)', color: 'var(--cream)', border: '1px solid rgba(240,232,212,0.14)' }}
-          >
-            ◈&nbsp; Materi
-          </motion.button>
-        )}
-        {hasPrompt && (
-          <motion.button
-            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
-            onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'prompt') }}
-            className="text-xs px-3 py-1.5 rounded-full font-medium"
-            style={{ background: 'rgba(232,160,32,0.1)', color: '#E8A020', border: '1px solid rgba(232,160,32,0.3)' }}
-          >
-            ⌘&nbsp; Prompt
-          </motion.button>
-        )}
-        {hasHtml && (
-          <motion.button
-            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
-            onClick={(e) => { e.stopPropagation(); onSelect?.(mod, 'penjelasan') }}
-            className="text-xs px-3 py-1.5 rounded-full font-medium"
-            style={{ background: 'rgba(240,232,212,0.06)', color: 'var(--cream)', border: '1px solid rgba(240,232,212,0.14)' }}
-          >
-            ◈&nbsp; Penjelasan
-          </motion.button>
-        )}
-        {!hasVideo && !hasMateri && !hasPrompt && !hasHtml && (
+      <div className="flex items-center gap-2 px-4 py-3 flex-wrap">
+        {types.map((t) => {
+          const meta = TYPE_META[t]
+          const parts = meta.label.split(/\s+/)
+          const icon = parts[0]
+          const name = parts.slice(1).join(' ')
+          return (
+            <motion.button
+              key={t}
+              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
+              onClick={(e) => { e.stopPropagation(); onSelect?.(mod, meta.tab) }}
+              className="text-xs px-3 py-1.5 rounded-full font-medium"
+              style={
+                isCompleted
+                  ? { background: 'rgba(74,222,128,0.12)', color: '#6EE7A0', border: '1px solid rgba(74,222,128,0.35)' }
+                  : meta.amber
+                  ? { background: 'rgba(232,160,32,0.1)', color: '#E8A020', border: '1px solid rgba(232,160,32,0.3)' }
+                  : { background: 'rgba(240,232,212,0.06)', color: 'var(--cream)', border: '1px solid rgba(240,232,212,0.14)' }
+              }
+            >
+              {isCompleted ? '✓' : icon}&nbsp; {name}
+            </motion.button>
+          )
+        })}
+        {types.length === 0 && (
           isSection ? (
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#E8A020', letterSpacing: '0.08em' }}>
               Materi ada di bawah ↓
