@@ -4,13 +4,17 @@
 **VPS Hostinger** (Ubuntu 24.04, IP: `187.77.122.42`) via **Coolify** (Docker-based)
 
 ## Auto-deploy (cara normal)
-Push ke branch `master` → GitHub Actions otomatis SSH ke VPS dan jalankan `/data/deploy-aiguild.sh`
+Push ke branch `master` → GitHub Actions otomatis SSH ke VPS dan jalankan `/data/deploy-aiguild.sh` + `db push` + `seed`.
 
 ```
 git push origin master   ← ini trigger deploy otomatis
 ```
 
 Cek status di: `github.com/arulbarker/aiguild/actions`
+
+**Auto-retry SSH (sejak 2026-06-17):** `deploy.yml` punya 2 percobaan — kalau attempt 1 gagal (mis. `dial tcp :22 i/o timeout` sesaat) → tunggu 20s → retry sekali. Script idempoten (env upsert pakai sed, seed mode aman) jadi re-run penuh aman. Kalau VPS tak terjangkau berkepanjangan (kedua attempt timeout), deploy gagal — TAPI tidak merusak prod (situs tetap jalan versi lama). Tinggal re-run saat koneksi pulih.
+
+**Catatan arsitektur (penting):** app ini **docker-compose buatan tangan** (lihat `docker-compose.prod.yml`), BUKAN "Coolify application". Coolify = proxy Traefik + jaringan + penyimpan env saja, BUKAN auto-pull dari GitHub. Pemicu deploy = GitHub Actions SSH. Rencana upgrade ke Coolify native auto-deploy ada di `docs-library/ideas-backlog.md`.
 
 ## Manual deploy (kalau GitHub Actions gagal)
 ```bash
