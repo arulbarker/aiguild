@@ -74,6 +74,8 @@ laporkan + tawarkan alternatif, terus kerja.
 - **Nomor kartu = `orderIndex + 1`; posisi visual ditentukan `parentIds` (DAG), bukan orderIndex.** Sisip/urutkan kartu → lihat skill `insert-modul.md` (geser orderIndex + sambung parentIds)
 - 4 tipe konten modul: `youtubeUrl`, `gammaUrl` (Drive `/preview`), `promptText`, `htmlContent`
 - `htmlContent` di-render via `dangerouslySetInnerHTML` — AMAN karena hanya dari seed/admin (tepercaya). Kalau suatu hari bisa diisi non-admin → WAJIB sanitasi dulu
+- **Sumber kebenaran konten (split sengaja):** `promptText` = milik admin panel → di `seed.js` dibuat **CREATE-ONLY** (ada di `create`, TIDAK di `update`) supaya editan admin tidak ketimpa reseed. `htmlContent` = milik kode/IDE → ikut `update` seed. JANGAN masukkan `promptText` ke `update` seed
+- **Konten berat (HTML 16-slide / prompt panjang) disimpan sebagai file aset** di `lib/card-content/*.html|*.txt`, dibaca `scripts/seed.js` via `fs` dan di-inject by slug — BUKAN template string inline di `lib/modules-seed.js` (yang ikut ke bundle browser via `MODULES_SEED` di `LandingClient.js`). Metadata kartu (judul/slug/parentIds/urutan) tetap di `modules-seed.js`
 - Google Drive embed: `.../file/d/<ID>/preview` (bukan `/view`)
 
 ### Notifikasi Telegram

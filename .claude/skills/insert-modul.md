@@ -31,12 +31,20 @@ menyisipkan baris di Excel.
 
 ### 3. Kalau butuh tipe konten yang belum ada kolomnya
 - Video/materi → pakai `youtubeUrl` / `gammaUrl` (Drive `/preview`). **Tidak butuh kolom baru → tidak perlu restart.**
-- Prompt copy-paste → `promptText`. Materi HTML → `htmlContent`. Keduanya **kolom DB**:
-  1. Tambah kolom di `prisma/schema.prisma` (nullable).
-  2. `npx prisma db push && npx prisma generate`.
-  3. **RESTART dev server** (Prisma client memotret struktur saat start — kolom baru tidak
-     terbaca sampai restart; gejala: error `Unknown argument` atau field hilang di API).
-     User yang start `npm run dev`; minta user, atau matikan port lalu start ulang 1 instance.
+- Prompt copy-paste → `promptText`. Materi HTML → `htmlContent`. Kolom DB sudah ada (tidak perlu
+  tambah kolom / restart lagi — sudah sejak Jun 2026).
+
+### 3b. Konten BERAT (HTML 16-slide / prompt panjang) — pola file aset
+Jangan tulis HTML/prompt panjang sebagai template string inline di `modules-seed.js`
+(ikut ke bundle browser via `MODULES_SEED` + escape backtick rawan error). Pola yang benar:
+1. Simpan konten mentah di `lib/card-content/<slug>.html` (HTML) atau `<slug>.txt` (prompt) —
+   pakai `.html`/`.txt` (BUKAN `.md`, biar tidak ketrigger aturan doc-hygiene).
+2. Di `scripts/seed.js`, daftarkan di map `CARD_CONTENT` by slug (dibaca via `fs.readFileSync`).
+3. Di `modules-seed.js` cukup metadata kartu (judul/slug/parentIds/urutan) — TANPA konten berat.
+
+**Sumber kebenaran (penting):** `promptText` di `seed.js` = **CREATE-ONLY** (di-destructure keluar
+dari `update`, hanya ikut `create`) → editan admin panel TIDAK ketimpa reseed. `htmlContent` ikut
+`update` (sumber = kode/IDE, menyebar tiap `npm run seed`). Lihat `rules.md` bagian konten.
 
 ### 4. Sinkron ke DB
 ```bash
