@@ -21,12 +21,13 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 ### Konten — flowchart modul
 - Modul tersusun sebagai DAG (Directed Acyclic Graph) — bukan tree linear
 - Satu modul bisa punya banyak parent (multiple prerequisite)
-- **4 tipe konten per modul** (bebas kombinasi): `youtubeUrl` (video), `gammaUrl` (Google Drive PDF embed — Gamma.app TIDAK dipakai, X-Frame-Options blokir), `promptText` (prompt copy-paste + tombol Salin), `htmlContent` (materi HTML inline, di-render via `dangerouslySetInnerHTML` — sumber tepercaya seed/admin)
+- **4 tipe konten per modul** (bebas kombinasi): `youtubeUrl` (video), `gammaUrl` (Google Drive PDF embed — Gamma.app TIDAK dipakai, X-Frame-Options blokir), `promptText` (prompt copy-paste + tombol Salin), `htmlContent` (materi HTML inline, di-render via `dangerouslySetInnerHTML`)
+- **Sumber kebenaran konten (split sengaja):** `promptText` = milik **admin panel** (DB) — di-seed sekali saat create lalu jadi editable, tidak pernah ketimpa reseed. `htmlContent` = milik **kode/IDE** (seed file) — ikut update tiap `npm run seed`, tidak diedit di admin (raw HTML rawan rusak/XSS). Alasan: prompt sering berubah & aman (plain text di `<pre>`); materi HTML jarang berubah & terstruktur
 - Viewer punya tab per tipe konten yang ada (Video / Materi / Prompt / Penjelasan)
 - **Dua sinyal progress terpisah:** `lastViewedAt` (modul DIBUKA) vs `completed` (DITANDAI SELESAI via tombol). Centang hijau = `completed`; jumlah centang = jumlah konten
 - **Badge per-user BARU/UPDATE (jendela 14 hari):** BARU = ditambah <14 hari & user belum buka; UPDATE = `contentUpdatedAt` <14 hari & belum dibuka sejak diubah. Hilang begitu user buka modul
 - Progress user dilacak per modul
-- Konten dikelola via `lib/modules-seed.js` + `npm run seed` (kartu prompt/HTML, `parentIds`/urutan) ATAU panel admin (video/materi/judul/urutan) — bukan CMS penuh
+- Konten dikelola via `lib/modules-seed.js` + `npm run seed` (struktur kartu, `htmlContent`, `parentIds`/urutan; konten berat HTML/prompt awal ada di `lib/card-content/*.html|*.txt` dibaca seed.js) ATAU panel admin (video/materi/judul/urutan/`promptText`) — bukan CMS penuh
 
 ### Notifikasi (Telegram)
 - Saat admin **tambah** modul (panel) → kirim "📚 Modul baru" ke grup Telegram; **ubah konten** modul → set `contentUpdatedAt` + kirim "✏️ Modul diperbarui" (link clickable)
@@ -50,7 +51,7 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 ### Admin panel (brand amber/Sora, semua route dijaga `requireAdmin`)
 - `/admin` — ringkasan: member aktif/expired, total user, modul, pembelian, voucher
 - `/admin/users` — cari email; set/perpanjang (+1 thn)/cabut masa aktif manual; toggle admin
-- `/admin/modules` — CRUD di UI (tambah/edit/hapus). Field UI: judul, slug, video, materi (Drive), urutan, deskripsi. `promptText`/`htmlContent`/`parentIds` belum ada di UI → masih via seed
+- `/admin/modules` — CRUD di UI (tambah/edit/hapus). Field UI: judul, slug, video, materi (Drive), urutan, deskripsi, **`promptText`** (textarea). `htmlContent`/`parentIds` tetap via seed/kode (IDE)
 - `/admin/purchases` — riwayat pembelian + search email
 - `/admin/vouchers` — buat voucher diskon (form) → terdaftar di Mayar via API kupon (`createMayarCoupon`); tabel `Voucher` lokal = cermin daftar; buyer ketik kode di checkout Mayar
 
