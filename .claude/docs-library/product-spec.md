@@ -20,7 +20,10 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 
 ### Konten — flowchart modul
 - Modul tersusun sebagai DAG (Directed Acyclic Graph) — bukan tree linear
-- Satu modul bisa punya banyak parent (multiple prerequisite)
+- Satu modul bisa punya banyak parent (multiple prerequisite); `parentIds` adalah `String[]`
+- **Struktur kurikulum:** trunk lurus (modul persiapan berurutan) lalu pecah jadi beberapa jalur praktek (GAS, Web App, Desktop, Android) yang punya rantai sub-modul sendiri. `lib/module-tree.js` (`buildSegments`) bedakan 2 pola otomatis: **diamond** (pecah lalu menyatu lagi) vs **tracks** (pecah jadi jalur sendiri, tidak menyatu)
+- **Dua mode tampilan flowchart** (toggle di dashboard, default Ringkas): **Ringkas** (`ModuleFlowchartCompact.js` — kotak kecil, seluruh kurikulum muat) vs **Kartu** (`ModuleFlowchart.js` — kartu besar). Desktop: jalur praktek melebar (fan-out); mobile: scroll samping
+- Kepala jalur (mis. "Praktek GAS") boleh tanpa konten langsung — kontennya di sub-modul; penomoran bertingkat otomatis dari posisi di jalur
 - **4 tipe konten per modul** (bebas kombinasi): `youtubeUrl` (video), `gammaUrl` (Google Drive PDF embed — Gamma.app TIDAK dipakai, X-Frame-Options blokir), `promptText` (prompt copy-paste + tombol Salin), `htmlContent` (materi HTML inline, di-render via `dangerouslySetInnerHTML`)
 - **Sumber kebenaran konten (split sengaja):** `promptText` = milik **admin panel** (DB) — di-seed sekali saat create lalu jadi editable, tidak pernah ketimpa reseed. `htmlContent` = milik **kode/IDE** (seed file) — ikut update tiap `npm run seed`, tidak diedit di admin (raw HTML rawan rusak/XSS). Alasan: prompt sering berubah & aman (plain text di `<pre>`); materi HTML jarang berubah & terstruktur
 - Viewer punya tab per tipe konten yang ada (Video / Materi / Prompt / Penjelasan)
