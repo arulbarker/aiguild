@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import LogoutButton from '@/components/LogoutButton'
 
 const NAV = [
   { href: '/admin', label: 'Ringkasan' },
@@ -24,6 +25,7 @@ export default function AdminLayout({ active, children }) {
               </Link>
             ))}
             <Link href="/dashboard" style={{ padding: '6px 12px', borderRadius: 8, color: 'var(--muted)' }}>↗ App</Link>
+            <LogoutButton />
           </nav>
         </div>
       </header>

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 
 function ScrollTitle({ children, hovered }) {
@@ -106,7 +106,19 @@ function ModuleItem({ mod, i, isDone, isActive, onSelect, setOpen }) {
 
 export default function Sidebar({ modules = [], completedIds = [], onSelect }) {
   const [open, setOpen] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+
+  async function handleLogout() {
+    if (loggingOut) return
+    setLoggingOut(true)
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } catch {}
+    router.push('/login')
+    router.refresh()
+  }
 
   return (
     <>
@@ -183,7 +195,7 @@ export default function Sidebar({ modules = [], completedIds = [], onSelect }) {
           </h2>
         </div>
 
-        <nav className="p-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 100px)' }}>
+        <nav className="p-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 180px)' }}>
           <Link
             href="/dashboard"
             onClick={() => setOpen(false)}
@@ -221,6 +233,32 @@ export default function Sidebar({ modules = [], completedIds = [], onSelect }) {
             ))}
           </div>
         </nav>
+
+        {/* Footer — tombol keluar */}
+        <div
+          className="absolute bottom-0 left-0 right-0 px-4 py-4"
+          style={{ borderTop: '1px solid var(--border)', background: 'var(--surface)' }}
+        >
+          <motion.button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            whileHover={{ scale: loggingOut ? 1 : 1.02 }}
+            whileTap={{ scale: loggingOut ? 1 : 0.97 }}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl"
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              color: loggingOut ? 'var(--muted)' : 'rgba(255,255,255,0.7)',
+              border: '1px solid var(--border)',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              cursor: loggingOut ? 'default' : 'pointer',
+            }}
+          >
+            {loggingOut ? 'Keluar…' : '⏻ Keluar'}
+          </motion.button>
+        </div>
       </motion.aside>
     </>
   )
