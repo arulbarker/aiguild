@@ -108,7 +108,7 @@ export default function LandingClient({ payUrl = '#' }) {
           >
             <span className="block" style={{ color: 'var(--cream)' }}>Belajar</span>
             <span className="block" style={{ color: 'var(--amber)' }}>Vibe Coding</span>
-            <span className="block" style={{ color: 'var(--cream)' }}>dari 0 sampai pro.</span>
+            <span className="block" style={{ color: 'var(--cream)' }}>dari pemula sampai pro.</span>
           </motion.h1>
 
           <motion.p
