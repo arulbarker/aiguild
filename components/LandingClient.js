@@ -125,7 +125,7 @@ export default function LandingClient({ payUrl = '#' }) {
           >
             <a href={payUrl} target="_blank" rel="noopener noreferrer"
               style={{ background: 'var(--amber)', color: '#07070A', padding: '15px 30px', borderRadius: 12, fontWeight: 700, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 13, letterSpacing: '0.04em' }}>
-              Gabung · {HARGA}/tahun
+              Gabung · <span style={{ textDecoration: 'line-through', opacity: 0.55, fontWeight: 500 }}>{HARGA_CORET}</span> {HARGA}/tahun
             </a>
             <a href="#kurikulum"
               style={{ border: '1px solid var(--border)', color: 'var(--cream)', padding: '15px 30px', borderRadius: 12, fontWeight: 500, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 13 }}>
