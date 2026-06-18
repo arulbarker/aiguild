@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { MODULES_SEED } from '@/lib/modules-seed'
 
 const HARGA = 'Rp1.497.000'
+const HARGA_CORET = 'Rp2.500.000'
+const HEMAT_PERSEN = 40
 const PER_BULAN = 'Rp124.750'
 const JUMLAH_MODUL = MODULES_SEED.length
 
@@ -187,6 +189,14 @@ export default function LandingClient({ payUrl = '#' }) {
                 <p style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.2em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 12 }}>
                   Keanggotaan Tahunan
                 </p>
+                <div className="flex items-center gap-2.5" style={{ marginBottom: 6 }}>
+                  <span style={{ textDecoration: 'line-through', color: 'var(--muted)', fontFamily: 'var(--font-mono)', fontSize: 17 }}>
+                    {HARGA_CORET}
+                  </span>
+                  <span style={{ background: 'rgba(232,160,32,0.14)', color: 'var(--amber)', border: '1px solid rgba(232,160,32,0.3)', borderRadius: 6, padding: '2px 8px', fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    Hemat {HEMAT_PERSEN}%
+                  </span>
+                </div>
                 <div className="flex items-baseline gap-2">
                   <span className="font-extrabold" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.6rem, 8vw, 4rem)', color: 'var(--cream)', letterSpacing: '-0.03em' }}>
                     {HARGA}
