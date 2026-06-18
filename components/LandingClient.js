@@ -106,9 +106,9 @@ export default function LandingClient({ payUrl = '#' }) {
             className="font-extrabold uppercase"
             style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.4rem, 9vw, 5.5rem)', lineHeight: 0.95, letterSpacing: '-0.04em', maxWidth: 900 }}
           >
-            <span className="block" style={{ color: 'var(--cream)' }}>Ngoding pakai AI.</span>
-            <span className="block" style={{ color: 'var(--amber)' }}>Dari nol sampai</span>
-            <span className="block" style={{ color: 'var(--cream)' }}>menghasilkan.</span>
+            <span className="block" style={{ color: 'var(--cream)' }}>Belajar</span>
+            <span className="block" style={{ color: 'var(--amber)' }}>Vibe Coding</span>
+            <span className="block" style={{ color: 'var(--cream)' }}>dari pemula sampai pro.</span>
           </motion.h1>
 
           <motion.p
