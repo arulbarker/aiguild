@@ -6,13 +6,14 @@ import { MODULES_SEED } from '@/lib/modules-seed'
 
 const HARGA = 'Rp1.497.000'
 const PER_BULAN = 'Rp124.750'
+const JUMLAH_MODUL = MODULES_SEED.length
 
 const ease = [0.16, 1, 0.3, 1]
 
 const LANGKAH = [
   { n: '01', t: 'Bayar di Mayar', d: 'Checkout aman pakai email kamu. Sekali bayar, akses 1 tahun penuh.' },
   { n: '02', t: 'Cek email', d: 'Akun kamu otomatis aktif. Buka halaman masuk, ketik email yang sama, klik link.' },
-  { n: '03', t: 'Mulai belajar', d: 'Langsung masuk ke flowchart 21 modul. Belajar urut, kapan saja, dari mana saja.' },
+  { n: '03', t: 'Mulai belajar', d: `Langsung masuk ke flowchart ${JUMLAH_MODUL} modul. Belajar urut, kapan saja, dari mana saja.` },
 ]
 
 const FAQ = [
@@ -113,7 +114,7 @@ export default function LandingClient({ payUrl = '#' }) {
             style={{ color: 'var(--muted)', fontSize: 'clamp(0.95rem, 2vw, 1.15rem)', lineHeight: 1.65, maxWidth: 540, marginTop: 28 }}
           >
             Tanpa harus jadi programmer dulu. Belajar bikin web app, aplikasi desktop, APK Android,
-            dan otomasi — dibimbing langkah demi langkah lewat 21 modul terstruktur.
+            dan otomasi — dibimbing langkah demi langkah lewat {JUMLAH_MODUL} modul terstruktur.
           </motion.p>
 
           <motion.div
@@ -135,7 +136,7 @@ export default function LandingClient({ payUrl = '#' }) {
             className="flex flex-wrap gap-x-6 gap-y-2 mt-12"
             style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}
           >
-            <span><span style={{ color: 'var(--amber)' }}>21</span> modul</span>
+            <span><span style={{ color: 'var(--amber)' }}>{JUMLAH_MODUL}</span> modul</span>
             <span><span style={{ color: 'var(--amber)' }}>4</span> jalur praktik</span>
             <span><span style={{ color: 'var(--amber)' }}>1</span> tahun akses</span>
             <span><span style={{ color: 'var(--amber)' }}>∞</span> belajar ulang</span>
@@ -159,7 +160,7 @@ export default function LandingClient({ payUrl = '#' }) {
       </Section>
 
       {/* ===== KURIKULUM ===== */}
-      <Section id="kurikulum" eyebrow="Isi materi" title="21 modul, dari mindset sampai monetisasi">
+      <Section id="kurikulum" eyebrow="Isi materi" title={`${JUMLAH_MODUL} modul, dari mindset sampai monetisasi`}>
         <p style={{ color: 'var(--muted)', fontSize: 14, lineHeight: 1.6, maxWidth: 560, marginBottom: 28 }}>
           Tersusun sebagai peta belajar (flowchart) — kamu selalu tahu langkah berikutnya, tidak tersesat.
         </p>
@@ -204,7 +205,7 @@ export default function LandingClient({ payUrl = '#' }) {
 
             <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3 mt-8 pt-8" style={{ borderTop: '1px solid var(--border)' }}>
               {[
-                'Akses semua 21 modul + yang baru ditambahkan',
+                `Akses semua ${JUMLAH_MODUL} modul + yang baru ditambahkan`,
                 'Video + materi PDF, belajar kapan saja',
                 'Peta belajar flowchart anti-tersesat',
                 'Komunitas Telegram untuk tanya-jawab',
