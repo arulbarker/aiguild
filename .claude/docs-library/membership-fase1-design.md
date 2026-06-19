@@ -8,7 +8,7 @@
 
 ## Tujuan
 
-Ubah AI Guild dari model "beli sekali, akses selamanya" jadi **langganan bulanan Rp149.000** via Mayar. User yang langganannya mau habis dapat **email reminder + tombol perpanjang**. Yang tidak perpanjang → akses materi dicabut otomatis.
+Ubah AI Guild dari model "beli sekali, akses selamanya" jadi **langganan tahunan Rp1.497.000** via Mayar. User yang langganannya mau habis dapat **email reminder + tombol perpanjang**. Yang tidak perpanjang → akses materi dicabut otomatis.
 
 ## Keputusan terkunci
 
@@ -19,7 +19,7 @@ Ubah AI Guild dari model "beli sekali, akses selamanya" jadi **langganan bulanan
 | Keamanan video | YouTube unlisted di-embed di balik login (Fase 3 nanti: Cloudflare Stream) |
 | Model langganan | **Manual + reminder** (H-3 email + tombol perpanjang), bukan auto-charge |
 | Webhook | Lewat `mayar-webhook-gateway` yang sudah ada (additive, aman untuk ruangsaku) |
-| Harga | Rp149.000 / 30 hari |
+| Harga | Rp1.497.000 / 365 hari (tahunan) |
 | Produk Mayar | `ai-guild` (sudah dibuat manual di dashboard) |
 
 ## URL Mayar (asli)
@@ -42,7 +42,7 @@ mayar-webhook-gateway (Cloudflare Worker)
    └──────────────► aiguild.online/api/webhook/mayar
                          │  verifikasi signature → FILTER produk ai-guild
                          ▼
-                    PostgreSQL: set/perpanjang membershipExpiredAt +30 hari
+                    PostgreSQL: set/perpanjang membershipExpiredAt +365 hari
                          │
    ┌─────────────────────┴─────────────────────┐
    ▼                                            ▼
@@ -78,8 +78,8 @@ Perubahan **additive** (aman untuk ruangsaku):
 Sudah ada: verifikasi HMAC signature + idempotency by `orderId`. **Ditambah:**
 1. **Filter produk (KRITIS):** hanya proses event produk `ai-guild`. Tanpa ini, pembeli ruangsaku dapat akses AI Guild gratis (gateway menyebar semua event ke semua app).
 2. **Logika perpanjang:**
-   - Kalau `membershipExpiredAt` masih di masa depan → tambah 30 hari ke tanggal itu (numpuk, adil).
-   - Kalau sudah habis / belum ada → `now() + 30 hari`.
+   - Kalau `membershipExpiredAt` masih di masa depan → tambah 365 hari ke tanggal itu (numpuk, adil).
+   - Kalau sudah habis / belum ada → `now() + 365 hari`.
    - Reset `reminderSentAt = null`.
 
 ## Penjagaan akses
@@ -102,7 +102,7 @@ Dashboard adalah client component yang ambil data dari `/api/modules`. Middlewar
 
 ## Langkah manual user (di luar kode)
 
-1. ✅ Produk `ai-guild` 149rb sudah dibuat di dashboard Mayar.
+1. ✅ Produk `ai-guild` (Rp1.497.000/tahun) sudah dibuat di dashboard Mayar.
 2. Daftarkan webhook Mayar ke URL gateway (jika belum): `https://mayar-webhook-gateway.mursalinasrul.workers.dev/`.
 3. Set redirect URL produk ke halaman sukses AI Guild.
 4. Deploy ulang `mayar-webhook-gateway` setelah Claude update kodenya.
@@ -124,5 +124,51 @@ Dashboard adalah client component yang ambil data dari `/api/modules`. Middlewar
 
 ## Di luar lingkup (fase berikutnya)
 
-- **Fase 2 — Bot Telegram + cron kick:** kode unik penghubung, `telegramId`, invite link sekali-pakai, auto-kick saat expired.
+- **Fase 2 — Akses grup Telegram (gate "Join Request", Cara 1):** rencana lengkap di section bawah.
 - **Fase 3 — Keamanan video:** migrasi dari YouTube embed ke Cloudflare Stream (signed URL) saat sudah scale.
+
+---
+
+## Fase 2 — Akses grup Telegram (Cara 1: Join Request)
+
+> Status: arah disetujui 2026-06-19 (Cara 1). Eksekusi setelah Fase 1 live. Ringkasan keputusan ada di `ideas-backlog.md`.
+
+### Keputusan inti
+- **Bukan email murni.** Email tidak terhubung ke Telegram (Telegram pakai chat ID berupa angka). Tanpa bot, mustahil cek status membership atau auto-kick. Bot wajib.
+- **Cara 1 (Join Request) dipilih, bukan Cara 2 (mute/captcha).** Grup di-set "butuh persetujuan admin untuk masuk". Yang tidak berhak tidak pernah masuk grup — lebih bersih daripada masuk dulu lalu dibungkam.
+- **Dipecah 2 bagian** supaya tidak berat dan tidak menabung utang migrasi:
+  - **Bagian A (bangun lebih dulu):** catat Telegram ID + invite sekali-pakai + auto-approve join request. Murah, sekali setup. Wajib dari awal agar member tidak jadi "hantu" (tak terlacak) saat grup membesar.
+  - **Bagian B (tunda):** auto-kick saat expired via cron. Paling ribet & rawan salah-kick. Awalnya kick manual via halaman admin (volume kecil karena periode langganan panjang).
+
+### Alur user (Bagian A)
+```
+1. User beli & login → dashboard kasih KODE UNIK (mis. AIG-7K2M) + tombol "Gabung Grup Telegram"
+2. User buka bot @aiguild_admin_bot → kirim kode
+3. Bot cocokkan kode ↔ akun user → simpan telegramId, tandai terverifikasi
+4. Bot balas link grup (atau langsung set siap auto-approve)
+5. User klik link → "Minta Bergabung" (grup mode Join Request)
+6. Bot terima event chat_join_request → cek DB: terverifikasi & membership aktif?
+   → ya: approve   → tidak: tolak/diamkan
+```
+
+### Syarat teknis
+- Bot jadi **admin grup** dengan hak "Tambah/Batasi Anggota" — bot `aiguild_admin_bot` sudah admin di grup VIP.
+- Grup VIP di-set **"Approve new members"** (Join Request).
+- Bot perlu endpoint webhook Telegram (atau long-polling) untuk terima `/start`, pesan kode, dan `chat_join_request`.
+- Token bot di env (`TELEGRAM_BOT_TOKEN`) — **bukan bot notif admin yang sama bila chat-nya beda**; pastikan tidak bentrok dengan `lib/telegram.js` (notif modul).
+
+### Field DB (ditunda dari Fase 1, masuk di Fase 2)
+- `User.telegramId` (String?, unik) — chat ID Telegram user.
+- `User.telegramKode` (String?, unik) — kode unik penghubung sekali-pakai.
+- Status verifikasi turunan: `telegramId != null`.
+
+### Langkah implementasi (tingkat tinggi — detail TDD dibuat saat eksekusi)
+1. Tambah field `telegramId` + `telegramKode` ke schema (additive, nullable → aman).
+2. Generate kode unik saat user pertama buka tab "Grup Telegram" di dashboard + tampilkan tombol.
+3. Endpoint bot Telegram: handle `/start`, terima kode → simpan `telegramId`.
+4. Handle `chat_join_request` → cek verifikasi + `isMembershipActive` → approve/decline.
+5. Set grup VIP ke mode Join Request (manual oleh user di Telegram).
+6. (Bagian B, nanti) Halaman admin "member expired" → tombol kick manual; lalu cron auto-kick.
+
+### Catatan
+- Periode langganan: **tahunan (+365 hari, Rp1.497.000)** sesuai Fase 1. Expired jarang (setahun sekali) → makin kuat alasan tunda Bagian B (kick manual cukup). Bila nanti ditambah produk bulanan terpisah (lihat `ideas-backlog.md`), logika kick tidak berubah.
