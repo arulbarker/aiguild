@@ -24,6 +24,7 @@ jobs:
       MAYAR_WEBHOOK_TOKEN: ${{ secrets.MAYAR_WEBHOOK_TOKEN }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TELEGRAM_INFO_THREAD_ID: ${{ secrets.TELEGRAM_INFO_THREAD_ID }}
     steps:
       # ATTEMPT 1 — kalau gagal (mis. SSH i/o timeout sesaat), TIDAK menggagalkan
       # job; lanjut ke step retry. Script idempoten → aman dijalankan ulang penuh
@@ -38,7 +39,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           timeout: 60s
           command_timeout: 20m
-          envs: ADMIN_EMAIL,CRON_SECRET,MAYAR_PAYMENT_URL,MAYAR_API_BASE,MAYAR_PRODUCT_NAME,MAYAR_API_KEY,MAYAR_WEBHOOK_TOKEN,TELEGRAM_BOT_TOKEN,TELEGRAM_CHAT_ID
+          envs: ADMIN_EMAIL,CRON_SECRET,MAYAR_PAYMENT_URL,MAYAR_API_BASE,MAYAR_PRODUCT_NAME,MAYAR_API_KEY,MAYAR_WEBHOOK_TOKEN,TELEGRAM_BOT_TOKEN,TELEGRAM_CHAT_ID,TELEGRAM_INFO_THREAD_ID
           script: |
             ENVF=/data/aiguild/.env.production
             touch "$ENVF"
@@ -61,6 +62,7 @@ jobs:
             upsert MAYAR_WEBHOOK_TOKEN "$MAYAR_WEBHOOK_TOKEN"
             upsert TELEGRAM_BOT_TOKEN "$TELEGRAM_BOT_TOKEN"
             upsert TELEGRAM_CHAT_ID "$TELEGRAM_CHAT_ID"
+            upsert TELEGRAM_INFO_THREAD_ID "$TELEGRAM_INFO_THREAD_ID"
 
             bash /data/deploy-aiguild.sh
 
@@ -89,7 +91,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           timeout: 60s
           command_timeout: 20m
-          envs: ADMIN_EMAIL,CRON_SECRET,MAYAR_PAYMENT_URL,MAYAR_API_BASE,MAYAR_PRODUCT_NAME,MAYAR_API_KEY,MAYAR_WEBHOOK_TOKEN,TELEGRAM_BOT_TOKEN,TELEGRAM_CHAT_ID
+          envs: ADMIN_EMAIL,CRON_SECRET,MAYAR_PAYMENT_URL,MAYAR_API_BASE,MAYAR_PRODUCT_NAME,MAYAR_API_KEY,MAYAR_WEBHOOK_TOKEN,TELEGRAM_BOT_TOKEN,TELEGRAM_CHAT_ID,TELEGRAM_INFO_THREAD_ID
           script: |
             ENVF=/data/aiguild/.env.production
             touch "$ENVF"
@@ -112,6 +114,7 @@ jobs:
             upsert MAYAR_WEBHOOK_TOKEN "$MAYAR_WEBHOOK_TOKEN"
             upsert TELEGRAM_BOT_TOKEN "$TELEGRAM_BOT_TOKEN"
             upsert TELEGRAM_CHAT_ID "$TELEGRAM_CHAT_ID"
+            upsert TELEGRAM_INFO_THREAD_ID "$TELEGRAM_INFO_THREAD_ID"
 
             bash /data/deploy-aiguild.sh
 
