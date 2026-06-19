@@ -81,6 +81,7 @@ laporkan + tawarkan alternatif, terus kerja.
 ### Notifikasi Telegram
 - Notif modul (`lib/telegram.js`) HANYA terpicu dari aksi panel admin (`/api/admin/modules` POST/PATCH). Perubahan via seed/deploy TIDAK notif (cegah spam tiap deploy)
 - Token & chat id dari env (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`) — dev di `.env.local`, prod di GitHub Secrets. Aman gagal kalau env kosong (notif di-skip, app tidak error)
+- Grup = supergroup **forum**; notif diarahkan ke **topik "Info"** via `TELEGRAM_INFO_THREAD_ID` (kosong → General). Kalau grup di-upgrade ke supergroup, **chat ID berubah** → update secret `TELEGRAM_CHAT_ID`
 
 ### Environment variables wajib sebelum run
 ```
@@ -90,6 +91,11 @@ TOKEN_SECRET          min 32 karakter
 NEXT_PUBLIC_APP_URL   http://localhost:3001 (dev) / https://domain.com (prod)
 ADMIN_EMAIL           email admin (untuk seed)
 ```
+
+### Env produksi (VPS) — cara kerja
+- Env prod hidup di **GitHub Secrets**, BUKAN dashboard Coolify. `deploy.yml` sync ke `/data/aiguild/.env.production` (upsert `sed`) tiap deploy
+- **Tambah env var baru WAJIB update `deploy.yml` di 3 tempat:** `env:` block job, daftar `envs:` ssh-action (×2 attempt 1 & retry), dan `upsert ...` (×2). Lupa salah satu → var tak sampai ke prod
+- Ubah nilai: `gh secret set NAMA` lalu deploy ulang (push/merge ke master)
 
 ### Rahasia & file .md
 - Token, API key, password, kredensial apapun DILARANG ditulis di file .md
