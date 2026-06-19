@@ -2,7 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ubah AI Guild jadi langganan bulanan Rp149rb via Mayar — webhook perpanjang masa aktif, akses dicabut saat habis, reminder email H-3 + tombol perpanjang.
+> **STATUS (2026-06-19): SUDAH DIIMPLEMENTASI & ada di master.** Model FINAL = **TAHUNAN** (365 hari / Rp1.497.000). Contoh kode di bawah masih pakai **30 hari / Rp149rb** (historis saat plan ditulis) — kode aktual `lib/membership.js` sudah `PERIOD_DAYS=365`. Untuk model terkini rujuk `lib/membership.js` + `membership-fase1-design.md`, bukan angka di contoh plan ini. Paket bulanan = produk baru terpisah nanti (lihat `ideas-backlog.md`).
+
+**Goal:** Ubah AI Guild jadi **langganan tahunan Rp1.497.000** via Mayar — webhook perpanjang masa aktif, akses dicabut saat habis, reminder email H-3 + tombol perpanjang.
 
 **Architecture:** Mayar → gateway Cloudflare (fan-out + teruskan signature) → webhook Next.js (verifikasi signature, filter produk `ai-guild`, perpanjang `membershipExpiredAt` +30 hari). Akses dijaga di `/api/modules` (403) & `/modul/[slug]` (redirect). Cron harian kirim reminder H-3 via Resend.
 
