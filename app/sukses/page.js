@@ -8,7 +8,7 @@ export default function SuksesPage() {
           Pembayaran Berhasil 🎉
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 28, lineHeight: 1.6 }}>
-          Cek email kamu untuk link masuk ke AI Guild. Klik tombol di email itu untuk mulai belajar.
+          Klik tombol Masuk di bawah, lalu masukkan email yang kamu pakai saat bayar. Link untuk masuk akan dikirim ke email itu.
         </p>
         <a href="/login" style={{ display: 'inline-block', background: 'var(--amber)', color: '#07070a', padding: '14px 32px', borderRadius: 10, textDecoration: 'none', fontWeight: 700 }}>
           Masuk
