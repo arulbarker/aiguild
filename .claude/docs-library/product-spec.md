@@ -36,6 +36,7 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 - Saat admin **tambah** modul (panel) → kirim "📚 Modul baru" ke grup Telegram; **ubah konten** modul → set `contentUpdatedAt` + kirim "✏️ Modul diperbarui" (link clickable)
 - Hanya dari aksi panel admin (`/api/admin/modules` POST/PATCH) — perubahan via seed/deploy TIDAK notif (cegah spam tiap deploy)
 - `lib/telegram.js` (`sendTelegram`/`notifyModule`), token & chat id dari env (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`), aman gagal kalau env kosong
+- Grup target = supergroup **forum** "Ai Guild MEMBERSHIP" (chat ID di env). Notif diarahkan ke **topik "Info"** lewat `TELEGRAM_INFO_THREAD_ID` (kosong → topik General)
 
 ### Pembayaran & akses — langganan (Fase 1)
 - **Mayar.id** = platform langganan utama. Webhook `payment.paid` → perpanjang `membershipExpiredAt` +365 hari (Rp1.497.000/tahun)
