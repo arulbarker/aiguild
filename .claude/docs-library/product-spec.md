@@ -7,7 +7,11 @@ Sumber kebenaran produk ini.
 
 ## Produk ini apa
 
-Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun produk digital dengan bantuan AI. Model akses: **langganan tahunan Rp1.497.000 / tahun (365 hari) via Mayar.id** (Fase 1). User bayar → masa aktif diperpanjang → belajar via email magic link. Akses dicabut otomatis saat masa aktif habis.
+Platform **toko ecourse** vibe coding. Target: non-IT yang ingin bangun produk digital dengan bantuan AI. Model akses: **beli per kursus, akses selamanya** via Mayar.id. Banyak kursus dijual terpisah, tiap kursus punya harga sendiri. User beli sebuah kursus → punya akses ke kursus itu tanpa batas waktu → belajar via email magic link. Etalase katalog publik (tanpa login); login hanya untuk masuk ke kursus yang dimiliki.
+
+**Kursus pertama:** "Vibe Coding Google Apps Script: Dari Nol Bikin Aplikasi Sampai Menghasilkan" (Rp500.000, 25 modul).
+
+> Pivot dari model lama (langganan tahunan single-product) didokumentasikan di [`multi-ecourse-design.md`](./multi-ecourse-design.md) + [`multi-ecourse-plan.md`](./multi-ecourse-plan.md).
 
 ---
 
@@ -38,24 +42,25 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 - `lib/telegram.js` (`sendTelegram`/`notifyModule`), token & chat id dari env (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`), aman gagal kalau env kosong
 - Grup target = supergroup **forum** "Ai Guild MEMBERSHIP" (chat ID di env). Notif diarahkan ke **topik "Info"** lewat `TELEGRAM_INFO_THREAD_ID` (kosong → topik General)
 
-### Pembayaran & akses — langganan (Fase 1)
-- **Mayar.id** = platform langganan utama. Webhook `payment.paid` → perpanjang `membershipExpiredAt` +365 hari (Rp1.497.000/tahun)
-- **Stacking:** perpanjang saat masih aktif → +1 tahun numpuk dari tanggal habis lama (user tak rugi sisa hari)
-- **Gerbang akses:** `/api/modules`, `/api/progress` (403), `/modul/[slug]` & `/dashboard` (redirect `/perpanjang`) saat masa aktif habis. Admin selalu bypass
-- **Reminder H-3:** cron harian `/api/cron/check-membership` kirim email perpanjang (Resend), idempotent via `reminderSentAt`
-- **Webhook Mayar:** event `payment.received`; field `data.customerEmail`, `data.id`, `data.amount`, `data.productId`/`data.productName` (dari docs Mayar)
-- **Auth webhook:** Mayar pakai **token statis** di header `Authorization: Bearer <token>` (BUKAN HMAC) — diverifikasi vs `MAYAR_WEBHOOK_TOKEN` (token diset saat daftar webhook di Mayar). Dikonfirmasi dari 3 codebase nyata
-- **Gerbang produk:** cocokkan `data.productId` (env `MAYAR_PRODUCT_ID`) / `productName` (`MAYAR_PRODUCT_NAME`) — fail-closed. Nominal jadi lantai opsional (`MAYAR_MIN_AMOUNT`, default mati) supaya diskon voucher lolos
+### Pembayaran & akses — beli per kursus, selamanya
+- **Mayar.id** = platform pembayaran. Tiap kursus = 1 produk Mayar (`Course.mayarProductId`). Webhook `payment.received` → buat kepemilikan (baris `Purchase` `userId`+`courseId`, tanpa kedaluwarsa)
+- **Kepemilikan = tabel `Purchase`.** Punya kursus = ada baris `Purchase(userId, courseId)`. Cek akses via `lib/ownership.js` (`getOwnedCourseIds` + `hasCourseAccess`). Admin selalu bypass
+- **Gerbang akses:** `/api/modules?course=` & `/api/progress` (403 `not_owned`), `/modul/[slug]` & `/belajar/[courseSlug]` (redirect `/kursus/[slug]`) bila tak punya kursus
+- **Webhook Mayar:** event `payment.received`; field `data.customerEmail`, `data.id`, `data.productId`. Idempotent via `orderId`/hash body per course
+- **Auth webhook:** Mayar pakai **token statis** di header `Authorization: Bearer <token>` (BUKAN HMAC) — diverifikasi vs `MAYAR_WEBHOOK_TOKEN`
+- **Gerbang produk:** `data.productId` di-lookup ke `Course.mayarProductId` di DB (`matchCourseByProduct`) — **fail-closed**, produk tak terpetakan diabaikan. Tambah kursus = isi product ID di admin, nol perubahan kode
 - **Gateway:** 1 webhook Mayar → Cloudflare Worker fan-out ke beberapa app (ai-guild & ruangsaku)
-- Halaman `/perpanjang` (tombol bayar) & `/sukses` (pasca-bayar)
-- Lynk.id webhook masih ada di kode (legacy/produk lain), bukan model akses AI Guild lagi
-- Tidak ada trial, tidak ada level berbeda — aktif = akses semua modul
+- Halaman `/kursus/[slug]` (jualan per kursus) & `/sukses` (pasca-bayar). Tidak ada `/perpanjang`, tidak ada cron reminder (akses selamanya)
+- Lynk.id webhook masih ada di kode (legacy/produk lain)
+- Tidak ada trial, tidak ada langganan, tidak ada kedaluwarsa
 - Refund dikelola manual oleh admin
+- **Checkout link:** sementara pakai `MAYAR_PAYMENT_URL` (env) untuk kursus pertama. Per-course checkout link ditambah saat kursus ke-2 muncul (lihat backlog)
 
 ### Admin panel (brand amber/Sora, semua route dijaga `requireAdmin`)
-- `/admin` — ringkasan: member aktif/expired, total user, modul, pembelian, voucher
-- `/admin/users` — cari email; set/perpanjang (+1 thn)/cabut masa aktif manual; toggle admin
-- `/admin/modules` — CRUD di UI (tambah/edit/hapus). Field UI: judul, slug, video, materi (Drive), urutan, deskripsi, **`promptText`** (textarea). `htmlContent`/`parentIds` tetap via seed/kode (IDE)
+- `/admin` — ringkasan: total user, kursus, modul, akses kursus terjual, voucher
+- `/admin/courses` — **CRUD kursus** (judul, slug, harga, `mayarProductId`, deskripsi, publish, urutan). Hapus ditolak bila kursus masih punya modul
+- `/admin/users` — cari email; **beri/cabut akses kursus** per user (baris `Purchase`); toggle admin
+- `/admin/modules` — CRUD di UI (tambah/edit/hapus) + **pemilih kursus** (`courseId` wajib saat tambah). Field UI: judul, slug, video, materi (Drive), urutan, deskripsi, **`promptText`** (textarea). `htmlContent`/`parentIds` tetap via seed/kode (IDE)
 - `/admin/purchases` — riwayat pembelian + search email
 - `/admin/vouchers` — buat voucher diskon (form) → terdaftar di Mayar via API kupon (`createMayarCoupon`); tabel `Voucher` lokal = cermin daftar; buyer ketik kode di checkout Mayar
 
@@ -71,20 +76,21 @@ Platform pembelajaran vibe coding berbayar. Target: non-IT yang ingin bangun pro
 ## Alur user utama
 
 ```
-Langganan di Mayar.id (Rp1.497rb / tahun)
+Pengunjung buka / (etalase publik) → lihat katalog + harga (tanpa login)
+        ↓
+Beli kursus di Mayar (harga per kursus)
         ↓
 Gateway (CF Worker) fan-out → webhook /api/webhook/mayar
         ↓
-Filter produk ai-guild → user upsert → membershipExpiredAt +365 hari
+productId → lookup Course → user upsert → Purchase(userId, courseId) [selamanya]
         ↓
 User buka /login → input email → klik magic link (email)
         ↓  (dev: auto-redirect tanpa email)
-Session dibuat → redirect ke /dashboard (akses aktif)
+Session dibuat → /dashboard → "Kelasku" (kursus dimiliki) + "Jelajahi"
         ↓
-Flowchart modul → klik modul → viewer full-screen
+Klik kursus → /belajar/[courseSlug] → flowchart modul → viewer full-screen
         ↓
-Masa aktif habis → gerbang redirect ke /perpanjang → bayar lagi (stacking)
-Reminder email H-3 sebelum habis
+Mau kursus lain → beli lagi (akses seumur hidup, tidak ada perpanjangan)
 ```
 
 ---
@@ -94,13 +100,16 @@ Reminder email H-3 sebelum habis
 | Keputusan | Alasan |
 |---|---|
 | Tidak pakai CMS untuk modul | Sederhana, tidak butuh UI tambahan, cukup edit kode |
-| Satu kelas, bukan multi-kelas | MVP dulu, multi-kelas bisa ditambah nanti |
+| **Multi-kursus, beli per kursus, akses selamanya** | Toko ecourse: banyak kursus, harga sendiri. Menggantikan "satu kelas + langganan tahunan" |
+| Kepemilikan = tabel `Purchase` (bukan tabel Enrollment baru) | Untuk akses selamanya, "pernah beli" = "boleh akses"; reuse alur webhook |
+| Webhook mapping via lookup DB (`Course.mayarProductId`) | Skalabel — tambah kursus tanpa ubah kode |
 | Self-hosted di VPS (bukan Vercel) | Kontrol penuh, lebih murah untuk multi-service |
 | Magic link tanpa password | Lebih simpel untuk non-IT, tidak ada password forgotten |
 | JavaScript (bukan TypeScript) | Lebih cepat untuk solo developer |
 | Prisma 7 dengan adapter-pg | Prisma 7 sudah tidak punya binary engine, butuh driver adapter |
-| Langganan tahunan Rp1.497rb (bukan lifetime) — Fase 1 | Pendapatan berulang, lewat Mayar; ganti model "beli sekali". Paket bulanan tidak dipakai |
-| Schema via `prisma db push` (bukan migrasi) | Project tak punya history migrasi; kolom membership nullable = aman tanpa reset. Prod disinkron manual + backup (bukan auto-deploy) |
+| Schema via `prisma db push` (bukan migrasi) | Project tak punya history migrasi. Fresh start → reset bersih di dev |
+
+> **Keputusan lama yang digantikan:** "satu kelas, bukan multi-kelas" & "langganan tahunan Rp1.497rb" — diganti model multi-kursus beli-selamanya (2026-06-22).
 
 ---
 
@@ -108,6 +117,7 @@ Reminder email H-3 sebelum habis
 
 - CMS untuk edit konten modul
 - Sistem refund otomatis
-- Multi-kelas
+- Bundle "beli semua kursus sekaligus"
+- Per-course checkout link & voucher per-kursus (sekarang pakai env tunggal + kupon Mayar global)
 - Notifikasi WhatsApp (bisa ditambah nanti via Fonnte)
 - Forum / komunitas di dalam platform
