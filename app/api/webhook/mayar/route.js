@@ -1,14 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createHash } from 'crypto'
 import { prisma } from '@/lib/db'
-import { computeNewExpiry } from '@/lib/membership'
-import { isAiGuildProduct, extractEmail, extractOrderId, extractAmount, isValidMayarToken } from '@/lib/mayar-webhook'
+import { matchCourseByProduct, extractEmail, extractOrderId, isValidMayarToken } from '@/lib/mayar-webhook'
 
 export async function POST(request) {
   const rawBody = await request.text()
 
-  // Verifikasi token — FAIL-CLOSED. Gateway (yang kita kontrol) menyuntik token ini
-  // di header x-gateway-token, jadi selalu cocok untuk request sah; hit langsung tanpa token ditolak.
   const expectedToken = process.env.MAYAR_WEBHOOK_TOKEN
   if (!expectedToken) {
     console.error('Webhook Mayar: MAYAR_WEBHOOK_TOKEN belum diset — webhook ditolak')
@@ -35,36 +32,29 @@ export async function POST(request) {
     return NextResponse.json({ message: 'Event diabaikan' })
   }
 
-  // Gerbang produk: cocokkan productId (utama) / productName (fallback) dari env.
-  // Fail-closed — kalau env produk belum diset, webhook ditolak.
-  const productMatch = isAiGuildProduct(payload, {
-    productId: process.env.MAYAR_PRODUCT_ID,
-    productName: process.env.MAYAR_PRODUCT_NAME,
+  // Gerbang produk via DB: productId → course. Fail-closed.
+  // Tambah kursus baru = isi mayarProductId di admin, nol perubahan kode.
+  const courses = await prisma.course.findMany({
+    where: { mayarProductId: { not: null } },
+    select: { id: true, slug: true, mayarProductId: true },
   })
-  if (!productMatch) {
-    console.log('Webhook: produk bukan AI Guild, diabaikan', payload.data?.productId, payload.data?.productName)
-    return NextResponse.json({ message: 'Produk lain diabaikan' })
+  const course = matchCourseByProduct(courses, payload)
+  if (!course) {
+    console.log('Webhook: produk tak terpetakan ke course, diabaikan', payload.data?.productId)
+    return NextResponse.json({ message: 'Produk tidak dikenal' })
   }
 
   const email = extractEmail(payload)
   const orderId = extractOrderId(payload)
-  const amount = extractAmount(payload)
-
   if (!email) {
     return NextResponse.json({ error: 'Email tidak ditemukan di payload' }, { status: 400 })
   }
 
-  // Lantai nominal opsional (default mati) — diskon voucher boleh bayar kurang.
-  // Gerbang utama adalah kecocokan produk di atas, bukan nominal.
-  const minAmount = Number(process.env.MAYAR_MIN_AMOUNT) || 0
-  if (minAmount > 0 && amount != null && amount < minAmount) {
-    console.warn('Webhook: nominal di bawah lantai', amount, '<', minAmount, 'order', orderId)
-    return NextResponse.json({ error: 'Nominal pembayaran kurang' }, { status: 402 })
-  }
-
-  // Idempotency selalu aktif: pakai orderId, atau hash body bila id tak ada (cegah replay).
+  // Idempotency: orderId, atau hash body bila id tak ada. Per course (cegah dobel grant).
   const dedupKey = orderId || `body:${createHash('sha256').update(rawBody).digest('hex').slice(0, 32)}`
-  const existing = await prisma.purchase.findFirst({ where: { orderId: dedupKey, source: 'mayar' } })
+  const existing = await prisma.purchase.findFirst({
+    where: { orderId: dedupKey, source: 'mayar', courseId: course.id },
+  })
   if (existing) {
     return NextResponse.json({ message: 'Sudah diproses' })
   }
@@ -75,16 +65,9 @@ export async function POST(request) {
     create: { email },
   })
 
-  const newExpiry = computeNewExpiry(user.membershipExpiredAt, new Date())
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { membershipExpiredAt: newExpiry, reminderSentAt: null },
-  })
-
   await prisma.purchase.create({
-    data: { userId: user.id, source: 'mayar', orderId: dedupKey },
+    data: { userId: user.id, courseId: course.id, source: 'mayar', orderId: dedupKey },
   })
 
-  return NextResponse.json({ message: 'OK' })
+  return NextResponse.json({ message: 'OK', course: course.slug })
 }

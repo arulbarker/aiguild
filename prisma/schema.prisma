@@ -7,22 +7,39 @@ datasource db {
 }
 
 model User {
-  id                  String         @id @default(uuid())
-  email               String         @unique
-  name                String?
-  isAdmin             Boolean        @default(false) @map("is_admin")
-  membershipExpiredAt DateTime?      @map("membership_expired_at")
-  reminderSentAt      DateTime?      @map("reminder_sent_at")
-  createdAt           DateTime       @default(now()) @map("created_at")
-  purchases           Purchase[]
-  progress            UserProgress[]
-  magicTokens         MagicToken[]
+  id          String         @id @default(uuid())
+  email       String         @unique
+  name        String?
+  isAdmin     Boolean        @default(false) @map("is_admin")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  purchases   Purchase[]
+  progress    UserProgress[]
+  magicTokens MagicToken[]
 
   @@map("users")
 }
 
+model Course {
+  id             String     @id @default(uuid())
+  title          String
+  slug           String     @unique
+  description    String?
+  price          Int        @default(0)
+  mayarProductId String?    @map("mayar_product_id")
+  coverImage     String?    @map("cover_image")
+  isPublished    Boolean    @default(false) @map("is_published")
+  orderIndex     Int        @default(0) @map("order_index")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  modules        Module[]
+  purchases      Purchase[]
+
+  @@map("courses")
+}
+
 model Module {
   id          String         @id @default(uuid())
+  course      Course         @relation(fields: [courseId], references: [id])
+  courseId    String         @map("course_id")
   title       String
   slug        String         @unique
   description String?
@@ -43,6 +60,8 @@ model Purchase {
   id          String   @id @default(uuid())
   user        User     @relation(fields: [userId], references: [id])
   userId      String   @map("user_id")
+  course      Course?  @relation(fields: [courseId], references: [id])
+  courseId    String?  @map("course_id")
   source      String
   orderId     String?  @map("order_id")
   purchasedAt DateTime @default(now()) @map("purchased_at")

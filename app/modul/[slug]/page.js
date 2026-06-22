@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { isMembershipActive } from '@/lib/membership'
+import { getOwnedCourseIds, hasCourseAccess } from '@/lib/ownership'
 import ModuleViewerWrapper from './ModuleViewerWrapper'
 
 export async function generateMetadata({ params }) {
@@ -14,23 +14,24 @@ export default async function ModulPage({ params }) {
   const session = await getSession()
   if (!session) redirect('/login')
 
-  const me = await prisma.user.findUnique({ where: { id: session.userId } })
-  if (!session.isAdmin && !isMembershipActive(me?.membershipExpiredAt, new Date())) {
-    redirect('/perpanjang')
-  }
-
   const { slug } = await params
   const mod = await prisma.module.findUnique({ where: { slug } })
   if (!mod) redirect('/dashboard')
 
-  // Tandai progress
+  const ownedCourseIds = await getOwnedCourseIds(prisma, session.userId)
+  if (!hasCourseAccess({ isAdmin: session.isAdmin, ownedCourseIds }, mod.courseId)) {
+    const course = await prisma.course.findUnique({ where: { id: mod.courseId }, select: { slug: true } })
+    redirect(course ? `/kursus/${course.slug}` : '/dashboard')
+  }
+
+  // Tandai progress (modul dibuka)
   await prisma.userProgress.upsert({
     where: { userId_moduleId: { userId: session.userId, moduleId: mod.id } },
     update: { lastViewedAt: new Date() },
     create: { userId: session.userId, moduleId: mod.id },
   })
 
-  const allModules = await prisma.module.findMany({ orderBy: { orderIndex: 'asc' } })
+  const allModules = await prisma.module.findMany({ where: { courseId: mod.courseId }, orderBy: { orderIndex: 'asc' } })
   const progress = await prisma.userProgress.findMany({ where: { userId: session.userId } })
   const completedIds = progress.filter((p) => p.completed).map((p) => p.moduleId)
 

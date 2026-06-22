@@ -1,0 +1,202 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import ModuleFlowchart from '@/components/ModuleFlowchart'
+import ModuleFlowchartCompact from '@/components/ModuleFlowchartCompact'
+import ModuleViewer from '@/components/ModuleViewer'
+import Sidebar from '@/components/Sidebar'
+import { useRouter } from 'next/navigation'
+
+export default function LearnClient({ courseSlug, courseTitle }) {
+  const [modules, setModules]        = useState([])
+  const [completedIds, setCompleted] = useState([])
+  const [viewedMap, setViewedMap]    = useState({})
+  const [activeModule, setActive]    = useState(null)
+  const [initialTab, setInitialTab]  = useState('video')
+  const [loading, setLoading]        = useState(true)
+  const [viewMode, setViewMode]      = useState('compact')
+  const router = useRouter()
+
+  useEffect(() => {
+    fetch(`/api/modules?course=${encodeURIComponent(courseSlug)}`).then(async (res) => {
+      if (res.status === 401) { router.push('/login'); return }
+      if (res.status === 403) { router.push(`/kursus/${courseSlug}`); return }
+      const data = await res.json()
+      setModules(data.modules ?? [])
+      setCompleted(data.completedIds ?? [])
+      const map = {}
+      ;(data.viewed ?? []).forEach((v) => { map[v.moduleId] = v.lastViewedAt })
+      setViewedMap(map)
+      setLoading(false)
+    })
+  }, [router, courseSlug])
+
+  function handleSelectModule(mod, tab = 'video') {
+    setInitialTab(tab)
+    setActive(mod)
+    // Buka modul = "dibaca" → catat view supaya badge BARU/UPDATE hilang.
+    setViewedMap((prev) => ({ ...prev, [mod.id]: new Date().toISOString() }))
+    fetch('/api/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ moduleId: mod.id }),
+    }).catch(() => {})
+  }
+
+  async function handleComplete(modId) {
+    if (completedIds.includes(modId)) return
+    await fetch('/api/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ moduleId: modId, completed: true }),
+    })
+    setCompleted((prev) => [...prev, modId])
+  }
+
+  const modulesWithView = modules.map((m) => ({ ...m, lastViewedAt: viewedMap[m.id] ?? null }))
+
+  return (
+    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
+      <Sidebar modules={modules} completedIds={completedIds} onSelect={handleSelectModule} />
+
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.div
+            key="loading"
+            className="min-h-screen flex items-center justify-center"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <motion.span
+              style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)', letterSpacing: '0.15em' }}
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              MEMUAT...
+            </motion.span>
+          </motion.div>
+        ) : (
+          <motion.main
+            key="content"
+            className="pb-16 px-4"
+            style={{ paddingTop: 72 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.45 }}
+          >
+            <div className="max-w-2xl mx-auto mb-12">
+
+              <motion.header
+                className="pt-4"
+                initial={{ opacity: 0, y: -16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <motion.p
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
+                  style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 10 }}
+                >
+                  AI GUILD · KURIKULUM
+                </motion.p>
+
+                <h1
+                  className="font-extrabold"
+                  style={{ fontSize: 'clamp(1.4rem, 5vw, 2.6rem)', letterSpacing: '-0.03em', marginBottom: 20, fontFamily: 'var(--font-display)', color: 'var(--cream)', lineHeight: 1.05 }}
+                >
+                  {courseTitle}
+                </h1>
+
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', whiteSpace: 'nowrap' }}>
+                    {completedIds.length} / {modules.length} selesai
+                  </span>
+                  <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+                </div>
+
+                {/* Toggle tampilan */}
+                <div className="flex items-center justify-end gap-1 mt-4">
+                  {[
+                    { key: 'compact', label: '⊟ Ringkas' },
+                    { key: 'card',    label: '⊞ Kartu'   },
+                  ].map(({ key, label }) => (
+                    <motion.button
+                      key={key}
+                      onClick={() => setViewMode(key)}
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.94 }}
+                      className="px-3 py-1.5 rounded-lg text-xs"
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 10,
+                        letterSpacing: '0.06em',
+                        background: viewMode === key ? 'rgba(232,160,32,0.12)' : 'transparent',
+                        color: viewMode === key ? '#E8A020' : 'rgba(255,255,255,0.55)',
+                        border: viewMode === key ? '1px solid rgba(232,160,32,0.3)' : '1px solid transparent',
+                        transition: 'all 0.18s',
+                      }}
+                    >
+                      {label}
+                    </motion.button>
+                  ))}
+                </div>
+
+                {modules.length > 0 && (
+                  <div className="mt-3 h-0.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ background: 'var(--amber)' }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(completedIds.length / modules.length) * 100}%` }}
+                      transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    />
+                  </div>
+                )}
+              </motion.header>
+            </div>
+
+            <div className="w-full">
+              {modules.length > 0 ? (
+                viewMode === 'compact' ? (
+                  <ModuleFlowchartCompact
+                    modules={modulesWithView}
+                    completedIds={completedIds}
+                    onSelect={handleSelectModule}
+                    activeId={activeModule?.id}
+                  />
+                ) : (
+                  <ModuleFlowchart
+                    modules={modulesWithView}
+                    completedIds={completedIds}
+                    onSelect={handleSelectModule}
+                    activeId={activeModule?.id}
+                  />
+                )
+              ) : (
+                <motion.p
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  style={{ fontFamily: 'var(--font-mono)', color: 'var(--muted)', textAlign: 'center', fontSize: 13 }}
+                >
+                  — modul belum tersedia —
+                </motion.p>
+              )}
+            </div>
+          </motion.main>
+        )}
+      </AnimatePresence>
+
+      {/* Full-screen viewer — muncul di atas */}
+      <AnimatePresence>
+        {activeModule && (
+          <ModuleViewer
+            module={activeModule}
+            initialTab={initialTab}
+            isCompleted={completedIds.includes(activeModule?.id)}
+            onComplete={() => handleComplete(activeModule?.id)}
+            onClose={() => setActive(null)}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}

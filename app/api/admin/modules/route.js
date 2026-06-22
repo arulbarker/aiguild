@@ -16,7 +16,10 @@ export async function GET() {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const modules = await prisma.module.findMany({ orderBy: { orderIndex: 'asc' } })
+  const modules = await prisma.module.findMany({
+    orderBy: { orderIndex: 'asc' },
+    include: { course: { select: { slug: true, title: true } } },
+  })
   return NextResponse.json({ modules })
 }
 
@@ -26,14 +29,17 @@ export async function POST(request) {
   }
 
   const body = await request.json()
-  const { title, slug, description, youtubeUrl, gammaUrl, promptText, htmlContent, parentIds, orderIndex } = body
+  const { title, slug, description, youtubeUrl, gammaUrl, promptText, htmlContent, parentIds, orderIndex, courseId } = body
 
   if (!title || !slug) {
     return NextResponse.json({ error: 'title dan slug wajib diisi' }, { status: 400 })
   }
+  if (!courseId) {
+    return NextResponse.json({ error: 'courseId wajib diisi (pilih kursus)' }, { status: 400 })
+  }
 
   const mod = await prisma.module.create({
-    data: { title, slug, description, youtubeUrl, gammaUrl, promptText, htmlContent, parentIds: parentIds ?? [], orderIndex: orderIndex ?? 0 },
+    data: { title, slug, description, youtubeUrl, gammaUrl, promptText, htmlContent, courseId, parentIds: parentIds ?? [], orderIndex: orderIndex ?? 0 },
   })
 
   // Notif modul baru (jangan gagalkan request kalau Telegram error).

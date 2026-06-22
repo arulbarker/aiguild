@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import pg from 'pg'
 import { readFileSync } from 'node:fs'
-import { MODULES_SEED } from '../lib/modules-seed.js'
+import { MODULES_SEED, COURSES_SEED, DEFAULT_COURSE_SLUG } from '../lib/modules-seed.js'
 import dotenv from 'dotenv'
 import { resolve } from 'path'
 
@@ -37,6 +37,19 @@ async function main() {
     console.log('Mode aman: progress user dipertahankan.')
   }
 
+  console.log('Sinkronisasi course...')
+  const courseSlugToId = {}
+  for (const c of COURSES_SEED) {
+    const { slug, ...rest } = c
+    const upserted = await prisma.course.upsert({
+      where: { slug },
+      // price & mayarProductId CREATE-ONLY (jadi milik admin setelah dibuat)
+      update: { title: rest.title, description: rest.description, isPublished: rest.isPublished, orderIndex: rest.orderIndex },
+      create: { slug, ...rest },
+    })
+    courseSlugToId[slug] = upserted.id
+  }
+
   console.log('Sinkronisasi modul...')
 
   const slugToId = {}
@@ -50,12 +63,14 @@ async function main() {
   //    update (sumber kebenaran = kode/IDE, menyebar saat npm run seed).
   for (const rawMod of MODULES_SEED) {
     const mod = { ...rawMod, ...(CARD_CONTENT[rawMod.slug] ?? {}) }
-    const { parentIds: _slugParentIds, promptText, ...rest } = mod
+    const { parentIds: _slugParentIds, promptText, courseSlug, ...rest } = mod
+    const courseId = courseSlugToId[courseSlug ?? DEFAULT_COURSE_SLUG]
+    if (!courseId) throw new Error(`Course tidak ditemukan untuk modul ${mod.slug}: ${courseSlug ?? DEFAULT_COURSE_SLUG}`)
 
     const upserted = await prisma.module.upsert({
       where: { slug: mod.slug },
-      update: { ...rest, parentIds: [] },
-      create: { ...rest, promptText: promptText ?? null, parentIds: [] },
+      update: { ...rest, courseId, parentIds: [] },
+      create: { ...rest, courseId, promptText: promptText ?? null, parentIds: [] },
     })
 
     slugToId[mod.slug] = upserted.id

@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { summarizeMembers } from '@/lib/admin-stats'
 import AdminLayout from '@/components/AdminLayout'
 
 export const metadata = { title: 'Admin — AI Guild' }
@@ -10,20 +9,19 @@ export default async function AdminDashboard() {
   const session = await getSession()
   if (!session?.isAdmin) redirect('/')
 
-  const [users, modules, purchases, vouchers] = await Promise.all([
-    prisma.user.findMany({ select: { membershipExpiredAt: true } }),
+  const [users, courses, modules, purchases, vouchers] = await Promise.all([
+    prisma.user.count(),
+    prisma.course.count(),
     prisma.module.count(),
-    prisma.purchase.count(),
+    prisma.purchase.count({ where: { courseId: { not: null } } }),
     prisma.voucher.count(),
   ])
-  const m = summarizeMembers(users)
 
   const cards = [
-    { label: 'Member aktif', value: m.active, accent: true },
-    { label: 'Member expired', value: m.expired },
-    { label: 'Total user', value: m.total },
+    { label: 'Total user', value: users, accent: true },
+    { label: 'Kursus', value: courses },
     { label: 'Modul', value: modules },
-    { label: 'Pembelian', value: purchases },
+    { label: 'Akses kursus terjual', value: purchases },
     { label: 'Voucher', value: vouchers },
   ]
 
