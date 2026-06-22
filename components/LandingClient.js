@@ -104,19 +104,18 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
           <motion.h1
             initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.08, ease }}
             className="font-extrabold uppercase"
-            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.1rem, 7vw, 4.4rem)', lineHeight: 0.98, letterSpacing: '-0.04em', maxWidth: 920 }}
+            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.4rem, 8vw, 5rem)', lineHeight: 0.98, letterSpacing: '-0.04em', maxWidth: 920 }}
           >
-            {flagship ? flagship.title : 'Belajar Vibe Coding dari pemula sampai pro.'}
+            <span className="block" style={{ color: 'var(--cream)' }}>Bisa bikin &amp; jual aplikasi sendiri</span>
+            <span className="block" style={{ color: 'var(--amber)' }}>walau kamu bukan anak IT.</span>
           </motion.h1>
 
-          {flagship?.description && (
-            <motion.p
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.22, ease }}
-              style={{ color: 'var(--muted)', fontSize: 'clamp(0.95rem, 2vw, 1.15rem)', lineHeight: 1.65, maxWidth: 560, marginTop: 28 }}
-            >
-              {flagship.description}
-            </motion.p>
-          )}
+          <motion.p
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.22, ease }}
+            style={{ color: 'var(--muted)', fontSize: 'clamp(0.95rem, 2vw, 1.15rem)', lineHeight: 1.65, maxWidth: 560, marginTop: 28 }}
+          >
+            Belajar vibe coding dengan bantuan AI — dari nol sampai produk yang menghasilkan. Pilih kursusmu di bawah dan mulai hari ini.
+          </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.34, ease }}
