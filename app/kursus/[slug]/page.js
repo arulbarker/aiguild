@@ -3,6 +3,9 @@ import { prisma } from '@/lib/db'
 import { getSession } from '@/lib/auth'
 import { getOwnedCourseIds, hasCourseAccess } from '@/lib/ownership'
 
+// Baca DB + cek sesi → render saat request, jangan prerender statis saat build.
+export const dynamic = 'force-dynamic'
+
 function rupiah(n) {
   if (n == null) return ''
   return 'Rp' + Number(n).toLocaleString('id-ID')
