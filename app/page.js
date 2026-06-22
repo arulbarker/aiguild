@@ -1,6 +1,9 @@
 import { prisma } from '@/lib/db'
 import LandingClient from '@/components/LandingClient'
 
+// Render saat request (bukan prerender statis saat build) — halaman baca DB live.
+export const dynamic = 'force-dynamic'
+
 export default async function Home() {
   const payUrl = process.env.MAYAR_PAYMENT_URL || '#'
 

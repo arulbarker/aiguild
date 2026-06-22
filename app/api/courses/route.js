@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
+// Baca DB live → jangan di-prerender statis saat build.
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const courses = await prisma.course.findMany({
     where: { isPublished: true },
