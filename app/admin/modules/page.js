@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react'
 import AdminLayout from '@/components/AdminLayout'
 
-const EMPTY = { title: '', slug: '', description: '', youtubeUrl: '', gammaUrl: '', orderIndex: 0 }
+const EMPTY = { title: '', slug: '', description: '', youtubeUrl: '', gammaUrl: '', orderIndex: 0, courseId: '' }
 
 export default function AdminModulesPage() {
   const [modules, setModules] = useState([])
+  const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({})
@@ -15,9 +16,11 @@ export default function AdminModulesPage() {
   const [msg, setMsg] = useState('')
 
   async function load() {
-    const r = await fetch('/api/admin/modules')
-    const d = await r.json()
-    setModules(d.modules ?? [])
+    const [rm, rc] = await Promise.all([fetch('/api/admin/modules'), fetch('/api/admin/courses')])
+    const dm = await rm.json()
+    const dc = await rc.json()
+    setModules(dm.modules ?? [])
+    setCourses(dc.courses ?? [])
     setLoading(false)
   }
   useEffect(() => { load() }, [])
@@ -59,11 +62,15 @@ export default function AdminModulesPage() {
       {creating && (
         <form onSubmit={createModule} className="rounded-2xl p-5 mb-5 space-y-3" style={{ background: 'var(--surface)', border: '1px solid rgba(232,160,32,0.25)' }}>
           <div className="grid sm:grid-cols-2 gap-3">
+            <select style={inp} value={newForm.courseId} onChange={(e) => setNewForm({ ...newForm, courseId: e.target.value })} required>
+              <option value="">— Pilih kursus * —</option>
+              {courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
+            </select>
+            <input style={inp} type="number" placeholder="Urutan" value={newForm.orderIndex} onChange={(e) => setNewForm({ ...newForm, orderIndex: Number(e.target.value) })} />
             <input style={inp} placeholder="Judul *" value={newForm.title} onChange={(e) => setNewForm({ ...newForm, title: e.target.value })} required />
             <input style={inp} placeholder="slug-unik *" value={newForm.slug} onChange={(e) => setNewForm({ ...newForm, slug: e.target.value })} required />
             <input style={inp} placeholder="YouTube URL" value={newForm.youtubeUrl} onChange={(e) => setNewForm({ ...newForm, youtubeUrl: e.target.value })} />
             <input style={inp} placeholder="Gamma/Drive URL" value={newForm.gammaUrl} onChange={(e) => setNewForm({ ...newForm, gammaUrl: e.target.value })} />
-            <input style={inp} type="number" placeholder="Urutan" value={newForm.orderIndex} onChange={(e) => setNewForm({ ...newForm, orderIndex: Number(e.target.value) })} />
           </div>
           <input style={inp} placeholder="Deskripsi" value={newForm.description} onChange={(e) => setNewForm({ ...newForm, description: e.target.value })} />
           <button type="submit" style={{ ...btnSm, color: '#07070A', background: 'var(--amber)', fontWeight: 700 }}>Simpan modul</button>
@@ -107,7 +114,7 @@ export default function AdminModulesPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="font-medium" style={{ color: 'var(--cream)' }}>{mod.title}</p>
-                    <p style={{ color: 'var(--muted)', fontSize: 12, marginTop: 2, fontFamily: 'var(--font-mono)' }}>/{mod.slug} · urutan {mod.orderIndex}</p>
+                    <p style={{ color: 'var(--muted)', fontSize: 12, marginTop: 2, fontFamily: 'var(--font-mono)' }}>/{mod.slug} · urutan {mod.orderIndex}{mod.course && ` · ${mod.course.title}`}</p>
                     {mod.description && <p style={{ color: 'var(--muted)', fontSize: 13, marginTop: 4 }}>{mod.description}</p>}
                     <div className="flex gap-3 mt-2" style={{ fontSize: 11 }}>
                       {mod.youtubeUrl && <span style={{ color: 'var(--amber)' }}>YouTube ✓</span>}
