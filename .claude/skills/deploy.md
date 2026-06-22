@@ -90,3 +90,26 @@ docker logs aiguild-app -f   # follow realtime
 4. Kalau besok masih: chat Hostinger, minta unblock IP rumah (sebutkan IP publik kamu, cek via `curl -4 https://ifconfig.me`).
 
 **Pencegahan:** jangan spam ping/SSH cepat-cepat ke VPS saat diagnosa — itu sendiri yang memicu blokir. Satu-dua tes cukup.
+
+---
+
+## Aturan build Next.js (WAJIB — pelajaran 2026-06-22, bikin deploy gagal)
+
+Build prod (`next build` di Docker) jalan **tanpa akses database & dengan `output: standalone`**. Dua jebakan yang sudah pernah menggagalkan deploy:
+
+1. **Halaman/route yang baca DB WAJIB `export const dynamic = 'force-dynamic'`.**
+   - Tanpa ini, Next mencoba **prerender statis saat build** → query Prisma saat build → DB tak terjangkau di build container → `next build` GAGAL (`Can't reach database server`).
+   - Berlaku untuk: server component yang query DB (mis. `/`, `/kursus/[slug]`) DAN route handler GET yang query DB (mis. `/api/courses`).
+   - Halaman yang pakai `cookies()`/`getSession()` otomatis dinamis — tidak perlu flag.
+   - **Tes lokal sebelum push:** `$env:DATABASE_URL="postgresql://x:x@127.0.0.1:1/nope"; npm run build` — kalau lolos, aman dari error ini.
+
+2. **Build `standalone` TIDAK otomatis menyalin `public/`.** Dockerfile WAJIB:
+   ```
+   COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+   ```
+   Tanpa ini, semua aset di `public/` (gambar dll) → **404** walau kode lain live.
+
+## Migrasi DB destruktif ke prod (pola aman)
+- Auto-deploy pakai `prisma db push` polos → **gagal** kalau ada drop kolom / tambah kolom NOT NULL ke tabel berisi data.
+- Kalau prod fresh (0 user): boleh **sekali** ubah deploy jadi `db push --force-reset --accept-data-loss`, deploy, lalu **langsung kembalikan** ke `db push` polos. JANGAN tinggalkan force-reset di `deploy.yml` (push berikutnya akan wipe prod).
+- Kalau prod ada data: jangan reset — pakai migrasi hati-hati + backup dulu.
