@@ -21,16 +21,18 @@ export async function middleware(request) {
     }
   }
 
-  // Redirect ke dashboard kalau sudah login dan buka landing/login
-  if ((pathname === '/login' || pathname === '/') && session) {
+  // Sudah login & buka halaman login → arahkan ke dashboard.
+  // Catatan: "/" (etalase) TIDAK diredirect — user yang login tetap boleh
+  // menjelajah katalog untuk beli kursus lain.
+  if (pathname === '/login' && session) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // Proteksi route /dashboard, /modul, /perpanjang
+  // Proteksi route yang butuh login (gerbang kepemilikan kursus ada di page).
   if (
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/modul') ||
-    pathname.startsWith('/perpanjang')
+    pathname.startsWith('/belajar')
   ) {
     if (!session) {
       return NextResponse.redirect(new URL('/login', request.url))
@@ -48,5 +50,5 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/', '/login', '/dashboard/:path*', '/modul/:path*', '/perpanjang/:path*', '/admin/:path*'],
+  matcher: ['/login', '/dashboard/:path*', '/modul/:path*', '/belajar/:path*', '/admin/:path*'],
 }
