@@ -2,31 +2,29 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MODULES_SEED } from '@/lib/modules-seed'
-
-const HARGA = 'Rp1.497.000'
-const HARGA_CORET = 'Rp2.500.000'
-const HEMAT_PERSEN = 40
-const PER_BULAN = 'Rp124.750'
-const JUMLAH_MODUL = MODULES_SEED.length
 
 const ease = [0.16, 1, 0.3, 1]
 
+function rupiah(n) {
+  if (n == null) return ''
+  return 'Rp' + Number(n).toLocaleString('id-ID')
+}
+
 const LANGKAH = [
-  { n: '01', t: 'Bayar di Mayar', d: 'Checkout aman pakai email kamu. Sekali bayar, akses 1 tahun penuh.' },
+  { n: '01', t: 'Pilih & bayar kursus', d: 'Checkout aman di Mayar pakai email kamu. Sekali bayar, akses selamanya.' },
   { n: '02', t: 'Cek email', d: 'Akun kamu otomatis aktif. Buka halaman masuk, ketik email yang sama, klik link.' },
-  { n: '03', t: 'Mulai belajar', d: `Langsung masuk ke flowchart ${JUMLAH_MODUL} modul. Belajar urut, kapan saja, dari mana saja.` },
+  { n: '03', t: 'Mulai belajar', d: 'Langsung masuk ke flowchart modul. Belajar urut, kapan saja, dari mana saja.' },
 ]
 
 const FAQ = [
-  { q: 'Harus bisa ngoding dulu?', a: 'Tidak. AI Guild dirancang khusus untuk non-IT. Kamu belajar dari mindset paling dasar sampai bisa bikin produk yang menghasilkan — dibantu AI di setiap langkah.' },
-  { q: 'Aksesnya berapa lama?', a: 'Satu tahun penuh sejak pembayaran. Mendekati masa habis, kamu kami ingatkan lewat email dan tinggal perpanjang. Perpanjang lebih awal? Sisa harimu tidak hangus — masa aktif numpuk.' },
+  { q: 'Harus bisa ngoding dulu?', a: 'Tidak. Kursus di sini dirancang khusus untuk non-IT. Kamu belajar dari mindset paling dasar sampai bisa bikin produk yang menghasilkan — dibantu AI di setiap langkah.' },
+  { q: 'Aksesnya berapa lama?', a: 'Selamanya. Sekali beli sebuah kursus, kamu punya akses penuh ke kursus itu tanpa batas waktu — termasuk modul baru yang ditambahkan ke kursus tersebut.' },
   { q: 'Email mana yang dipakai untuk masuk?', a: 'Email yang sama dengan saat kamu bayar di Mayar. Pastikan ketik dengan benar — akun terikat ke email itu.' },
-  { q: 'Materinya dalam bentuk apa?', a: 'Video YouTube + materi PDF per modul, tersusun sebagai flowchart (peta belajar) supaya kamu tahu urutan dan tidak tersesat. Modul baru ditambah dari waktu ke waktu — kamu otomatis dapat.' },
+  { q: 'Materinya dalam bentuk apa?', a: 'Video YouTube + materi PDF per modul, tersusun sebagai flowchart (peta belajar) supaya kamu tahu urutan dan tidak tersesat.' },
   { q: 'Bagaimana kalau mau refund?', a: 'Refund dikelola manual oleh admin. Hubungi kami lewat komunitas dan kami bantu sesuai kondisinya.' },
 ]
 
-export default function LandingClient({ payUrl = '#' }) {
+export default function LandingClient({ payUrl = '#', courses = [], flagship = null, flagshipModules = [] }) {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState('idle')
   const [errorMsg, setErrorMsg] = useState('')
@@ -68,6 +66,8 @@ export default function LandingClient({ payUrl = '#' }) {
     }
   }
 
+  const flagshipLink = flagship ? `/kursus/${flagship.slug}` : '#harga'
+
   return (
     <div style={{ background: 'var(--bg)', color: 'var(--cream)', overflowX: 'hidden' }}>
 
@@ -78,14 +78,14 @@ export default function LandingClient({ payUrl = '#' }) {
         </span>
         <div className="flex items-center gap-5" style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
           <a href="#masuk" style={{ color: 'var(--muted)' }} className="hover:opacity-100 transition">Masuk</a>
-          <a href="#harga" style={{ color: '#07070A', background: 'var(--amber)', padding: '7px 16px', borderRadius: 8, fontWeight: 600 }}>
-            Gabung
+          <a href="#kursus" style={{ color: '#07070A', background: 'var(--amber)', padding: '7px 16px', borderRadius: 8, fontWeight: 600 }}>
+            Lihat Kursus
           </a>
         </div>
       </nav>
 
-      {/* ===== HERO ===== */}
-      <header className="relative px-5 sm:px-8 max-w-6xl mx-auto" style={{ paddingTop: 56, paddingBottom: 80 }}>
+      {/* ===== HERO (kursus unggulan) ===== */}
+      <header className="relative px-5 sm:px-8 max-w-6xl mx-auto" style={{ paddingTop: 56, paddingBottom: 64 }}>
         <div aria-hidden style={{
           position: 'absolute', top: -120, left: '50%', transform: 'translateX(-50%)',
           width: 700, height: 500, maxWidth: '120vw',
@@ -98,38 +98,37 @@ export default function LandingClient({ payUrl = '#' }) {
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease }}
             style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.25em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 22 }}
           >
-            Platform Vibe Coding · Untuk Non-IT
+            Platform Kursus Vibe Coding · Untuk Non-IT
           </motion.p>
 
           <motion.h1
             initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.08, ease }}
             className="font-extrabold uppercase"
-            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.4rem, 9vw, 5.5rem)', lineHeight: 0.95, letterSpacing: '-0.04em', maxWidth: 900 }}
+            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.1rem, 7vw, 4.4rem)', lineHeight: 0.98, letterSpacing: '-0.04em', maxWidth: 920 }}
           >
-            <span className="block" style={{ color: 'var(--cream)' }}>Belajar</span>
-            <span className="block" style={{ color: 'var(--amber)' }}>Vibe Coding</span>
-            <span className="block" style={{ color: 'var(--cream)' }}>dari pemula sampai pro.</span>
+            {flagship ? flagship.title : 'Belajar Vibe Coding dari pemula sampai pro.'}
           </motion.h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.22, ease }}
-            style={{ color: 'var(--muted)', fontSize: 'clamp(0.95rem, 2vw, 1.15rem)', lineHeight: 1.65, maxWidth: 540, marginTop: 28 }}
-          >
-            Tanpa harus jadi programmer dulu. Belajar bikin web app, aplikasi desktop, APK Android,
-            dan otomasi — dibimbing langkah demi langkah lewat {JUMLAH_MODUL} modul terstruktur.
-          </motion.p>
+          {flagship?.description && (
+            <motion.p
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.22, ease }}
+              style={{ color: 'var(--muted)', fontSize: 'clamp(0.95rem, 2vw, 1.15rem)', lineHeight: 1.65, maxWidth: 560, marginTop: 28 }}
+            >
+              {flagship.description}
+            </motion.p>
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.34, ease }}
             className="flex flex-col sm:flex-row gap-3 mt-10"
           >
-            <a href={payUrl} target="_blank" rel="noopener noreferrer"
+            <a href={flagshipLink}
               style={{ background: 'var(--amber)', color: '#07070A', padding: '15px 30px', borderRadius: 12, fontWeight: 700, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 13, letterSpacing: '0.04em' }}>
-              Gabung · <span style={{ textDecoration: 'line-through', opacity: 0.55, fontWeight: 500 }}>{HARGA_CORET}</span> {HARGA}/tahun
+              {flagship ? `Mulai · ${rupiah(flagship.price)}` : 'Lihat kursus'} {flagship && <span style={{ opacity: 0.7, fontWeight: 500 }}>· akses selamanya</span>}
             </a>
-            <a href="#kurikulum"
+            <a href="#kursus"
               style={{ border: '1px solid var(--border)', color: 'var(--cream)', padding: '15px 30px', borderRadius: 12, fontWeight: 500, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 13 }}>
-              Lihat kurikulum ↓
+              Semua kursus ↓
             </a>
           </motion.div>
 
@@ -138,13 +137,39 @@ export default function LandingClient({ payUrl = '#' }) {
             className="flex flex-wrap gap-x-6 gap-y-2 mt-12"
             style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}
           >
-            <span><span style={{ color: 'var(--amber)' }}>{JUMLAH_MODUL}</span> modul</span>
-            <span><span style={{ color: 'var(--amber)' }}>4</span> jalur praktik</span>
-            <span><span style={{ color: 'var(--amber)' }}>1</span> tahun akses</span>
+            <span><span style={{ color: 'var(--amber)' }}>{flagshipModules.length}</span> modul</span>
+            <span><span style={{ color: 'var(--amber)' }}>1×</span> bayar</span>
+            <span><span style={{ color: 'var(--amber)' }}>∞</span> akses selamanya</span>
             <span><span style={{ color: 'var(--amber)' }}>∞</span> belajar ulang</span>
           </motion.div>
         </div>
       </header>
+
+      {/* ===== SEMUA KURSUS (grid) ===== */}
+      <Section id="kursus" eyebrow="Katalog" title="Semua kursus">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {courses.map((c, i) => (
+            <Reveal key={c.slug} delay={Math.min(i, 6) * 0.06}>
+              <a href={`/kursus/${c.slug}`} className="block h-full rounded-2xl p-6 transition"
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <h3 className="font-bold" style={{ fontFamily: 'var(--font-display)', fontSize: 18, color: 'var(--cream)', lineHeight: 1.25, marginBottom: 10 }}>{c.title}</h3>
+                {c.description && <p style={{ color: 'var(--muted)', fontSize: 13.5, lineHeight: 1.6, marginBottom: 18 }}>{c.description}</p>}
+                <div className="flex items-center justify-between" style={{ marginTop: 'auto' }}>
+                  <span className="font-extrabold" style={{ fontFamily: 'var(--font-display)', fontSize: 20, color: 'var(--amber)' }}>{rupiah(c.price)}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px' }}>Lihat →</span>
+                </div>
+              </a>
+            </Reveal>
+          ))}
+          {/* Placeholder pertumbuhan katalog */}
+          <Reveal delay={0.12}>
+            <div className="h-full rounded-2xl p-6 flex items-center justify-center text-center"
+              style={{ border: '1px dashed var(--border)', minHeight: 160 }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}>Kursus baru<br />segera hadir</span>
+            </div>
+          </Reveal>
+        </div>
+      </Section>
 
       {/* ===== CARA KERJA ===== */}
       <Section id="cara-kerja" eyebrow="Cara mulai" title="Tiga langkah, langsung jalan">
@@ -161,76 +186,31 @@ export default function LandingClient({ payUrl = '#' }) {
         </div>
       </Section>
 
-      {/* ===== KURIKULUM ===== */}
-      <Section id="kurikulum" eyebrow="Isi materi" title={`${JUMLAH_MODUL} modul, dari mindset sampai monetisasi`}>
-        <p style={{ color: 'var(--muted)', fontSize: 14, lineHeight: 1.6, maxWidth: 560, marginBottom: 28 }}>
-          Tersusun sebagai peta belajar (flowchart) — kamu selalu tahu langkah berikutnya, tidak tersesat.
-        </p>
-        <div className="grid sm:grid-cols-2 gap-x-8 gap-y-0">
-          {MODULES_SEED.map((m, i) => (
-            <Reveal key={m.slug} delay={Math.min(i, 6) * 0.04}>
-              <div className="flex items-start gap-3 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--amber)', marginTop: 3, minWidth: 24 }}>
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <span style={{ fontSize: 14, color: 'var(--cream)', lineHeight: 1.45 }}>{m.title}</span>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </Section>
-
-      {/* ===== HARGA ===== */}
-      <Section id="harga" eyebrow="Investasi" title="Satu harga, akses penuh">
-        <Reveal>
-          <div className="rounded-3xl p-8 sm:p-10" style={{ background: 'var(--surface)', border: '1px solid rgba(232,160,32,0.25)', boxShadow: '0 20px 80px rgba(232,160,32,0.06)' }}>
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
-              <div>
-                <p style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.2em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 12 }}>
-                  Keanggotaan Tahunan
-                </p>
-                <div className="flex items-center gap-2.5" style={{ marginBottom: 6 }}>
-                  <span style={{ textDecoration: 'line-through', color: 'var(--muted)', fontFamily: 'var(--font-mono)', fontSize: 17 }}>
-                    {HARGA_CORET}
+      {/* ===== KURIKULUM (kursus unggulan) ===== */}
+      {flagshipModules.length > 0 && (
+        <Section id="kurikulum" eyebrow="Isi kursus unggulan" title={`${flagshipModules.length} modul, dari mindset sampai monetisasi`}>
+          <p style={{ color: 'var(--muted)', fontSize: 14, lineHeight: 1.6, maxWidth: 560, marginBottom: 28 }}>
+            Tersusun sebagai peta belajar (flowchart) — kamu selalu tahu langkah berikutnya, tidak tersesat.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-x-8 gap-y-0">
+            {flagshipModules.map((m, i) => (
+              <Reveal key={m.slug} delay={Math.min(i, 6) * 0.04}>
+                <div className="flex items-start gap-3 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--amber)', marginTop: 3, minWidth: 24 }}>
+                    {String(i + 1).padStart(2, '0')}
                   </span>
-                  <span style={{ background: 'rgba(232,160,32,0.14)', color: 'var(--amber)', border: '1px solid rgba(232,160,32,0.3)', borderRadius: 6, padding: '2px 8px', fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                    Hemat {HEMAT_PERSEN}%
-                  </span>
+                  <span style={{ fontSize: 14, color: 'var(--cream)', lineHeight: 1.45 }}>{m.title}</span>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="font-extrabold" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.6rem, 8vw, 4rem)', color: 'var(--cream)', letterSpacing: '-0.03em' }}>
-                    {HARGA}
-                  </span>
-                  <span style={{ color: 'var(--muted)', fontSize: 15 }}>/tahun</span>
-                </div>
-                <p style={{ color: 'var(--muted)', fontSize: 13, marginTop: 8, fontFamily: 'var(--font-mono)' }}>
-                  setara ± {PER_BULAN}/bulan
-                </p>
-              </div>
-              <a href={payUrl} target="_blank" rel="noopener noreferrer"
-                style={{ background: 'var(--amber)', color: '#07070A', padding: '15px 32px', borderRadius: 12, fontWeight: 700, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 13, whiteSpace: 'nowrap' }}>
-                Gabung sekarang
-              </a>
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3 mt-8 pt-8" style={{ borderTop: '1px solid var(--border)' }}>
-              {[
-                `Akses semua ${JUMLAH_MODUL} modul + yang baru ditambahkan`,
-                'Video + materi PDF, belajar kapan saja',
-                'Peta belajar flowchart anti-tersesat',
-                'Komunitas Telegram untuk tanya-jawab',
-                'Akses penuh 1 tahun, bisa diperpanjang',
-                'Cocok untuk pemula total / non-IT',
-              ].map((f) => (
-                <div key={f} className="flex items-start gap-2.5">
-                  <span style={{ color: 'var(--amber)', marginTop: 1 }}>✓</span>
-                  <span style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.5 }}>{f}</span>
-                </div>
-              ))}
-            </div>
+              </Reveal>
+            ))}
           </div>
-        </Reveal>
-      </Section>
+          <div className="mt-8">
+            <a href={flagshipLink} style={{ display: 'inline-block', background: 'var(--amber)', color: '#07070A', padding: '13px 28px', borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', fontSize: 13 }}>
+              Mulai kursus ini →
+            </a>
+          </div>
+        </Section>
+      )}
 
       {/* ===== FAQ ===== */}
       <Section id="faq" eyebrow="Pertanyaan umum" title="Yang sering ditanya">
@@ -273,7 +253,7 @@ export default function LandingClient({ payUrl = '#' }) {
               Masuk ke AI Guild
             </h2>
             <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 28 }}>
-              Pakai email yang sama saat kamu membeli akses.
+              Pakai email yang sama saat kamu membeli kursus.
             </p>
 
             <div style={{ maxWidth: 380, margin: '0 auto' }}>
@@ -322,7 +302,7 @@ export default function LandingClient({ payUrl = '#' }) {
               </AnimatePresence>
               <p className="mt-6" style={{ fontSize: 13, color: 'var(--muted)' }}>
                 Belum punya akses?{' '}
-                <a href={payUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--amber)' }} className="hover:underline">Gabung di sini</a>
+                <a href="#kursus" style={{ color: 'var(--amber)' }} className="hover:underline">Lihat kursus</a>
               </p>
             </div>
           </div>
@@ -331,7 +311,7 @@ export default function LandingClient({ payUrl = '#' }) {
 
       {/* ===== FOOTER ===== */}
       <footer className="px-5 sm:px-8 py-8 max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderTop: '1px solid var(--border)', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}>
-        <span>AI<span style={{ color: 'var(--amber)' }}>·</span>GUILD — Platform Vibe Coding</span>
+        <span>AI<span style={{ color: 'var(--amber)' }}>·</span>GUILD — Platform Kursus Vibe Coding</span>
         <span>© 2026 · arul.cg</span>
       </footer>
     </div>
