@@ -145,6 +145,47 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
         </div>
       </header>
 
+      {/* ===== SOCIAL PROOF / KENAPA BELAJAR DI SINI ===== */}
+      <Section id="kenapa" eyebrow="Kenapa belajar di sini" title="Belajar dari vibe coder sejati — bukan programmer, bukan anak IT">
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          <Reveal>
+            <div>
+              <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.75, marginBottom: 16 }}>
+                Aku <b style={{ color: 'var(--cream)' }}>Arul</b> — bukan lulusan IT, bukan programmer. Tapi dengan{' '}
+                <b style={{ color: 'var(--amber)' }}>vibe coding</b> dan bantuan AI, aku sudah membangun puluhan produk
+                digital yang menghasilkan <b style={{ color: 'var(--cream)' }}>ratusan juta rupiah</b>.
+              </p>
+              <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.75 }}>
+                Di sini kamu belajar cara yang sama — langkah demi langkah, dari nol, tanpa harus jadi programmer dulu.
+              </p>
+              <div className="flex flex-wrap gap-x-8 gap-y-3 mt-7" style={{ fontFamily: 'var(--font-mono)' }}>
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--amber)', fontFamily: 'var(--font-display)' }}>Rp712jt+</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>total penjualan</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--amber)', fontFamily: 'var(--font-display)' }}>7.473</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>order produk digital</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--amber)', fontFamily: 'var(--font-display)' }}>0</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>background IT</div>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <figure style={{ margin: 0 }}>
+              <img src="/penghasilan-lynkid.png" alt="Dashboard penghasilan Lynk.id — Rp712 juta+ total penjualan" loading="lazy"
+                style={{ width: '100%', borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.45)' }} />
+              <figcaption style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', textAlign: 'center', marginTop: 10 }}>
+                Dashboard Lynk.id — bukti nyata, bukan janji.
+              </figcaption>
+            </figure>
+          </Reveal>
+        </div>
+      </Section>
+
       {/* ===== SEMUA KURSUS (grid) ===== */}
       <Section id="kursus" eyebrow="Katalog" title="Semua kursus">
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
