@@ -41,6 +41,7 @@ Semua detail ada di file-file berikut:
 → `.claude/docs-library/membership-fase1-design.md` — desain membership langganan Mayar (Fase 1)
 → `.claude/docs-library/membership-fase1-plan.md` — rencana implementasi membership (Fase 1)
 → `.claude/docs-library/admin-voucher-plan.md` — rencana admin panel + voucher diskon (Mayar coupon API)
+→ `.claude/docs-library/multi-ecourse-design.md` — desain pivot ke platform multi-ecourse (beli per kursus, akses selamanya)
 
 Aturan: ide baru → catat di backlog dulu → tanya user "sekarang/nanti/simpan".
 Keputusan dibatalkan → hapus dari product-spec, catat di backlog status BATAL.
