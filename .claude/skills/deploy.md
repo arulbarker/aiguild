@@ -69,3 +69,24 @@ ssh -i ~/.ssh/aiguild_vps root@187.77.122.42
 docker logs aiguild-app --tail 50
 docker logs aiguild-app -f   # follow realtime
 ```
+
+## Troubleshooting: situs tampak DOWN tapi server sehat (gejala palsu)
+**Kejadian 2026-06-18:** `aiguild.online` & SSH `ERR_CONNECTION_TIMED_OUT` dari PC rumah, padahal VPS sehat total (Docker jalan, `curl localhost` balas, outbound OK, UFW/iptables kosong). Ternyata **IP publik rumah (Indihome) diblokir sementara di edge network Hostinger** — terpicu oleh ping + SSH retry beruntun saat diagnosa (Hostinger anggap mencurigakan, auto-block per-IP).
+
+**Cara kenali (bukan server yang down):**
+1. Buka situs dari **HP pakai data kartu** → kalau BISA, server aman, yang keblokir IP rumahmu.
+2. `tracert -d 187.77.122.42` dari PC → paket sampai edge Hostinger (`153.92.x` / `172.17.x`) lalu putus = bukan masalah rute internasional, tapi blokir di gerbang Hostinger.
+3. `ping`/`ssh` ke IP langsung (bukan domain) juga timeout → buktinya **bukan DNS/domain**.
+
+**Penting — yang BUKAN penyebab (jangan buang waktu ke sini):**
+- Bukan DNS/nameserver. Nameserver Hostinger memang `*.dns-parking.com` (normal — domain lain yang sehat juga pakai itu). Jangan ganti nameserver.
+- Bukan Docker/Coolify/aplikasi. Bukan folder lokal yang dipindah.
+- Bukan UFW/iptables/fail2ban (semua kosong di VPS ini).
+
+**Fix (urut tercepat):**
+1. **Restart router Indihome** (cabut listrik 1 menit) → dapat IP publik baru → lolos blokir. **TERBUKTI BERHASIL** (IP `182.10.97.111` → `182.10.100.255`, langsung tembus).
+2. Sementara nunggu: pakai **hotspot HP** untuk kerja/SSH.
+3. Tunggu beberapa jam — blokir auto-expire.
+4. Kalau besok masih: chat Hostinger, minta unblock IP rumah (sebutkan IP publik kamu, cek via `curl -4 https://ifconfig.me`).
+
+**Pencegahan:** jangan spam ping/SSH cepat-cepat ke VPS saat diagnosa — itu sendiri yang memicu blokir. Satu-dua tes cukup.
