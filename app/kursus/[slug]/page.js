@@ -35,6 +35,10 @@ export default async function KursusPage({ params }) {
     owned = hasCourseAccess({ isAdmin: session.isAdmin, ownedCourseIds }, course.id)
   }
 
+  // Sudah login & punya kursus ini → langsung masuk ruang belajar,
+  // lewati halaman jualan. Sesi bertahan 1 tahun (lib/auth.js).
+  if (owned) redirect(`/belajar/${course.slug}`)
+
   const payUrl = process.env.MAYAR_PAYMENT_URL || '#'
 
   return (
@@ -67,17 +71,11 @@ export default async function KursusPage({ params }) {
         </div>
 
         <div className="mt-6">
-          {owned ? (
-            <a href={`/belajar/${course.slug}`}
-              style={{ display: 'inline-block', background: 'var(--amber)', color: '#07070A', padding: '15px 34px', borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', fontSize: 13, letterSpacing: '0.04em' }}>
-              Masuk ke Kelas →
-            </a>
-          ) : (
-            <a href={payUrl} target="_blank" rel="noopener noreferrer"
-              style={{ display: 'inline-block', background: 'var(--amber)', color: '#07070A', padding: '15px 34px', borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', fontSize: 13, letterSpacing: '0.04em' }}>
-              Beli Sekarang
-            </a>
-          )}
+          {/* Pemilik sudah dialihkan ke /belajar di atas — di sini pasti non-pemilik. */}
+          <a href={payUrl} target="_blank" rel="noopener noreferrer"
+            style={{ display: 'inline-block', background: 'var(--amber)', color: '#07070A', padding: '15px 34px', borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', fontSize: 13, letterSpacing: '0.04em' }}>
+            Beli Sekarang
+          </a>
         </div>
       </header>
 
