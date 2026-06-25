@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { hashToken } from '@/lib/tokens'
-import { createSession } from '@/lib/auth'
+import { createSession, getSession } from '@/lib/auth'
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const rawToken = searchParams.get('token')
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+
+  // Sudah login? (mis. user menekan tombol Back browser ke URL verify lama yang
+  // tokennya sudah terpakai) → langsung ke dashboard, jangan paksa verifikasi
+  // ulang yang malah melempar ke halaman login. Sesi bertahan 1 tahun.
+  const existing = await getSession()
+  if (existing) {
+    return NextResponse.redirect(new URL('/dashboard', baseUrl))
+  }
 
   if (!rawToken) {
     return NextResponse.redirect(new URL('/login?error=invalid', baseUrl))
