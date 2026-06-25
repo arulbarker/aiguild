@@ -6,7 +6,10 @@ menyisipkan baris di Excel.
 
 ## Konsep wajib paham dulu
 
-- **Nomor kartu = `orderIndex + 1`** (lihat `displayNumber()` di `lib/module-tree.js`).
+- **Nomor kartu = POSISI urut (rank 1..N), bukan `orderIndex` mentah** (lihat
+  `numberMap()` + `displayNumber()` di `lib/module-tree.js`). Jadi kalau ada kartu dihapus,
+  nomor sisanya rapat sendiri (a la Excel) — TIDAK perlu menggeser orderIndex satu per satu.
+  `orderIndex` tetap penting hanya sebagai **kunci urutan** (sort & field "Urutan" di admin).
 - **Posisi visual di flowchart ditentukan `parentIds` (DAG), BUKAN orderIndex.**
   Menggeser orderIndex saja TIDAK memindah kartu di flowchart.
 - **`slug` = identitas permanen.** Seed upsert by slug → progress user nyambung via slug→id.
