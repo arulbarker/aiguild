@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useState, useRef, useEffect } from 'react'
-import { buildSegments, displayNumber, moduleBadge, contentTypes } from '@/lib/module-tree'
+import { buildSegments, displayNumber, numberMap, moduleBadge, contentTypes } from '@/lib/module-tree'
 
 const C_TYPE = {
   video:      { icon: '▶', amber: true },
@@ -64,14 +64,14 @@ function ScrollTitle({ children, hovered }) {
   )
 }
 
-function NodeBox({ mod, label, isActive, isCompleted, onSelect, isSection }) {
+function NodeBox({ mod, label, numbers, isActive, isCompleted, onSelect, isSection }) {
   const hasVideo  = !!mod.youtubeUrl
   const hasMateri = !!mod.gammaUrl
   const hasPrompt = !!mod.promptText
   const hasHtml   = !!mod.htmlContent
   const canPlay   = hasVideo || hasMateri || hasPrompt || hasHtml
   const defaultTab = hasVideo ? 'video' : hasMateri ? 'materi' : hasPrompt ? 'prompt' : 'penjelasan'
-  const num       = label ?? displayNumber(mod)
+  const num       = label ?? displayNumber(mod, numbers)
   const types     = contentTypes(mod)
   const badge     = moduleBadge(mod)
   const [hovered, setHovered] = useState(false)
@@ -189,6 +189,7 @@ function SplitConnector({ count }) {
 
 export default function ModuleFlowchartCompact({ modules, completedIds = [], onSelect, activeId }) {
   const segments = buildSegments(modules)
+  const numbers = numberMap(modules)
   const isDone = (m) => completedIds.includes(m.id)
 
   // Trunk dibatasi lebar nyaman, ditengah. Track boleh melebar keluar.
@@ -204,7 +205,7 @@ export default function ModuleFlowchartCompact({ modules, completedIds = [], onS
           const mod = seg.modules[0]
           return (
             <div key={mod.id} className={TRUNK}>
-              <NodeBox mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
+              <NodeBox mod={mod} numbers={numbers} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
               {!isLast && (
                 next?.type === 'diamond'
                   ? <SplitConnector count={next.modules.length} />
@@ -221,7 +222,7 @@ export default function ModuleFlowchartCompact({ modules, completedIds = [], onS
             <div key={seg.modules.map((m) => m.id).join('-')} className={TRUNK}>
               <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${seg.modules.length}, 1fr)` }}>
                 {seg.modules.map((mod) => (
-                  <NodeBox key={mod.id} mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
+                  <NodeBox key={mod.id} mod={mod} numbers={numbers} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
                 ))}
               </div>
               {!isLast && <Arrow />}
@@ -237,14 +238,15 @@ export default function ModuleFlowchartCompact({ modules, completedIds = [], onS
               <SplitConnector count={count} />
               <div className="grid gap-3 items-start" style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }}>
                 {seg.columns.map((chain) => {
-                  const head = Number(displayNumber(chain[0]))
+                  const head = Number(displayNumber(chain[0], numbers))
                   return (
                     <div key={chain[0].id} className="flex flex-col">
                       {chain.map((mod, ci) => (
                         <div key={mod.id}>
                           <NodeBox
                             mod={mod}
-                            label={ci === 0 ? displayNumber(mod) : `${head}.${ci}`}
+                            numbers={numbers}
+                            label={ci === 0 ? displayNumber(mod, numbers) : `${head}.${ci}`}
                             isActive={activeId === mod.id}
                             isCompleted={isDone(mod)}
                             onSelect={onSelect}

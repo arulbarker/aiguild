@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { buildSegments, displayNumber, moduleBadge, contentTypes } from '@/lib/module-tree'
+import { buildSegments, displayNumber, numberMap, moduleBadge, contentTypes } from '@/lib/module-tree'
 
 const TYPE_META = {
   video:      { tab: 'video',      label: '▶  Video',      amber: true },
@@ -121,7 +121,7 @@ const cardVariants = {
   }),
 }
 
-function ModuleCard({ mod, label, isActive, isCompleted, onSelect, isSection }) {
+function ModuleCard({ mod, label, numbers, isActive, isCompleted, onSelect, isSection }) {
   const hasVideo  = !!mod.youtubeUrl
   const hasMateri = !!mod.gammaUrl
   const hasPrompt = !!mod.promptText
@@ -132,7 +132,7 @@ function ModuleCard({ mod, label, isActive, isCompleted, onSelect, isSection }) 
   const thumbUrl  = ytId
     ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
     : getDriveThumb(mod.gammaUrl)
-  const num = label ?? displayNumber(mod)
+  const num = label ?? displayNumber(mod, numbers)
   const types = contentTypes(mod)
   const badge = moduleBadge(mod)
 
@@ -245,6 +245,7 @@ function ModuleCard({ mod, label, isActive, isCompleted, onSelect, isSection }) 
 
 export default function ModuleFlowchart({ modules, completedIds = [], onSelect, activeId }) {
   const segments = buildSegments(modules)
+  const numbers = numberMap(modules)
   const isDone = (m) => completedIds.includes(m.id)
 
   // Trunk kartu dibatasi lebar nyaman di tengah; track melebar keluar (fan-out)
@@ -259,7 +260,7 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
           const mod = seg.modules[0]
           return (
             <div key={mod.id} className={TRUNK}>
-              <ModuleCard mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
+              <ModuleCard mod={mod} numbers={numbers} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
               {!isLast && <FlowConnector index={si} />}
             </div>
           )
@@ -272,7 +273,7 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
             <div key={seg.modules.map((m) => m.id).join('-')} className={TRUNK}>
               {seg.modules.map((mod, mi) => (
                 <div key={mod.id}>
-                  <ModuleCard mod={mod} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
+                  <ModuleCard mod={mod} numbers={numbers} isActive={activeId === mod.id} isCompleted={isDone(mod)} onSelect={onSelect} />
                   {mi < seg.modules.length - 1 && <FlowConnector index={si * 10 + mi} />}
                 </div>
               ))}
@@ -299,14 +300,15 @@ export default function ModuleFlowchart({ modules, completedIds = [], onSelect, 
                 style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))`, minWidth: count * 240, maxWidth: '100%' }}
               >
                 {seg.columns.map((chain) => {
-                  const head = Number(displayNumber(chain[0]))
+                  const head = Number(displayNumber(chain[0], numbers))
                   return (
                     <div key={chain[0].id} className="flex flex-col">
                       {chain.map((mod, ci) => (
                         <div key={mod.id}>
                           <ModuleCard
                             mod={mod}
-                            label={ci === 0 ? displayNumber(mod) : `${head}.${ci}`}
+                            numbers={numbers}
+                            label={ci === 0 ? displayNumber(mod, numbers) : `${head}.${ci}`}
                             isActive={activeId === mod.id}
                             isCompleted={isDone(mod)}
                             onSelect={onSelect}
