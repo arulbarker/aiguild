@@ -9,7 +9,7 @@ Sumber kebenaran produk ini.
 
 Platform **toko ecourse** vibe coding. Target: non-IT yang ingin bangun produk digital dengan bantuan AI. Model akses: **beli per kursus, akses selamanya** via Mayar.id. Banyak kursus dijual terpisah, tiap kursus punya harga sendiri. User beli sebuah kursus → punya akses ke kursus itu tanpa batas waktu → belajar via email magic link. Etalase katalog publik (tanpa login); login hanya untuk masuk ke kursus yang dimiliki.
 
-**Kursus pertama:** "Vibe Coding Google Apps Script: Dari Nol Bikin Aplikasi Sampai Menghasilkan" (Rp500.000, 25 modul).
+**Kursus pertama:** "Vibe Coding Google Apps Script: Dari Nol Bikin Aplikasi Sampai Menghasilkan" (Rp500.000, 20 modul).
 
 > Pivot dari model lama (langganan tahunan single-product) didokumentasikan di [`multi-ecourse-design.md`](./multi-ecourse-design.md) + [`multi-ecourse-plan.md`](./multi-ecourse-plan.md).
 
