@@ -368,7 +368,7 @@ git commit -m "feat: webhook Lynk.id beri akses course (pola shared-secret)"
 
 ## Task 5: Variabel env `LYNKID_SHARED_SECRET`
 
-**Files:** Ubah `.env.local` (dev), `.env.example` (dokumentasi)
+**Files:** Ubah `.env.local` (dev), `.env.production.example` (dokumentasi — nama file di project ini)
 
 - [ ] **Step 1: Tambah di `.env.local`** (dev) — nilai dev bebas, samakan dengan yang dipakai di uji manual:
 
@@ -376,16 +376,16 @@ git commit -m "feat: webhook Lynk.id beri akses course (pola shared-secret)"
 LYNKID_SHARED_SECRET=dev-lynkid-shared
 ```
 
-- [ ] **Step 2: Dokumentasikan di `.env.example`** (tanpa nilai asli):
+- [ ] **Step 2: Dokumentasikan di `.env.production.example`** (placeholder, tanpa nilai asli):
 
 ```
-LYNKID_SHARED_SECRET=
+LYNKID_SHARED_SECRET=<acak-panjang-kuat>
 ```
 
 - [ ] **Step 3: Commit** (`.env.local` sudah di-gitignore, tidak ikut)
 
 ```bash
-git add .env.example
+git add .env.production.example
 git commit -m "docs: dokumentasikan env LYNKID_SHARED_SECRET"
 ```
 
