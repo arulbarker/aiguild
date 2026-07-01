@@ -42,6 +42,7 @@ Semua detail ada di file-file berikut:
 → `.claude/docs-library/multi-ecourse-design.md` — desain pivot ke platform multi-ecourse (beli per kursus, akses selamanya)
 → `.claude/docs-library/multi-ecourse-plan.md` — rencana implementasi multi-ecourse (7 fase, task TDD)
 → `.claude/docs-library/lynkid-integration-plan.md` — jual kelas GAS juga di Lynk.id (webhook via Worker `lynkid-router`, pola RuangSaku, kolom `lynkidProductTitle`)
+→ `.claude/docs-library/lynkid-router-worker.js` — kode Worker Cloudflare `lynkid-router` siap tempel (referensi, dengan cabang AI Guild)
 
 Aturan: ide baru → catat di backlog dulu → tanya user "sekarang/nanti/simpan".
 Keputusan dibatalkan → hapus dari product-spec, catat di backlog status BATAL.

@@ -395,7 +395,9 @@ git commit -m "docs: dokumentasikan env LYNKID_SHARED_SECRET"
 
 ## Task 6: Cabang AI Guild di Worker `lynkid-router` (Cloudflare)
 
-**Files:** Ubah Worker `lynkid-router` (di dashboard Cloudflare / wrangler). Deploy hanya setelah Task 1–5 lulus di lokal.
+**Files:** Ubah Worker `lynkid-router` (di dashboard Cloudflare / wrangler). Deploy hanya setelah Task 1–5 lulus di lokal DAN AI Guild prod sudah punya `LYNKID_SHARED_SECRET` + kolom + nilai course.
+
+> Kode Worker lengkap siap tempel: `.claude/docs-library/lynkid-router-worker.js`. Cukup salin isinya ke Worker `lynkid-router`, lalu set secret `AIGUILD_APP` + Deploy. Langkah manual di bawah menjelaskan perubahannya.
 
 - [ ] **Step 1: Tambah konstanta** di atas file worker (setelah `RUANGSAKU_URL`):
 
