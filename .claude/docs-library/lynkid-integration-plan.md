@@ -97,17 +97,21 @@ Konvensi test project: hanya helper murni yang di-test otomatis (lihat `lib/maya
   lynkidProductTitle String? @map("lynkid_product_title")
 ```
 
-- [ ] **Step 2: Migrasi dev + generate** (Docker postgres dev harus hidup)
+- [ ] **Step 2: Terapkan ke DB dev + generate** (Docker postgres dev harus hidup)
 
-Run: `npx prisma migrate dev --name add_lynkid_product_title`
-Expected: migrasi baru dibuat di `prisma/migrations/`, Prisma client ter-generate ulang, tidak ada error. Nullable → tidak menyentuh data lama.
+Project ini pakai `prisma db push` (belum ada folder `prisma/migrations` — masih fase db push). JANGAN `migrate dev` (memaksa baseline → minta reset/hapus data). Kolom nullable = aditif, aman via db push.
+
+Run: `npx prisma db push` lalu `npx prisma generate`
+Expected: "Your database is now in sync", kolom `lynkid_product_title` (nullable) muncul di tabel `courses`, tanpa data hilang.
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add prisma/schema.prisma prisma/migrations
+git add prisma/schema.prisma
 git commit -m "feat: tambah kolom lynkidProductTitle di Course"
 ```
+
+> Prod: pakai `npx prisma db push` juga (sama seperti dev, karena project belum bermigrasi). Kolom nullable → tidak menyentuh data user.
 
 ---
 
