@@ -7,7 +7,6 @@ const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbzPixa15u3Synd
 const STICKERPACK_URL  = 'https://script.google.com/macros/s/AKfycbyptORJH9l8AxlcVEQyobBewKCOUq19GGYHbBKyF4Sjh9ra6gA75I_rxAxw8UlrQlWA/exec';
 const RUANGSAKU_URL    = 'https://app.ruangsaku.com/api/webhooks/lynkid';
 const AIGUILD_URL      = 'https://aiguild.online/api/webhook/lynkid';
-const AIGUILD_TITLES   = ['ecourse vibe coding google appscript'];
 
 export default {
   async fetch(request, env) {
@@ -45,10 +44,9 @@ export default {
       email = (customer && customer.email) || '';
       customerName = (customer && customer.name) || '';
       const lower = productTitle.toLowerCase();
-      const normTitle = lower.trim().replace(/\s+/g, ' ');
       isRuangSaku   = lower.indexOf('ruangsaku')    > -1 || lower.indexOf('ruang saku')  > -1;
       isStickerPack = lower.indexOf('sticker pack') > -1 || lower.indexOf('stickerpack') > -1;
-      isAiGuild     = AIGUILD_TITLES.indexOf(normTitle) > -1;
+      isAiGuild     = lower.indexOf('vibe coding google appscript') > -1;
     } catch (e) {
       console.error('Parse error:', e.message);
     }

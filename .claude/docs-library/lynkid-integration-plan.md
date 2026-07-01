@@ -1,6 +1,8 @@
 # Rencana — Integrasi Lynk.id → AI Guild (jual kelas GAS di dua tempat)
 
-Tanggal: 2026-07-01 · Branch: `feat/lynkid-integration` · Status: disetujui, siap implementasi
+Tanggal: 2026-07-01 · Branch: `feat/lynkid-integration` · **Status: ✅ LIVE (terverifikasi end-to-end 2026-07-01)**
+
+> **Sudah live di produksi.** Semua task selesai: kolom+nilai DB prod (via SSH `aiguild-postgres`), env `LYNKID_SHARED_SECRET` di `/data/aiguild/.env.production` (pola sama `LYNKID_WEBHOOK_SECRET`, bukan deploy.yml), Worker `lynkid-router` di-deploy via Cloudflare API (`keep_bindings` menjaga `RUANGSAKU_APP`+`AIGUILD_APP`), deteksi produk pakai `indexOf('vibe coding google appscript')`. Deploy app = GitHub Actions (lihat `skills/deploy.md`), BUKAN Coolify. Smoke test: payload Lynk.id → Worker → webhook → Purchase(vibe-coding-gas) OK; Mayar tak terpengaruh.
 
 > **Untuk pelaksana:** kerjakan task berurutan. Langkah pakai checkbox (`- [ ]`). Pola: tulis test gagal → implement minimal → test lulus → commit. Uji manual route via skill `.claude/skills/test-webhook-lokal.md`.
 
