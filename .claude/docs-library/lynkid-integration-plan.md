@@ -127,10 +127,12 @@ git commit -m "feat: tambah kolom lynkidProductTitle di Course"
     lynkidProductTitle: 'Ecourse vibe coding google appscript',
 ```
 
-- [ ] **Step 2: Terapkan ke DB dev** (upsert via seed)
+Catatan: `scripts/seed.js` menjadikan `lynkidProductTitle` **CREATE-ONLY** (klausa `update` tidak menyentuhnya, sama seperti `mayarProductId`). Course `vibe-coding-gas` sudah ada → `npm run seed` TIDAK akan mengisinya. Nilai di seed hanya berlaku untuk instalasi DB baru. Untuk baris yang sudah ada, set via SQL.
 
-Run: `npm run seed`
-Expected: selesai tanpa error.
+- [ ] **Step 2: Set nilai di baris yang sudah ada (dev)**
+
+Run: `docker exec aiguild-postgres-dev psql -U aiguild -d aiguild -c "UPDATE courses SET lynkid_product_title='Ecourse vibe coding google appscript' WHERE slug='vibe-coding-gas';"`
+Expected: `UPDATE 1`.
 
 - [ ] **Step 3: Verifikasi nilai tersimpan**
 
@@ -144,7 +146,7 @@ git add lib/modules-seed.js
 git commit -m "feat: petakan produk Lynk.id ke course vibe-coding-gas"
 ```
 
-> Prod: jalankan `UPDATE courses SET lynkid_product_title='Ecourse vibe coding google appscript' WHERE slug='vibe-coding-gas';` di DB prod, atau `npm run seed` (upsert) saat deploy. Tidak menyentuh data user.
+> Prod: jalankan `UPDATE courses SET lynkid_product_title='Ecourse vibe coding google appscript' WHERE slug='vibe-coding-gas';` di DB prod (create-only, jadi seed tidak mengisinya). Tidak menyentuh data user.
 
 ---
 
