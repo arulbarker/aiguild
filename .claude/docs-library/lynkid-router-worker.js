@@ -44,9 +44,10 @@ export default {
       email = (customer && customer.email) || '';
       customerName = (customer && customer.name) || '';
       const lower = productTitle.toLowerCase();
+      const aiguildNorm = lower.trim().replace(/ +/g, ' ');
       isRuangSaku   = lower.indexOf('ruangsaku')    > -1 || lower.indexOf('ruang saku')  > -1;
       isStickerPack = lower.indexOf('sticker pack') > -1 || lower.indexOf('stickerpack') > -1;
-      isAiGuild     = lower.indexOf('vibe coding google appscript') > -1;
+      isAiGuild     = aiguildNorm === 'ecourse vibe coding google appscript';
     } catch (e) {
       console.error('Parse error:', e.message);
     }
