@@ -54,13 +54,13 @@ lynkidProductTitle String? @map("lynkid_product_title")
 ### 3. Worker `lynkid-router` (Cloudflare) — tambah 1 cabang
 - Daftar judul produk AI Guild di atas file (array), mis. `['ecourse vibe coding google appscript']` (normalisasi lowercase).
 - Deteksi `isAiGuild` = judul (dinormalisasi) ada di daftar. Cabang ditaruh **sebelum** `default` agar tidak ketangkap route Apps Script.
-- Bila `isAiGuild`: POST ke `<AIGUILD_PROD_URL>/api/webhook/lynkid` dengan body `{ event:'lynkid_purchase', email, name, product_title, timestamp, source, raw }` + header `x-shared-secret: env.AIGUILD_APP`.
+- Bila `isAiGuild`: POST ke `https://aiguild.online/api/webhook/lynkid` dengan body `{ event:'lynkid_purchase', email, name, product_title, timestamp, source, raw }` + header `x-shared-secret: env.AIGUILD_APP`.
 - Blok RuangSaku / StickerPack / default **tidak diubah**.
 
 ## Env & secret (nilai asli di env, BUKAN di doc)
 - AI Guild (Coolify prod + `.env.local` dev): `LYNKID_SHARED_SECRET=<nilai rahasia>`.
 - Worker (Cloudflare secret): `AIGUILD_APP=<nilai sama dengan LYNKID_SHARED_SECRET>`.
-- Domain prod AI Guild yang dituju Worker: `<AIGUILD_PROD_URL>` — **INPUT dari user** (belum diketahui, ada di env Coolify).
+- Domain prod AI Guild yang dituju Worker: `https://aiguild.online/api/webhook/lynkid`.
 - Catatan: `LYNKID_WEBHOOK_SECRET` lama (HMAC) tidak lagi dipakai webhook ini; boleh dibersihkan belakangan.
 
 ## Testing (Vitest — fungsi kritis akses berbayar)
