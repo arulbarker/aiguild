@@ -26,6 +26,7 @@ model Course {
   description    String?
   price          Int        @default(0)
   mayarProductId String?    @map("mayar_product_id")
+  lynkidProductTitle String? @map("lynkid_product_title")
   coverImage     String?    @map("cover_image")
   isPublished    Boolean    @default(false) @map("is_published")
   orderIndex     Int        @default(0) @map("order_index")

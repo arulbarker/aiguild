@@ -51,7 +51,7 @@ Platform **toko ecourse** vibe coding. Target: non-IT yang ingin bangun produk d
 - **Gerbang produk:** `data.productId` di-lookup ke `Course.mayarProductId` di DB (`matchCourseByProduct`) — **fail-closed**, produk tak terpetakan diabaikan. Tambah kursus = isi product ID di admin, nol perubahan kode
 - **Gateway:** 1 webhook Mayar → Cloudflare Worker fan-out ke beberapa app (ai-guild & ruangsaku)
 - Halaman `/kursus/[slug]` (jualan per kursus) & `/sukses` (pasca-bayar). Tidak ada `/perpanjang`, tidak ada cron reminder (akses selamanya)
-- Lynk.id webhook masih ada di kode (legacy/produk lain)
+- **Lynk.id = kanal penjualan KEDUA** (kelas GAS dijual di Mayar & Lynk.id). Webhook `/api/webhook/lynkid`: auth **`x-shared-secret`** (`LYNKID_SHARED_SECRET`), event `lynkid_purchase`, gerbang produk via `Course.lynkidProductTitle` (cocok judul, fail-closed), idempoten per (user, course). Worker Cloudflare `lynkid-router` menerjemahkan payload Lynk.id → format ini (pola sama dengan RuangSaku). Keduanya beri `Purchase(userId, courseId)` yang sama. Mayar tak terpengaruh
 - Tidak ada trial, tidak ada langganan, tidak ada kedaluwarsa
 - Refund dikelola manual oleh admin
 - **Checkout link:** sementara pakai `MAYAR_PAYMENT_URL` (env) untuk kursus pertama. Per-course checkout link ditambah saat kursus ke-2 muncul (lihat backlog)
