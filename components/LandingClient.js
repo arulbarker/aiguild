@@ -16,6 +16,20 @@ const LANGKAH = [
   { n: '03', t: 'Mulai belajar', d: 'Langsung masuk ke flowchart modul. Belajar urut, kapan saja, dari mana saja.' },
 ]
 
+// Bukti pendapatan. Isi `src` dengan path file di /public (mis. '/pendapatan-bulanan.png').
+// Kalau `src` masih '' → tampil placeholder bergaya (tidak ada gambar broken).
+const PROOF = [
+  { src: '/penghasilan-lynkid.png', caption: 'Total penjualan Lynk.id', hint: 'Rp712jt+ sepanjang jalan' },
+  { src: '', caption: 'Pendapatan per bulan', hint: 'Puluhan juta / bulan' },
+  { src: '', caption: 'Penjualan harian', hint: 'Masuk tiap hari' },
+]
+
+const STATS = [
+  { big: 'Rp712jt+', small: 'total penjualan' },
+  { big: '7.473', small: 'order produk digital' },
+  { big: '0', small: 'background IT' },
+]
+
 const FAQ = [
   { q: 'Harus bisa ngoding dulu?', a: 'Tidak. Kursus di sini dirancang khusus untuk non-IT. Kamu belajar dari mindset paling dasar sampai bisa bikin produk yang menghasilkan — dibantu AI di setiap langkah.' },
   { q: 'Aksesnya berapa lama?', a: 'Selamanya. Sekali beli sebuah kursus, kamu punya akses penuh ke kursus itu tanpa batas waktu — termasuk modul baru yang ditambahkan ke kursus tersebut.' },
@@ -125,9 +139,9 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
               style={{ background: 'var(--amber)', color: '#07070A', padding: '15px 30px', borderRadius: 12, fontWeight: 700, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 13, letterSpacing: '0.04em' }}>
               {flagship ? `Mulai · ${rupiah(flagship.price)}` : 'Lihat kursus'} {flagship && <span style={{ opacity: 0.7, fontWeight: 500 }}>· akses selamanya</span>}
             </a>
-            <a href="#kursus"
+            <a href="#bukti"
               style={{ border: '1px solid var(--border)', color: 'var(--cream)', padding: '15px 30px', borderRadius: 12, fontWeight: 500, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 13 }}>
-              Semua kursus ↓
+              Lihat bukti ↓
             </a>
           </motion.div>
 
@@ -144,45 +158,48 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
         </div>
       </header>
 
-      {/* ===== SOCIAL PROOF / KENAPA BELAJAR DI SINI ===== */}
-      <Section id="kenapa" eyebrow="Kenapa belajar di sini" title="Belajar dari vibe coder sejati — bukan programmer, bukan anak IT">
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          <Reveal>
-            <div>
-              <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.75, marginBottom: 16 }}>
-                Aku <b style={{ color: 'var(--cream)' }}>Arul</b> — bukan lulusan IT, bukan programmer. Tapi dengan{' '}
-                <b style={{ color: 'var(--amber)' }}>vibe coding</b> dan bantuan AI, aku sudah membangun puluhan produk
-                digital yang menghasilkan <b style={{ color: 'var(--cream)' }}>ratusan juta rupiah</b>.
-              </p>
-              <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.75 }}>
-                Di sini kamu belajar cara yang sama — langkah demi langkah, dari nol, tanpa harus jadi programmer dulu.
-              </p>
-              <div className="flex flex-wrap gap-x-8 gap-y-3 mt-7" style={{ fontFamily: 'var(--font-mono)' }}>
-                <div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--amber)', fontFamily: 'var(--font-display)' }}>Rp712jt+</div>
-                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>total penjualan</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--amber)', fontFamily: 'var(--font-display)' }}>7.473</div>
-                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>order produk digital</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--amber)', fontFamily: 'var(--font-display)' }}>0</div>
-                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>background IT</div>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <figure style={{ margin: 0 }}>
-              <img src="/penghasilan-lynkid.png" alt="Dashboard penghasilan Lynk.id — Rp712 juta+ total penjualan" loading="lazy"
-                style={{ width: '100%', borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.45)' }} />
-              <figcaption style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', textAlign: 'center', marginTop: 10 }}>
-                Dashboard Lynk.id — bukti nyata, bukan janji.
-              </figcaption>
-            </figure>
-          </Reveal>
+      {/* ===== BUKTI PENDAPATAN (wall of proof) ===== */}
+      <Section id="bukti" eyebrow="Bukti nyata · bukan janji" title="Uang beneran masuk rekening — dari vibe coding">
+        <div className="grid sm:grid-cols-3 gap-4">
+          {PROOF.map((p, i) => (
+            <Reveal key={i} delay={Math.min(i, 3) * 0.08}>
+              <ProofShot src={p.src} caption={p.caption} hint={p.hint} />
+            </Reveal>
+          ))}
         </div>
+
+        <Reveal delay={0.1}>
+          <div className="flex flex-wrap gap-x-8 gap-y-3 mt-9" style={{ fontFamily: 'var(--font-mono)' }}>
+            {STATS.map((s) => (
+              <div key={s.small}>
+                <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--amber)', fontFamily: 'var(--font-display)' }}>{s.big}</div>
+                <div style={{ fontSize: 11, color: 'var(--muted)' }}>{s.small}</div>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+
+        <div className="mt-8">
+          <a href={flagshipLink} style={{ display: 'inline-block', background: 'var(--amber)', color: '#07070A', padding: '13px 28px', borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', fontSize: 13 }}>
+            Mulai belajar cara ini →
+          </a>
+        </div>
+      </Section>
+
+      {/* ===== KENAPA BELAJAR DI SINI (cerita) ===== */}
+      <Section id="kenapa" eyebrow="Kenapa belajar di sini" title="Belajar dari vibe coder sejati — bukan programmer, bukan anak IT">
+        <Reveal>
+          <div style={{ maxWidth: 620 }}>
+            <p style={{ color: 'var(--muted)', fontSize: 15.5, lineHeight: 1.75, marginBottom: 16 }}>
+              Aku <b style={{ color: 'var(--cream)' }}>Arul</b> — bukan lulusan IT, bukan programmer. Tapi dengan{' '}
+              <b style={{ color: 'var(--amber)' }}>vibe coding</b> dan bantuan AI, aku sudah membangun puluhan produk
+              digital yang menghasilkan <b style={{ color: 'var(--cream)' }}>ratusan juta rupiah</b> — angka di atas itu rekeningku, bukan janji marketing.
+            </p>
+            <p style={{ color: 'var(--muted)', fontSize: 15.5, lineHeight: 1.75 }}>
+              Di sini kamu belajar cara yang persis sama — langkah demi langkah, dari nol, tanpa harus jadi programmer dulu.
+            </p>
+          </div>
+        </Reveal>
       </Section>
 
       {/* ===== SEMUA KURSUS (grid) ===== */}
@@ -355,6 +372,40 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
         <span>© 2026 · arul.cg</span>
       </footer>
     </div>
+  )
+}
+
+function ProofShot({ src, caption, hint }) {
+  return (
+    <figure style={{ margin: 0 }}>
+      {src ? (
+        <img src={src} alt={caption} loading="lazy"
+          style={{ width: '100%', borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.45)', display: 'block' }} />
+      ) : (
+        <div style={{
+          width: '100%', aspectRatio: '4 / 3', borderRadius: 16, overflow: 'hidden',
+          border: '1px dashed var(--border)', background: 'var(--surface)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.35)', position: 'relative',
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 18,
+        }}>
+          {/* batang-batang blur ala grafik dashboard */}
+          <div aria-hidden style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: 10, padding: 18, opacity: 0.35 }}>
+            {[42, 68, 55, 82, 60, 95].map((h, i) => (
+              <div key={i} style={{ flex: 1, height: `${h}%`, background: 'linear-gradient(to top, var(--amber), transparent)', borderRadius: 4 }} />
+            ))}
+          </div>
+          <div style={{ position: 'relative' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 800, color: 'var(--amber)' }}>Rp•••</div>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.08em', color: 'var(--muted)', textTransform: 'uppercase' }}>
+              screenshot · segera
+            </span>
+          </div>
+        </div>
+      )}
+      <figcaption style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', textAlign: 'center', marginTop: 10 }}>
+        {caption}{hint ? ` · ${hint}` : ''}
+      </figcaption>
+    </figure>
   )
 }
 
