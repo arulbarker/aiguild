@@ -118,7 +118,7 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease }}
             style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.25em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 22 }}
           >
-            Platform Kursus Vibe Coding · Untuk Non-IT
+            Platform Kelas AI · Untuk Non-IT
           </motion.p>
 
           <motion.h1
@@ -126,7 +126,7 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
             className="font-extrabold uppercase"
             style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.4rem, 8vw, 5rem)', lineHeight: 0.98, letterSpacing: '-0.04em', maxWidth: 920 }}
           >
-            <span className="block" style={{ color: 'var(--cream)' }}>Bisa bikin &amp; jual aplikasi sendiri</span>
+            <span className="block" style={{ color: 'var(--cream)' }}>Manfaatkan AI sampai menghasilkan —</span>
             <span className="block" style={{ color: 'var(--amber)' }}>walau kamu bukan anak IT.</span>
           </motion.h1>
 
@@ -134,7 +134,7 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.22, ease }}
             style={{ color: 'var(--muted)', fontSize: 'clamp(0.95rem, 2vw, 1.15rem)', lineHeight: 1.65, maxWidth: 560, marginTop: 28 }}
           >
-            Belajar vibe coding dengan bantuan AI — dari nol sampai produk yang menghasilkan. Pilih kursusmu di bawah dan mulai hari ini.
+            Belajar langsung dari orang yang benar-benar menghasilkan pakai AI — dari nol, tanpa background IT. Pilih kelasmu di bawah dan mulai hari ini.
           </motion.p>
 
           <motion.div
@@ -374,7 +374,7 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
 
       {/* ===== FOOTER ===== */}
       <footer className="px-5 sm:px-8 py-8 max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderTop: '1px solid var(--border)', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}>
-        <span>AI<span style={{ color: 'var(--amber)' }}>·</span>GUILD — Platform Kursus Vibe Coding</span>
+        <span>AI<span style={{ color: 'var(--amber)' }}>·</span>GUILD — Platform Kelas AI · Untuk Non-IT</span>
         <span>© 2026 · arul.cg</span>
       </footer>
     </div>

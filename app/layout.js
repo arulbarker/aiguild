@@ -21,8 +21,8 @@ const mono = JetBrains_Mono({
 })
 
 export const metadata = {
-  title: 'AI Guild — Platform Vibe Coding',
-  description: 'Belajar vibe coding dari nol sampai bisa menghasilkan.',
+  title: 'AI Guild — Manfaatkan AI Sampai Menghasilkan',
+  description: 'Belajar memanfaatkan AI sampai menghasilkan — dari nol, tanpa background IT. Kelas praktis untuk non-IT, ditopang bukti nyata.',
 }
 
 export default function RootLayout({ children }) {

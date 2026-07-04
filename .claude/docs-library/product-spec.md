@@ -7,9 +7,11 @@ Sumber kebenaran produk ini.
 
 ## Produk ini apa
 
-Platform **toko ecourse** vibe coding. Target: non-IT yang ingin bangun produk digital dengan bantuan AI. Model akses: **beli per kursus, akses selamanya** via Mayar.id. Banyak kursus dijual terpisah, tiap kursus punya harga sendiri. User beli sebuah kursus → punya akses ke kursus itu tanpa batas waktu → belajar via email magic link. Etalase katalog publik (tanpa login); login hanya untuk masuk ke kursus yang dimiliki.
+Platform **toko ecourse** untuk **memanfaatkan AI sampai menghasilkan**. Target: non-IT yang ingin menghasilkan uang dengan bantuan AI. Model akses: **beli per kursus, akses selamanya** via Mayar.id. Banyak kursus dijual terpisah, tiap kursus punya harga sendiri. User beli sebuah kursus → punya akses ke kursus itu tanpa batas waktu → belajar via email magic link. Etalase katalog publik (tanpa login); login hanya untuk masuk ke kursus yang dimiliki.
 
-**Kursus pertama:** "Vibe Coding Google Apps Script: Dari Nol Bikin Aplikasi Sampai Menghasilkan" (Rp500.000, 20 modul).
+**Positioning (outcome-first, disetujui 2026-07-05):** janji utama brand = *"Manfaatkan AI sampai menghasilkan — walau kamu bukan anak IT."* Homepage menjual **hasil** (uang dari AI) ditopang **bukti nyata** (galeri screenshot pendapatan bulanan), tiap kelas menjual **skill spesifik**. Nama "AI Guild" = payung AI; **vibe coding = kelas flagship**, bukan keseluruhan brand. Framing lama "Platform Vibe Coding" digantikan.
+
+**Kursus pertama (flagship):** "Vibe Coding Google Apps Script: Dari Nol Bikin Aplikasi Sampai Menghasilkan" (Rp500.000, 20 modul).
 
 > Pivot dari model lama (langganan tahunan single-product) didokumentasikan di [`multi-ecourse-design.md`](./multi-ecourse-design.md) + [`multi-ecourse-plan.md`](./multi-ecourse-plan.md).
 
