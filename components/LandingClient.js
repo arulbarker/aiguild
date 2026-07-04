@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence, useScroll, useTransform, useInView, animate } from 'framer-motion'
+import { motion, AnimatePresence, useScroll, useTransform, useInView, useMotionValue, useSpring, animate } from 'framer-motion'
 
 const ease = [0.16, 1, 0.3, 1]
 
@@ -96,8 +96,18 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
   const glowY = useTransform(scrollYProgress, [0, 1], [0, 180])
   const glowScale = useTransform(scrollYProgress, [0, 1], [1, 1.35])
 
+  // Progress bar scroll seluruh halaman
+  const { scrollYProgress: pageProgress } = useScroll()
+  const barScaleX = useSpring(pageProgress, { stiffness: 120, damping: 30, mass: 0.3 })
+
   return (
     <div style={{ background: 'var(--bg)', color: 'var(--cream)', overflowX: 'hidden' }}>
+
+      {/* ===== PROGRESS BAR SCROLL ===== */}
+      <motion.div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, height: 3, zIndex: 60,
+        background: 'var(--amber)', transformOrigin: '0%', scaleX: barScaleX,
+      }} />
 
       {/* ===== NAV ===== */}
       <nav className="flex items-center justify-between px-5 sm:px-8 py-5 max-w-6xl mx-auto">
@@ -133,7 +143,7 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
           <motion.h1
             initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.08, ease }}
             className="font-extrabold uppercase mx-auto"
-            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.6rem, 8.5vw, 6rem)', lineHeight: 0.96, letterSpacing: '-0.04em', maxWidth: 1000 }}
+            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.3rem, 6vw, 4.3rem)', lineHeight: 1.0, letterSpacing: '-0.035em', maxWidth: 1040 }}
           >
             <span className="block" style={{ color: 'var(--cream)' }}>Manfaatkan AI sampai menghasilkan jutaan —</span>
             <span className="block" style={{ color: 'var(--amber)' }}>walau kamu bukan programmer.</span>
@@ -150,14 +160,14 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.34, ease }}
             className="flex flex-col sm:flex-row gap-3 mt-10 justify-center"
           >
-            <motion.a href={flagshipLink} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+            <MagneticA href={flagshipLink}
               style={{ background: 'var(--amber)', color: '#07070A', padding: '15px 30px', borderRadius: 12, fontWeight: 700, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 13, letterSpacing: '0.04em' }}>
               {flagship ? `Mulai · ${rupiah(flagship.price)}` : 'Lihat kursus'} {flagship && <span style={{ opacity: 0.7, fontWeight: 500 }}>· akses selamanya</span>}
-            </motion.a>
-            <motion.a href="#bukti" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+            </MagneticA>
+            <MagneticA href="#bukti"
               style={{ border: '1px solid var(--border)', color: 'var(--cream)', padding: '15px 30px', borderRadius: 12, fontWeight: 500, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 13 }}>
               Lihat bukti ↓
-            </motion.a>
+            </MagneticA>
           </motion.div>
 
           <motion.div
@@ -171,6 +181,16 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
             <span><span style={{ color: 'var(--amber)' }}>∞</span> belajar ulang</span>
           </motion.div>
         </motion.div>
+
+        <motion.a href="#bukti" aria-label="Scroll ke bukti"
+          style={{ position: 'absolute', bottom: 24, left: '50%', x: '-50%', zIndex: 1, color: 'var(--muted)' }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.8 }}
+        >
+          <motion.span style={{ display: 'block', fontSize: 22 }}
+            animate={{ y: [0, 9, 0] }} transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}>
+            ↓
+          </motion.span>
+        </motion.a>
       </header>
 
       {/* ===== BUKTI PENDAPATAN (wall of proof) ===== */}
@@ -395,7 +415,8 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
 function ProofShot({ src, caption, hint }) {
   const [broken, setBroken] = useState(false)
   return (
-    <figure style={{ margin: 0 }}>
+    <motion.figure style={{ margin: 0 }}
+      whileHover={{ y: -6 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
       {src && !broken ? (
         <img src={src} alt={caption} loading="lazy"
           onError={() => setBroken(true)}
@@ -426,7 +447,7 @@ function ProofShot({ src, caption, hint }) {
       <figcaption style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', textAlign: 'center', marginTop: 10 }}>
         {caption}{hint ? ` · ${hint}` : ''}
       </figcaption>
-    </figure>
+    </motion.figure>
   )
 }
 
@@ -470,4 +491,26 @@ function CountUp({ to, prefix = '', suffix = '', duration = 1.8 }) {
     return () => controls.stop()
   }, [inView, to, duration])
   return <span ref={ref}>{prefix}{Math.round(val).toLocaleString('id-ID')}{suffix}</span>
+}
+
+// Tombol yang sedikit "menempel" ke kursor (magnetic) + hover scale
+function MagneticA({ href, style, children }) {
+  const ref = useRef(null)
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const sx = useSpring(x, { stiffness: 200, damping: 15 })
+  const sy = useSpring(y, { stiffness: 200, damping: 15 })
+  function onMove(e) {
+    const r = ref.current.getBoundingClientRect()
+    x.set((e.clientX - (r.left + r.width / 2)) * 0.3)
+    y.set((e.clientY - (r.top + r.height / 2)) * 0.3)
+  }
+  function reset() { x.set(0); y.set(0) }
+  return (
+    <motion.a ref={ref} href={href} onMouseMove={onMove} onMouseLeave={reset}
+      whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+      style={{ ...style, x: sx, y: sy }}>
+      {children}
+    </motion.a>
+  )
 }
