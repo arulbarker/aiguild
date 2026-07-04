@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence, useScroll, useTransform, useInView, animate } from 'framer-motion'
 
 const ease = [0.16, 1, 0.3, 1]
 
@@ -31,9 +31,9 @@ const PROOF = [
 ]
 
 const STATS = [
-  { big: 'Rp712jt+', small: 'total penjualan' },
-  { big: '7.473', small: 'order produk digital' },
-  { big: '0', small: 'background IT' },
+  { to: 712, prefix: 'Rp', suffix: 'jt+', small: 'total penjualan' },
+  { to: 7473, prefix: '', suffix: '', small: 'order produk digital' },
+  { to: 0, prefix: '', suffix: '', small: 'background IT' },
 ]
 
 const FAQ = [
@@ -88,6 +88,14 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
 
   const flagshipLink = flagship ? `/kursus/${flagship.slug}` : '#harga'
 
+  // Parallax hero: konten naik & memudar, glow bergerak turun saat scroll
+  const heroRef = useRef(null)
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, -90])
+  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0])
+  const glowY = useTransform(scrollYProgress, [0, 1], [0, 180])
+  const glowScale = useTransform(scrollYProgress, [0, 1], [1, 1.35])
+
   return (
     <div style={{ background: 'var(--bg)', color: 'var(--cream)', overflowX: 'hidden' }}>
 
@@ -105,26 +113,27 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
       </nav>
 
       {/* ===== HERO (kursus unggulan) ===== */}
-      <header className="relative px-5 sm:px-8 max-w-6xl mx-auto" style={{ paddingTop: 56, paddingBottom: 64 }}>
-        <div aria-hidden style={{
-          position: 'absolute', top: -120, left: '50%', transform: 'translateX(-50%)',
-          width: 700, height: 500, maxWidth: '120vw',
+      <header ref={heroRef} className="relative px-5 sm:px-8 max-w-6xl mx-auto text-center flex flex-col justify-center"
+        style={{ paddingTop: 40, paddingBottom: 72, minHeight: '90vh' }}>
+        <motion.div aria-hidden style={{
+          position: 'absolute', top: '6%', left: '50%', x: '-50%', y: glowY, scale: glowScale,
+          width: 780, height: 560, maxWidth: '130vw',
           background: 'radial-gradient(circle, var(--amber-glow), transparent 65%)',
-          filter: 'blur(40px)', pointerEvents: 'none', zIndex: 0,
+          filter: 'blur(50px)', pointerEvents: 'none', zIndex: 0,
         }} />
 
-        <div className="relative" style={{ zIndex: 1 }}>
+        <motion.div className="relative" style={{ zIndex: 1, y: heroY, opacity: heroOpacity }}>
           <motion.p
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease }}
-            style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.25em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 22 }}
+            style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.25em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 24 }}
           >
             Platform Kelas AI · Untuk Pemula Non-IT
           </motion.p>
 
           <motion.h1
-            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.08, ease }}
-            className="font-extrabold uppercase"
-            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.4rem, 8vw, 5rem)', lineHeight: 0.98, letterSpacing: '-0.04em', maxWidth: 920 }}
+            initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.08, ease }}
+            className="font-extrabold uppercase mx-auto"
+            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.6rem, 8.5vw, 6rem)', lineHeight: 0.96, letterSpacing: '-0.04em', maxWidth: 1000 }}
           >
             <span className="block" style={{ color: 'var(--cream)' }}>Manfaatkan AI sampai menghasilkan jutaan —</span>
             <span className="block" style={{ color: 'var(--amber)' }}>walau kamu bukan programmer.</span>
@@ -132,28 +141,28 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
 
           <motion.p
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.22, ease }}
-            style={{ color: 'var(--muted)', fontSize: 'clamp(0.95rem, 2vw, 1.15rem)', lineHeight: 1.65, maxWidth: 560, marginTop: 28 }}
+            style={{ color: 'var(--muted)', fontSize: 'clamp(0.95rem, 2vw, 1.2rem)', lineHeight: 1.65, maxWidth: 600, marginTop: 30, marginLeft: 'auto', marginRight: 'auto' }}
           >
             Belajar langsung dari orang yang benar-benar menghasilkan pakai AI — dari nol, tanpa background IT. Pilih kelasmu di bawah dan mulai hari ini.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.34, ease }}
-            className="flex flex-col sm:flex-row gap-3 mt-10"
+            className="flex flex-col sm:flex-row gap-3 mt-10 justify-center"
           >
-            <a href={flagshipLink}
+            <motion.a href={flagshipLink} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
               style={{ background: 'var(--amber)', color: '#07070A', padding: '15px 30px', borderRadius: 12, fontWeight: 700, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 13, letterSpacing: '0.04em' }}>
               {flagship ? `Mulai · ${rupiah(flagship.price)}` : 'Lihat kursus'} {flagship && <span style={{ opacity: 0.7, fontWeight: 500 }}>· akses selamanya</span>}
-            </a>
-            <a href="#bukti"
+            </motion.a>
+            <motion.a href="#bukti" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
               style={{ border: '1px solid var(--border)', color: 'var(--cream)', padding: '15px 30px', borderRadius: 12, fontWeight: 500, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 13 }}>
               Lihat bukti ↓
-            </a>
+            </motion.a>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.5 }}
-            className="flex flex-wrap gap-x-6 gap-y-2 mt-12"
+            className="flex flex-wrap gap-x-6 gap-y-2 mt-12 justify-center"
             style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}
           >
             <span><span style={{ color: 'var(--amber)' }}>{flagshipModules.length}</span> modul</span>
@@ -161,7 +170,7 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
             <span><span style={{ color: 'var(--amber)' }}>∞</span> akses selamanya</span>
             <span><span style={{ color: 'var(--amber)' }}>∞</span> belajar ulang</span>
           </motion.div>
-        </div>
+        </motion.div>
       </header>
 
       {/* ===== BUKTI PENDAPATAN (wall of proof) ===== */}
@@ -178,7 +187,9 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
           <div className="flex flex-wrap gap-x-8 gap-y-3 mt-9" style={{ fontFamily: 'var(--font-mono)' }}>
             {STATS.map((s) => (
               <div key={s.small}>
-                <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--amber)', fontFamily: 'var(--font-display)' }}>{s.big}</div>
+                <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--amber)', fontFamily: 'var(--font-display)' }}>
+                  <CountUp to={s.to} prefix={s.prefix} suffix={s.suffix} />
+                </div>
                 <div style={{ fontSize: 11, color: 'var(--muted)' }}>{s.small}</div>
               </div>
             ))}
@@ -435,15 +446,28 @@ function Section({ id, eyebrow, title, children }) {
   )
 }
 
-function Reveal({ children, delay = 0 }) {
+function Reveal({ children, delay = 0, y = 28 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y, scale: 0.97 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: '-60px' }}
-      transition={{ duration: 0.6, delay, ease }}
+      transition={{ duration: 0.7, delay, ease }}
     >
       {children}
     </motion.div>
   )
+}
+
+// Angka menghitung naik saat masuk viewport (0 → target)
+function CountUp({ to, prefix = '', suffix = '', duration = 1.8 }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, margin: '-40px' })
+  const [val, setVal] = useState(0)
+  useEffect(() => {
+    if (!inView) return
+    const controls = animate(0, to, { duration, ease: 'easeOut', onUpdate: (v) => setVal(v) })
+    return () => controls.stop()
+  }, [inView, to, duration])
+  return <span ref={ref}>{prefix}{Math.round(val).toLocaleString('id-ID')}{suffix}</span>
 }
