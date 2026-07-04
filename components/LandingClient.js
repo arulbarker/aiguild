@@ -16,12 +16,18 @@ const LANGKAH = [
   { n: '03', t: 'Mulai belajar', d: 'Langsung masuk ke flowchart modul. Belajar urut, kapan saja, dari mana saja.' },
 ]
 
-// Bukti pendapatan. Isi `src` dengan path file di /public (mis. '/pendapatan-bulanan.png').
+// Bukti pendapatan. Isi `src` dengan path file di /public (mis. '/pendapatan/jan.png').
 // Kalau `src` masih '' → tampil placeholder bergaya (tidak ada gambar broken).
+// Simpan file screenshot bulanan ke: public/pendapatan/<nama>.png
 const PROOF = [
-  { src: '/penghasilan-lynkid.png', caption: 'Total penjualan Lynk.id', hint: 'Rp712jt+ sepanjang jalan' },
-  { src: '', caption: 'Pendapatan per bulan', hint: 'Puluhan juta / bulan' },
-  { src: '', caption: 'Penjualan harian', hint: 'Masuk tiap hari' },
+  { src: '/penghasilan-lynkid.png', caption: 'Total Lynk.id', hint: 'Rp712jt+' },
+  { src: '/pendapatan/jan.png',     caption: 'Januari',       hint: 'Rp176,5jt' },
+  { src: '/pendapatan/feb.png',     caption: 'Februari',      hint: 'Rp45,4jt' },
+  { src: '/pendapatan/mar.png',     caption: 'Maret',         hint: 'Rp42,7jt' },
+  { src: '/pendapatan/apr.png',     caption: 'April',         hint: 'Rp24,2jt' },
+  { src: '/pendapatan/mei.png',     caption: 'Mei',           hint: 'Rp17,8jt' },
+  { src: '/pendapatan/jun.png',     caption: 'Juni',          hint: 'Rp18,5jt' },
+  { src: '/pendapatan/harian.png',  caption: 'Contoh 1 hari', hint: 'Rp11,1jt' },
 ]
 
 const STATS = [
@@ -160,9 +166,9 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
 
       {/* ===== BUKTI PENDAPATAN (wall of proof) ===== */}
       <Section id="bukti" eyebrow="Bukti nyata · bukan janji" title="Uang beneran masuk rekening — dari vibe coding">
-        <div className="grid sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {PROOF.map((p, i) => (
-            <Reveal key={i} delay={Math.min(i, 3) * 0.08}>
+            <Reveal key={i} delay={Math.min(i, 6) * 0.06}>
               <ProofShot src={p.src} caption={p.caption} hint={p.hint} />
             </Reveal>
           ))}
@@ -376,10 +382,14 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
 }
 
 function ProofShot({ src, caption, hint }) {
+  const [broken, setBroken] = useState(false)
   return (
     <figure style={{ margin: 0 }}>
-      {src ? (
+      {src && !broken ? (
         <img src={src} alt={caption} loading="lazy"
+          onError={() => setBroken(true)}
+          onLoad={(e) => { if (e.currentTarget.naturalWidth === 0) setBroken(true) }}
+          ref={(img) => { if (img && img.complete && img.naturalWidth === 0) setBroken(true) }}
           style={{ width: '100%', borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.45)', display: 'block' }} />
       ) : (
         <div style={{
