@@ -198,7 +198,9 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {PROOF.map((p, i) => (
             <Reveal key={i} delay={Math.min(i, 6) * 0.06}>
-              <ProofShot src={p.src} caption={p.caption} hint={p.hint} />
+              <Parallax offset={[22, 38, 12][i % 3]}>
+                <ProofShot src={p.src} caption={p.caption} hint={p.hint} />
+              </Parallax>
             </Reveal>
           ))}
         </div>
@@ -454,14 +456,18 @@ function ProofShot({ src, caption, hint }) {
 function Section({ id, eyebrow, title, children }) {
   return (
     <section id={id} className="px-5 sm:px-8 max-w-6xl mx-auto" style={{ paddingTop: 64, paddingBottom: 16 }}>
-      <Reveal>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.2em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 12 }}>
-          {eyebrow}
-        </p>
-        <h2 className="font-extrabold" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', color: 'var(--cream)', letterSpacing: '-0.03em', marginBottom: 32, maxWidth: 640, lineHeight: 1.05 }}>
-          {title}
-        </h2>
-      </Reveal>
+      <motion.p
+        initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.6, ease }}
+        style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.2em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 12 }}>
+        {eyebrow}
+      </motion.p>
+      <motion.h2 className="font-extrabold"
+        initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.7, delay: 0.1, ease }}
+        style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', color: 'var(--cream)', letterSpacing: '-0.03em', marginBottom: 32, maxWidth: 640, lineHeight: 1.05 }}>
+        {title}
+      </motion.h2>
       {children}
     </section>
   )
@@ -478,6 +484,14 @@ function Reveal({ children, delay = 0, y = 28 }) {
       {children}
     </motion.div>
   )
+}
+
+// Geser vertikal halus mengikuti scroll (efek kedalaman)
+function Parallax({ children, offset = 24 }) {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const y = useTransform(scrollYProgress, [0, 1], [offset, -offset])
+  return <motion.div ref={ref} style={{ y }}>{children}</motion.div>
 }
 
 // Angka menghitung naik saat masuk viewport (0 → target)
