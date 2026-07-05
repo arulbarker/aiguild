@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence, useScroll, useTransform, useInView, useMotionValue, useSpring, animate } from 'framer-motion'
 
 const ease = [0.16, 1, 0.3, 1]
 
@@ -14,6 +14,26 @@ const LANGKAH = [
   { n: '01', t: 'Pilih & bayar kursus', d: 'Checkout aman di Mayar pakai email kamu. Sekali bayar, akses selamanya.' },
   { n: '02', t: 'Cek email', d: 'Akun kamu otomatis aktif. Buka halaman masuk, ketik email yang sama, klik link.' },
   { n: '03', t: 'Mulai belajar', d: 'Langsung masuk ke flowchart modul. Belajar urut, kapan saja, dari mana saja.' },
+]
+
+// Bukti pendapatan. Isi `src` dengan path file di /public (mis. '/pendapatan/jan.png').
+// Kalau `src` masih '' → tampil placeholder bergaya (tidak ada gambar broken).
+// Simpan file screenshot bulanan ke: public/pendapatan/<nama>.png
+const PROOF = [
+  { src: '/penghasilan-lynkid.png', caption: 'Total Lynk.id', hint: 'Rp712jt+' },
+  { src: '/pendapatan/jan.png',     caption: 'Januari',       hint: 'Rp176,5jt' },
+  { src: '/pendapatan/feb.png',     caption: 'Februari',      hint: 'Rp45,4jt' },
+  { src: '/pendapatan/mar.png',     caption: 'Maret',         hint: 'Rp42,7jt' },
+  { src: '/pendapatan/apr.png',     caption: 'April',         hint: 'Rp24,2jt' },
+  { src: '/pendapatan/mei.png',     caption: 'Mei',           hint: 'Rp17,8jt' },
+  { src: '/pendapatan/jun.png',     caption: 'Juni',          hint: 'Rp18,5jt' },
+  { src: '/pendapatan/harian.png',  caption: 'Contoh 1 hari', hint: 'Rp11,1jt' },
+]
+
+const STATS = [
+  { to: 712, prefix: 'Rp', suffix: 'jt+', small: 'total penjualan' },
+  { to: 7473, prefix: '', suffix: '', small: 'order produk digital' },
+  { to: 0, prefix: '', suffix: '', small: 'background IT' },
 ]
 
 const FAQ = [
@@ -68,8 +88,26 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
 
   const flagshipLink = flagship ? `/kursus/${flagship.slug}` : '#harga'
 
+  // Parallax hero: konten naik & memudar, glow bergerak turun saat scroll
+  const heroRef = useRef(null)
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, -90])
+  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0])
+  const glowY = useTransform(scrollYProgress, [0, 1], [0, 180])
+  const glowScale = useTransform(scrollYProgress, [0, 1], [1, 1.35])
+
+  // Progress bar scroll seluruh halaman
+  const { scrollYProgress: pageProgress } = useScroll()
+  const barScaleX = useSpring(pageProgress, { stiffness: 120, damping: 30, mass: 0.3 })
+
   return (
     <div style={{ background: 'var(--bg)', color: 'var(--cream)', overflowX: 'hidden' }}>
+
+      {/* ===== PROGRESS BAR SCROLL ===== */}
+      <motion.div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, height: 3, zIndex: 60,
+        background: 'var(--amber)', transformOrigin: '0%', scaleX: barScaleX,
+      }} />
 
       {/* ===== NAV ===== */}
       <nav className="flex items-center justify-between px-5 sm:px-8 py-5 max-w-6xl mx-auto">
@@ -85,55 +123,56 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
       </nav>
 
       {/* ===== HERO (kursus unggulan) ===== */}
-      <header className="relative px-5 sm:px-8 max-w-6xl mx-auto" style={{ paddingTop: 56, paddingBottom: 64 }}>
-        <div aria-hidden style={{
-          position: 'absolute', top: -120, left: '50%', transform: 'translateX(-50%)',
-          width: 700, height: 500, maxWidth: '120vw',
+      <header ref={heroRef} className="relative px-5 sm:px-8 max-w-6xl mx-auto text-center flex flex-col justify-center"
+        style={{ paddingTop: 40, paddingBottom: 72, minHeight: '90vh' }}>
+        <motion.div aria-hidden style={{
+          position: 'absolute', top: '6%', left: '50%', x: '-50%', y: glowY, scale: glowScale,
+          width: 780, height: 560, maxWidth: '130vw',
           background: 'radial-gradient(circle, var(--amber-glow), transparent 65%)',
-          filter: 'blur(40px)', pointerEvents: 'none', zIndex: 0,
+          filter: 'blur(50px)', pointerEvents: 'none', zIndex: 0,
         }} />
 
-        <div className="relative" style={{ zIndex: 1 }}>
+        <motion.div className="relative" style={{ zIndex: 1, y: heroY, opacity: heroOpacity }}>
           <motion.p
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease }}
-            style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.25em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 22 }}
+            style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.25em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 24 }}
           >
-            Platform Kursus Vibe Coding · Untuk Non-IT
+            Platform Kelas AI · Untuk Pemula Non-IT
           </motion.p>
 
           <motion.h1
-            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.08, ease }}
-            className="font-extrabold uppercase"
-            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.4rem, 8vw, 5rem)', lineHeight: 0.98, letterSpacing: '-0.04em', maxWidth: 920 }}
+            initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.08, ease }}
+            className="font-extrabold uppercase mx-auto"
+            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.3rem, 6vw, 4.3rem)', lineHeight: 1.0, letterSpacing: '-0.035em', maxWidth: 1040 }}
           >
-            <span className="block" style={{ color: 'var(--cream)' }}>Bisa bikin &amp; jual aplikasi sendiri</span>
-            <span className="block" style={{ color: 'var(--amber)' }}>walau kamu bukan anak IT.</span>
+            <span className="block" style={{ color: 'var(--cream)' }}>Manfaatkan AI sampai menghasilkan jutaan —</span>
+            <span className="block" style={{ color: 'var(--amber)' }}>walau kamu bukan programmer.</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.22, ease }}
-            style={{ color: 'var(--muted)', fontSize: 'clamp(0.95rem, 2vw, 1.15rem)', lineHeight: 1.65, maxWidth: 560, marginTop: 28 }}
+            style={{ color: 'var(--muted)', fontSize: 'clamp(0.95rem, 2vw, 1.2rem)', lineHeight: 1.65, maxWidth: 600, marginTop: 30, marginLeft: 'auto', marginRight: 'auto' }}
           >
-            Belajar vibe coding dengan bantuan AI — dari nol sampai produk yang menghasilkan. Pilih kursusmu di bawah dan mulai hari ini.
+            Belajar langsung dari orang yang benar-benar menghasilkan pakai AI — dari nol, tanpa background IT. Pilih kelasmu di bawah dan mulai hari ini.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.34, ease }}
-            className="flex flex-col sm:flex-row gap-3 mt-10"
+            className="flex flex-col sm:flex-row gap-3 mt-10 justify-center"
           >
-            <a href={flagshipLink}
+            <MagneticA href={flagshipLink}
               style={{ background: 'var(--amber)', color: '#07070A', padding: '15px 30px', borderRadius: 12, fontWeight: 700, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 13, letterSpacing: '0.04em' }}>
               {flagship ? `Mulai · ${rupiah(flagship.price)}` : 'Lihat kursus'} {flagship && <span style={{ opacity: 0.7, fontWeight: 500 }}>· akses selamanya</span>}
-            </a>
-            <a href="#kursus"
+            </MagneticA>
+            <MagneticA href="#bukti"
               style={{ border: '1px solid var(--border)', color: 'var(--cream)', padding: '15px 30px', borderRadius: 12, fontWeight: 500, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 13 }}>
-              Semua kursus ↓
-            </a>
+              Lihat bukti ↓
+            </MagneticA>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.5 }}
-            className="flex flex-wrap gap-x-6 gap-y-2 mt-12"
+            className="flex flex-wrap gap-x-6 gap-y-2 mt-12 justify-center"
             style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}
           >
             <span><span style={{ color: 'var(--amber)' }}>{flagshipModules.length}</span> modul</span>
@@ -141,48 +180,65 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
             <span><span style={{ color: 'var(--amber)' }}>∞</span> akses selamanya</span>
             <span><span style={{ color: 'var(--amber)' }}>∞</span> belajar ulang</span>
           </motion.div>
-        </div>
+        </motion.div>
+
+        <motion.a href="#bukti" aria-label="Scroll ke bukti"
+          style={{ position: 'absolute', bottom: 24, left: '50%', x: '-50%', zIndex: 1, color: 'var(--muted)' }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.8 }}
+        >
+          <motion.span style={{ display: 'block', fontSize: 22 }}
+            animate={{ y: [0, 9, 0] }} transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}>
+            ↓
+          </motion.span>
+        </motion.a>
       </header>
 
-      {/* ===== SOCIAL PROOF / KENAPA BELAJAR DI SINI ===== */}
-      <Section id="kenapa" eyebrow="Kenapa belajar di sini" title="Belajar dari vibe coder sejati — bukan programmer, bukan anak IT">
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          <Reveal>
-            <div>
-              <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.75, marginBottom: 16 }}>
-                Aku <b style={{ color: 'var(--cream)' }}>Arul</b> — bukan lulusan IT, bukan programmer. Tapi dengan{' '}
-                <b style={{ color: 'var(--amber)' }}>vibe coding</b> dan bantuan AI, aku sudah membangun puluhan produk
-                digital yang menghasilkan <b style={{ color: 'var(--cream)' }}>ratusan juta rupiah</b>.
-              </p>
-              <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.75 }}>
-                Di sini kamu belajar cara yang sama — langkah demi langkah, dari nol, tanpa harus jadi programmer dulu.
-              </p>
-              <div className="flex flex-wrap gap-x-8 gap-y-3 mt-7" style={{ fontFamily: 'var(--font-mono)' }}>
-                <div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--amber)', fontFamily: 'var(--font-display)' }}>Rp712jt+</div>
-                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>total penjualan</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--amber)', fontFamily: 'var(--font-display)' }}>7.473</div>
-                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>order produk digital</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--amber)', fontFamily: 'var(--font-display)' }}>0</div>
-                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>background IT</div>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <figure style={{ margin: 0 }}>
-              <img src="/penghasilan-lynkid.png" alt="Dashboard penghasilan Lynk.id — Rp712 juta+ total penjualan" loading="lazy"
-                style={{ width: '100%', borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.45)' }} />
-              <figcaption style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', textAlign: 'center', marginTop: 10 }}>
-                Dashboard Lynk.id — bukti nyata, bukan janji.
-              </figcaption>
-            </figure>
-          </Reveal>
+      {/* ===== BUKTI PENDAPATAN (wall of proof) ===== */}
+      <Section id="bukti" eyebrow="Bukti nyata · bukan janji" title="Uang beneran masuk rekening — dari vibe coding">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {PROOF.map((p, i) => (
+            <Reveal key={i} delay={Math.min(i, 6) * 0.06}>
+              <Parallax offset={[22, 38, 12][i % 3]}>
+                <ProofShot src={p.src} caption={p.caption} hint={p.hint} />
+              </Parallax>
+            </Reveal>
+          ))}
         </div>
+
+        <Reveal delay={0.1}>
+          <div className="flex flex-wrap gap-x-8 gap-y-3 mt-9" style={{ fontFamily: 'var(--font-mono)' }}>
+            {STATS.map((s) => (
+              <div key={s.small}>
+                <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--amber)', fontFamily: 'var(--font-display)' }}>
+                  <CountUp to={s.to} prefix={s.prefix} suffix={s.suffix} />
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--muted)' }}>{s.small}</div>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+
+        <div className="mt-8">
+          <a href={flagshipLink} style={{ display: 'inline-block', background: 'var(--amber)', color: '#07070A', padding: '13px 28px', borderRadius: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', fontSize: 13 }}>
+            Mulai belajar cara ini →
+          </a>
+        </div>
+      </Section>
+
+      {/* ===== KENAPA BELAJAR DI SINI (cerita) ===== */}
+      <Section id="kenapa" eyebrow="Kenapa belajar di sini" title="Belajar dari vibe coder sejati — bukan programmer, bukan anak IT">
+        <Reveal>
+          <div style={{ maxWidth: 620 }}>
+            <p style={{ color: 'var(--muted)', fontSize: 15.5, lineHeight: 1.75, marginBottom: 16 }}>
+              Aku <b style={{ color: 'var(--cream)' }}>Arul</b> — bukan lulusan IT, bukan programmer. Tapi dengan{' '}
+              <b style={{ color: 'var(--amber)' }}>vibe coding</b> dan bantuan AI, aku sudah membangun puluhan produk
+              digital yang menghasilkan <b style={{ color: 'var(--cream)' }}>ratusan juta rupiah</b> — angka di atas itu rekeningku, bukan janji marketing.
+            </p>
+            <p style={{ color: 'var(--muted)', fontSize: 15.5, lineHeight: 1.75 }}>
+              Di sini kamu belajar cara yang persis sama — langkah demi langkah, dari nol, tanpa harus jadi programmer dulu.
+            </p>
+          </div>
+        </Reveal>
       </Section>
 
       {/* ===== SEMUA KURSUS (grid) ===== */}
@@ -351,38 +407,124 @@ export default function LandingClient({ payUrl = '#', courses = [], flagship = n
 
       {/* ===== FOOTER ===== */}
       <footer className="px-5 sm:px-8 py-8 max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderTop: '1px solid var(--border)', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}>
-        <span>AI<span style={{ color: 'var(--amber)' }}>·</span>GUILD — Platform Kursus Vibe Coding</span>
+        <span>AI<span style={{ color: 'var(--amber)' }}>·</span>GUILD — Platform Kelas AI · Untuk Pemula Non-IT</span>
         <span>© 2026 · arul.cg</span>
       </footer>
     </div>
   )
 }
 
+function ProofShot({ src, caption, hint }) {
+  const [broken, setBroken] = useState(false)
+  return (
+    <motion.figure style={{ margin: 0 }}
+      whileHover={{ y: -6 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
+      {src && !broken ? (
+        <img src={src} alt={caption} loading="lazy"
+          onError={() => setBroken(true)}
+          onLoad={(e) => { if (e.currentTarget.naturalWidth === 0) setBroken(true) }}
+          ref={(img) => { if (img && img.complete && img.naturalWidth === 0) setBroken(true) }}
+          style={{ width: '100%', borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.45)', display: 'block' }} />
+      ) : (
+        <div style={{
+          width: '100%', aspectRatio: '4 / 3', borderRadius: 16, overflow: 'hidden',
+          border: '1px dashed var(--border)', background: 'var(--surface)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.35)', position: 'relative',
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 18,
+        }}>
+          {/* batang-batang blur ala grafik dashboard */}
+          <div aria-hidden style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: 10, padding: 18, opacity: 0.35 }}>
+            {[42, 68, 55, 82, 60, 95].map((h, i) => (
+              <div key={i} style={{ flex: 1, height: `${h}%`, background: 'linear-gradient(to top, var(--amber), transparent)', borderRadius: 4 }} />
+            ))}
+          </div>
+          <div style={{ position: 'relative' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 800, color: 'var(--amber)' }}>Rp•••</div>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.08em', color: 'var(--muted)', textTransform: 'uppercase' }}>
+              screenshot · segera
+            </span>
+          </div>
+        </div>
+      )}
+      <figcaption style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', textAlign: 'center', marginTop: 10 }}>
+        {caption}{hint ? ` · ${hint}` : ''}
+      </figcaption>
+    </motion.figure>
+  )
+}
+
 function Section({ id, eyebrow, title, children }) {
   return (
     <section id={id} className="px-5 sm:px-8 max-w-6xl mx-auto" style={{ paddingTop: 64, paddingBottom: 16 }}>
-      <Reveal>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.2em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 12 }}>
-          {eyebrow}
-        </p>
-        <h2 className="font-extrabold" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', color: 'var(--cream)', letterSpacing: '-0.03em', marginBottom: 32, maxWidth: 640, lineHeight: 1.05 }}>
-          {title}
-        </h2>
-      </Reveal>
+      <motion.p
+        initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.6, ease }}
+        style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.2em', color: 'var(--amber)', textTransform: 'uppercase', marginBottom: 12 }}>
+        {eyebrow}
+      </motion.p>
+      <motion.h2 className="font-extrabold"
+        initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.7, delay: 0.1, ease }}
+        style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', color: 'var(--cream)', letterSpacing: '-0.03em', marginBottom: 32, maxWidth: 640, lineHeight: 1.05 }}>
+        {title}
+      </motion.h2>
       {children}
     </section>
   )
 }
 
-function Reveal({ children, delay = 0 }) {
+function Reveal({ children, delay = 0, y = 28 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y, scale: 0.97 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: '-60px' }}
-      transition={{ duration: 0.6, delay, ease }}
+      transition={{ duration: 0.7, delay, ease }}
     >
       {children}
     </motion.div>
+  )
+}
+
+// Geser vertikal halus mengikuti scroll (efek kedalaman)
+function Parallax({ children, offset = 24 }) {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const y = useTransform(scrollYProgress, [0, 1], [offset, -offset])
+  return <motion.div ref={ref} style={{ y }}>{children}</motion.div>
+}
+
+// Angka menghitung naik saat masuk viewport (0 → target)
+function CountUp({ to, prefix = '', suffix = '', duration = 1.8 }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, margin: '-40px' })
+  const [val, setVal] = useState(0)
+  useEffect(() => {
+    if (!inView) return
+    const controls = animate(0, to, { duration, ease: 'easeOut', onUpdate: (v) => setVal(v) })
+    return () => controls.stop()
+  }, [inView, to, duration])
+  return <span ref={ref}>{prefix}{Math.round(val).toLocaleString('id-ID')}{suffix}</span>
+}
+
+// Tombol yang sedikit "menempel" ke kursor (magnetic) + hover scale
+function MagneticA({ href, style, children }) {
+  const ref = useRef(null)
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const sx = useSpring(x, { stiffness: 200, damping: 15 })
+  const sy = useSpring(y, { stiffness: 200, damping: 15 })
+  function onMove(e) {
+    const r = ref.current.getBoundingClientRect()
+    x.set((e.clientX - (r.left + r.width / 2)) * 0.3)
+    y.set((e.clientY - (r.top + r.height / 2)) * 0.3)
+  }
+  function reset() { x.set(0); y.set(0) }
+  return (
+    <motion.a ref={ref} href={href} onMouseMove={onMove} onMouseLeave={reset}
+      whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+      style={{ ...style, x: sx, y: sy }}>
+      {children}
+    </motion.a>
   )
 }
